@@ -1,4 +1,4 @@
-import { NavBar } from "@/components/NavBar";
+import NavBar from "@/components/NavBar";
 import "./globals.css";
 import {
   NavigationMenu,
@@ -22,7 +22,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        {/* Layout UI */}
         <NavBar />
         <main>{children}</main>
       </body>
