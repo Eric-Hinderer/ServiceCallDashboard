@@ -3,7 +3,8 @@ export default async function Home() {
   return (
     <main>
       <div>
-        <Link href="/dashboard">DashBoard </Link>
+        <h1>Home</h1>
+        <p>Welcome to the home page!</p>
       </div>
     </main>
   );

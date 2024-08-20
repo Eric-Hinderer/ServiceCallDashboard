@@ -1,23 +1,31 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { NavBar } from "@/components/NavBar";
 import "./globals.css";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuIndicator,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  NavigationMenuViewport,
+} from "@/components/ui/navigation-menu";
 
-
-const inter = Inter({ subsets: ["latin"] });
-
-export const metadata: Metadata = {
-  title: "Service Call App",
-  description: "A dashboard for managing service calls",
-};
+import { navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
+import Link from "next/link";
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body>
+        {/* Layout UI */}
+        <NavBar />
+        <main>{children}</main>
+      </body>
     </html>
   );
 }
