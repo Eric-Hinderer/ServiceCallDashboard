@@ -1,4 +1,8 @@
-// `app/dashboard/page.tsx` is the UI for the `/dashboard` URL
 export default function Page() {
-    return <h1>Hello, Dashboard Page!</h1>
-  }
+  return (
+    <div>
+      <h1>Dashboard</h1>
+      <p>Welcome to the dashboard!</p>
+    </div>
+  );
+}

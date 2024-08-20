@@ -1,10 +1,11 @@
+import Link from "next/link";
+export default async function Home() {
+const data = await fetch('https://catfact.ninja/fact').then((res) => res.json());
 
-export default function Home() {
   return (
-<section className="py-24">
-  <div className="container">
-    <h1 className="text-3xl font-bold">Service Call Application for central distributing</h1>
-  </div>
-</section>
+    <div>
+      <Link href="/dashboard">DashBoard </Link>
+      <p>{data.fact}</p>
+    </div>
   );
 }
