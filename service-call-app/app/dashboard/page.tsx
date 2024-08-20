@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import Status from "./[id]/Status";
 
 // Server Component for data fetching
 export default async function DashboardPage() {
@@ -79,7 +80,7 @@ export default async function DashboardPage() {
                   {serviceCall.reportedProblem || "N/A"}
                 </td>
                 <td className="py-2 px-4 text-sm text-gray-700">
-                  {serviceCall.status || "N/A"}
+                  <Status id={serviceCall.id} currentStatus={serviceCall.status} />
                 </td>
                 <td className="py-2 px-4 text-sm text-gray-700">
                   {serviceCall.takenBy || "N/A"}

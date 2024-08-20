@@ -68,31 +68,32 @@ export default function CreateServiceCall() {
       <form action={createFromForm} className="space-y-6">
         <div>
           <Label htmlFor="location" className="block text-sm font-medium text-gray-700">Location:</Label>
-          <Input type="text" name="location" className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+          <Input id="location" type="text" name="location" className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
         </div>
         <div>
           <Label htmlFor="whoCalled" className="block text-sm font-medium text-gray-700">Who Called:</Label>
-          <Input type="text" name="whoCalled" className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+          <Input id="whoCalled" type="text" name="whoCalled" className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
         </div>
         <div>
           <Label htmlFor="machine" className="block text-sm font-medium text-gray-700">Machine:</Label>
-          <Input type="text" name="machine" className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+          <Input id="machine" type="text" name="machine" className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
         </div>
         <div>
           <Label htmlFor="reportedProblem" className="block text-sm font-medium text-gray-700">Reported Problem:</Label>
-          <Input type="text" name="reportedProblem" className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+          <Input id="reportedProblem" type="text" name="reportedProblem" className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
         </div>
         <div>
           <Label htmlFor="takenBy" className="block text-sm font-medium text-gray-700">Taken By:</Label>
-          <Input type="text" name="takenBy" className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+          <Input id="takenBy" type="text" name="takenBy" className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
         </div>
         <div>
           <Label htmlFor="notes" className="block text-sm font-medium text-gray-700">Notes:</Label>
-          <Textarea name="notes" className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+          <Textarea id="notes" name="notes" className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
         </div>
         <div>
           <Label htmlFor="status" className="block text-sm font-medium text-gray-700">Status:</Label>
           <select
+            id="status"
             name="status"
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             defaultValue={Status.OPEN} // Set default value
