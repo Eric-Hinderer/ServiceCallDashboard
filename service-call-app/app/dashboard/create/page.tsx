@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import nodemailer from 'nodemailer';
+import nodemailer from "nodemailer";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -37,50 +37,6 @@ enum Status {
 }
 
 export default function CreateServiceCall() {
-  async function emailGroup(formData: FormData) {
-    "use server";
-    const date = formData.get("date");
-    const location = formData.get("location");
-    const whoCalled = formData.get("whoCalled");
-    const machine = formData.get("machine");
-    const reportedProblem = formData.get("reportedProblem");
-    const takenBy = formData.get("takenBy");
-    const status = formData.get("status");
-    const notes = formData.get("notes");
-  
-    // Construct the full URL (adjust as needed if using serverless or hosted environments)
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-  
-    try {
-      const res = await fetch(`${baseUrl}/api/sendEmail`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          date,
-          location,
-          whoCalled,
-          machine,
-          reportedProblem,
-          takenBy,
-          status,
-          notes,
-        }),
-      });
-  
-      if (res.ok) {
-        console.log("Email sent successfully");
-      } else {
-        console.error("Failed to send email");
-      }
-    } catch (err) {
-      console.error("Error sending email:", err);
-    }
-  }
-  
-  
-
   async function createFromForm(formData: FormData) {
     "use server";
     const dateString = formData.get("date") as string;
@@ -107,6 +63,49 @@ export default function CreateServiceCall() {
 
     await prisma.serviceCall.create({ data: newServiceCall });
     redirect("/dashboard");
+  }
+
+  async function emailGroup(formData: FormData) {
+    "use server";
+    const date = formData.get("date");
+    const location = formData.get("location");
+    const whoCalled = formData.get("whoCalled");
+    const machine = formData.get("machine");
+    const reportedProblem = formData.get("reportedProblem");
+    const takenBy = formData.get("takenBy");
+    const status = formData.get("status");
+    const notes = formData.get("notes");
+
+    // Construct the full URL (adjust as needed if using serverless or hosted environments)
+    const baseUrl = "http://localhost:3000";
+
+    try {
+      const res = await fetch(`${baseUrl}/api/sendEmail`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          date,
+          location,
+          whoCalled,
+          machine,
+          reportedProblem,
+          takenBy,
+          status,
+          notes,
+        }),
+      });
+
+      if (res.ok) {
+        console.log("Email sent successfully");
+      } else {
+        console.error("Failed to send email");
+      }
+    } catch (err) {
+      console.error("Error sending email:", err);
+    }
+    await createFromForm(formData);
   }
 
   return (
@@ -252,13 +251,13 @@ export default function CreateServiceCall() {
           formAction={emailGroup}
           className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         >
-          Send Email
+          Create Service Call & Email
         </Button>
         <Button
           type="submit"
           className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         >
-          Create Service Call
+          Create Service Call No Email
         </Button>
       </form>
     </div>
