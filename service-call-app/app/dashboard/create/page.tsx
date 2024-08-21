@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import nodemailer from 'nodemailer';
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -36,6 +37,50 @@ enum Status {
 }
 
 export default function CreateServiceCall() {
+  async function emailGroup(formData: FormData) {
+    "use server";
+    const date = formData.get("date");
+    const location = formData.get("location");
+    const whoCalled = formData.get("whoCalled");
+    const machine = formData.get("machine");
+    const reportedProblem = formData.get("reportedProblem");
+    const takenBy = formData.get("takenBy");
+    const status = formData.get("status");
+    const notes = formData.get("notes");
+  
+    // Construct the full URL (adjust as needed if using serverless or hosted environments)
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+  
+    try {
+      const res = await fetch(`${baseUrl}/api/sendEmail`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          date,
+          location,
+          whoCalled,
+          machine,
+          reportedProblem,
+          takenBy,
+          status,
+          notes,
+        }),
+      });
+  
+      if (res.ok) {
+        console.log("Email sent successfully");
+      } else {
+        console.error("Failed to send email");
+      }
+    } catch (err) {
+      console.error("Error sending email:", err);
+    }
+  }
+  
+  
+
   async function createFromForm(formData: FormData) {
     "use server";
     const dateString = formData.get("date") as string;
@@ -69,10 +114,16 @@ export default function CreateServiceCall() {
       <h1 className="text-2xl font-bold text-center mb-6 text-gray-800">
         Create Service Call
       </h1>
-      <form action={createFromForm} className="space-y-4 bg-white p-6 shadow rounded-lg">
+      <form
+        action={createFromForm}
+        className="space-y-4 bg-white p-6 shadow rounded-lg"
+      >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="date" className="block text-sm font-medium text-gray-700">
+            <Label
+              htmlFor="date"
+              className="block text-sm font-medium text-gray-700"
+            >
               Date:
             </Label>
             <Input
@@ -83,7 +134,10 @@ export default function CreateServiceCall() {
             />
           </div>
           <div>
-            <Label htmlFor="location" className="block text-sm font-medium text-gray-700">
+            <Label
+              htmlFor="location"
+              className="block text-sm font-medium text-gray-700"
+            >
               Location:
             </Label>
             <Input
@@ -96,7 +150,10 @@ export default function CreateServiceCall() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="whoCalled" className="block text-sm font-medium text-gray-700">
+            <Label
+              htmlFor="whoCalled"
+              className="block text-sm font-medium text-gray-700"
+            >
               Who Called:
             </Label>
             <Input
@@ -107,7 +164,10 @@ export default function CreateServiceCall() {
             />
           </div>
           <div>
-            <Label htmlFor="machine" className="block text-sm font-medium text-gray-700">
+            <Label
+              htmlFor="machine"
+              className="block text-sm font-medium text-gray-700"
+            >
               Machine:
             </Label>
             <Input
@@ -120,7 +180,10 @@ export default function CreateServiceCall() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="reportedProblem" className="block text-sm font-medium text-gray-700">
+            <Label
+              htmlFor="reportedProblem"
+              className="block text-sm font-medium text-gray-700"
+            >
               Reported Problem:
             </Label>
             <Input
@@ -131,7 +194,10 @@ export default function CreateServiceCall() {
             />
           </div>
           <div>
-            <Label htmlFor="takenBy" className="block text-sm font-medium text-gray-700">
+            <Label
+              htmlFor="takenBy"
+              className="block text-sm font-medium text-gray-700"
+            >
               Taken By:
             </Label>
             <select
@@ -151,7 +217,10 @@ export default function CreateServiceCall() {
           </div>
         </div>
         <div>
-          <Label htmlFor="notes" className="block text-sm font-medium text-gray-700">
+          <Label
+            htmlFor="notes"
+            className="block text-sm font-medium text-gray-700"
+          >
             Notes:
           </Label>
           <Textarea
@@ -161,7 +230,10 @@ export default function CreateServiceCall() {
           />
         </div>
         <div>
-          <Label htmlFor="status" className="block text-sm font-medium text-gray-700">
+          <Label
+            htmlFor="status"
+            className="block text-sm font-medium text-gray-700"
+          >
             Status:
           </Label>
           <select
@@ -175,6 +247,13 @@ export default function CreateServiceCall() {
             <option value={Status.DONE}>Done</option>
           </select>
         </div>
+        <Button
+          type="submit"
+          formAction={emailGroup}
+          className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        >
+          Send Email
+        </Button>
         <Button
           type="submit"
           className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
