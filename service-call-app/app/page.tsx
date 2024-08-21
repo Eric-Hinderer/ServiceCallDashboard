@@ -11,11 +11,9 @@ import {
 } from "@/components/ui/card";
 import { revalidatePath } from "next/cache";
 
-export const revalidate = 10;
-
 // Server Component for data fetching
 export default async function Home() {
-
+  revalidatePath("/");
   // Fetch Open and In Progress service calls
   const data = await prisma.serviceCall.findMany({
     where: {
@@ -24,7 +22,6 @@ export default async function Home() {
       },
     },
   });
-
 
   return (
     <main className="pt-20 px-8 max-w-7xl mx-auto space-y-16">
@@ -41,7 +38,6 @@ export default async function Home() {
           <Link href="/dashboard/create">Create a New Service Call</Link>
         </Button>
       </section>
-
 
       {/* Card Layout for Mobile */}
       <div className="space-y-4 md:hidden">
