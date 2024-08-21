@@ -10,11 +10,12 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
+import { revalidatePath } from "next/cache";
 
 // Server Component for data fetching
 export default async function DashboardPage() {
   const data = await prisma.serviceCall.findMany();
-
+  revalidatePath("/dashboard");
   return (
     <div className="pt-20 px-4 md:px-8 max-w-7xl mx-auto">
       {/* Welcome Section */}
@@ -171,7 +172,10 @@ export default async function DashboardPage() {
               ))
             ) : (
               <tr>
-                <td colSpan={10} className="py-2 px-4 text-sm text-gray-700 text-center">
+                <td
+                  colSpan={10}
+                  className="py-2 px-4 text-sm text-gray-700 text-center"
+                >
                   No service calls found
                 </td>
               </tr>
