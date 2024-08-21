@@ -17,3 +17,14 @@ export async function changeStatus(id: string, newStatus: string) {
   // Revalidate the dashboard page to reflect the new status
   revalidatePath("/dashboard");
 }
+
+export async function changeTakenBy(id: string, newTakenBy: string) {
+  // Update the takenBy field in the database
+  await prisma.serviceCall.update({
+    where: { id },
+    data: { takenBy: newTakenBy },
+  });
+
+  // Revalidate the dashboard page to reflect the new takenBy value
+  revalidatePath("/dashboard");
+}

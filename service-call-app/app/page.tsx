@@ -10,6 +10,7 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { revalidatePath } from "next/cache";
+import TakenBy from "./dashboard/[id]/TakenBy";
 
 // Server Component for data fetching
 export default async function Home() {
@@ -63,7 +64,11 @@ export default async function Home() {
                 {serviceCall.reportedProblem || "N/A"}
               </div>
               <div>
-                <strong>Taken By:</strong> {serviceCall.takenBy || "N/A"}
+                <strong>Taken By:</strong>{" "}
+                <TakenBy
+                  id={serviceCall.id}
+                  currentTakenBy={serviceCall.takenBy!}
+                />
               </div>
               <div>
                 <strong>Notes:</strong>{" "}
@@ -90,39 +95,44 @@ export default async function Home() {
 
       {/* Table Layout for Desktop */}
       <div className="hidden md:block">
-        {" "}
         {/* Hidden on mobile */}
         <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
           <thead className="bg-gray-100">
             <tr>
-              <th className="py-2 px-4 text-left text-sm font-semibold text-gray-600 max-w-xs">
+              <th className="py-2 px-4 text-left text-sm font-semibold text-gray-600">
                 Date
               </th>
-              <th className="py-2 px-4 text-left text-sm font-semibold text-gray-600 max-w-xs">
+              <th className="py-2 px-4 text-left text-sm font-semibold text-gray-600">
                 Updated At
               </th>
-              <th className="py-2 px-4 text-left text-sm font-semibold text-gray-600 max-w-xs">
+              <th className="py-2 px-4 text-left text-sm font-semibold text-gray-600">
                 Location
               </th>
-              <th className="py-2 px-4 text-left text-sm font-semibold text-gray-600 max-w-xs">
+              <th className="py-2 px-4 text-left text-sm font-semibold text-gray-600">
                 Who Called
               </th>
-              <th className="py-2 px-4 text-left text-sm font-semibold text-gray-600 max-w-xs">
+              <th className="py-2 px-4 text-left text-sm font-semibold text-gray-600">
                 Machine
               </th>
-              <th className="py-2 px-4 text-left text-sm font-semibold text-gray-600 max-w-xs">
+              <th className="py-2 px-4 text-left text-sm font-semibold text-gray-600">
                 Reported Problem
               </th>
-              <th className="py-2 px-4 text-left text-sm font-semibold text-gray-600 max-w-xs">
+              <th
+                className="py-2 px-4 text-left text-sm font-semibold text-gray-600"
+                style={{ width: "125px" }}
+              >
                 Status
               </th>
-              <th className="py-2 px-4 text-left text-sm font-semibold text-gray-600 max-w-xs">
+              <th
+                className="py-2 px-4 text-left text-sm font-semibold text-gray-600"
+                style={{ width: "100px" }}
+              >
                 Taken By
               </th>
-              <th className="py-2 px-4 text-left text-sm font-semibold text-gray-600 max-w-xs">
+              <th className="py-2 px-4 text-left text-sm font-semibold text-gray-600">
                 Notes
               </th>
-              <th className="py-2 px-4 text-left text-sm font-semibold text-gray-600 max-w-xs">
+              <th className="py-2 px-4 text-left text-sm font-semibold text-gray-600">
                 Actions
               </th>
             </tr>
@@ -134,37 +144,46 @@ export default async function Home() {
                   key={serviceCall.id}
                   className="hover:bg-gray-50 border-t border-gray-200"
                 >
-                  <td className="py-2 px-4 text-sm text-gray-700 max-w-xs">
+                  <td className="py-2 px-4 text-sm text-gray-700">
                     {serviceCall.date?.toLocaleString() || "N/A"}
                   </td>
-                  <td className="py-2 px-4 text-sm text-gray-700 max-w-xs">
+                  <td className="py-2 px-4 text-sm text-gray-700">
                     {serviceCall.updatedAt?.toLocaleString() || "N/A"}
                   </td>
-                  <td className="py-2 px-4 text-sm text-gray-700 max-w-xs">
+                  <td className="py-2 px-4 text-sm text-gray-700">
                     {serviceCall.location || "N/A"}
                   </td>
-                  <td className="py-2 px-4 text-sm text-gray-700 max-w-xs">
+                  <td className="py-2 px-4 text-sm text-gray-700">
                     {serviceCall.whoCalled || "N/A"}
                   </td>
-                  <td className="py-2 px-4 text-sm text-gray-700 max-w-xs">
+                  <td className="py-2 px-4 text-sm text-gray-700">
                     {serviceCall.machine || "N/A"}
                   </td>
-                  <td className="py-2 px-4 text-sm text-gray-700 max-w-xs">
+                  <td className="py-2 px-4 text-sm text-gray-700">
                     {serviceCall.reportedProblem || "N/A"}
                   </td>
-                  <td className="py-2 px-4 text-sm text-gray-700 max-w-xs">
+                  <td
+                    className="py-2 px-4 text-sm text-gray-700 break-words"
+                    style={{ width: "125px" }}
+                  >
                     <Status
                       id={serviceCall.id}
                       currentStatus={serviceCall.status}
                     />
                   </td>
-                  <td className="py-2 px-4 text-sm text-gray-700 max-w-xs">
-                    {serviceCall.takenBy || "N/A"}
+                  <td
+                    className="py-2 px-4 text-sm text-gray-700 break-words"
+                    style={{ width: "125px" }}
+                  >
+                    <TakenBy
+                      id={serviceCall.id}
+                      currentTakenBy={serviceCall.takenBy!}
+                    />
                   </td>
-                  <td className="py-2 px-4 text-sm text-gray-700 max-w-xs break-words">
+                  <td className="py-2 px-4 text-sm text-gray-700 break-words">
                     {serviceCall.notes || "N/A"}
                   </td>
-                  <td className="py-2 px-4 text-sm text-gray-700 max-w-xs">
+                  <td className="py-2 px-4 text-sm text-gray-700">
                     <Link href={`/dashboard/${serviceCall.id}/edit`} passHref>
                       <button className="text-blue-500 hover:underline">
                         Edit

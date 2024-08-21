@@ -11,6 +11,7 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { revalidatePath } from "next/cache";
+import TakenBy from "./[id]/TakenBy";
 
 // Server Component for data fetching
 export default async function DashboardPage() {
@@ -60,7 +61,11 @@ export default async function DashboardPage() {
                 {serviceCall.reportedProblem || "N/A"}
               </div>
               <div>
-                <strong>Taken By:</strong> {serviceCall.takenBy || "N/A"}
+                <strong>Taken By:</strong>{" "}
+                <TakenBy
+                  id={serviceCall.id}
+                  currentTakenBy={serviceCall.takenBy!}
+                />
               </div>
               <div>
                 <strong>Notes:</strong>{" "}
@@ -149,14 +154,23 @@ export default async function DashboardPage() {
                   <td className="py-2 px-4 text-sm text-gray-700 max-w-xs">
                     {serviceCall.reportedProblem || "N/A"}
                   </td>
-                  <td className="py-2 px-4 text-sm text-gray-700 max-w-xs">
+                  <td
+                    className="py-2 px-4 text-sm text-gray-700 break-words"
+                    style={{ width: "125px" }}
+                  >
                     <Status
                       id={serviceCall.id}
                       currentStatus={serviceCall.status}
                     />
                   </td>
-                  <td className="py-2 px-4 text-sm text-gray-700 max-w-xs">
-                    {serviceCall.takenBy || "N/A"}
+                  <td
+                    className="py-2 px-4 text-sm text-gray-700 break-words"
+                    style={{ width: "125px" }}
+                  >
+                    <TakenBy
+                      id={serviceCall.id}
+                      currentTakenBy={serviceCall.takenBy!}
+                    />
                   </td>
                   <td className="py-2 px-4 text-sm text-gray-700 max-w-xs break-words">
                     {serviceCall.notes || "N/A"}
