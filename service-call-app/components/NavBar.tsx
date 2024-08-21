@@ -1,11 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/router";
 import React, { useState } from "react";
 import { FaBars, FaTimes } from "react-icons/fa";
 
 const Navbar = () => {
   const [nav, setNav] = useState(false);
+
+
+
+  
 
   const links = [
     {
@@ -32,14 +37,16 @@ const Navbar = () => {
 
         {/* Desktop Menu */}
       <ul className="hidden md:flex space-x-4">
-        {links.map(({ id, link, label }) => (
+        {/* {links.map(({ id, link, label }) => (
           <li
             key={id}
-            className="nav-links px-4 cursor-pointer capitalize font-medium text-gray-500 hover:scale-105 hover:text-white duration-200"
+            className="nav-links px-4 cursor-pointer capitalize font-medium text-gray-500 hover:scale-105 hover:text-white duration-200 active:text-red active:scale-100"
           >
             <Link href={link}>{label}</Link>
           </li>
-        ))}
+        ))} */}
+        <Link href={"/"} className="nav-links px-4 cursor-pointer capitalize font-medium text-gray-500 hover:scale-105 hover:text-white duration-200 active:text-red active:scale-100">Home</Link>
+        <Link href={"/dashboard"} className="nav-links px-4 cursor-pointer capitalize font-medium text-gray-500 hover:scale-105 hover:text-white duration-200 active:text-red active:scale-100">Dashboard</Link>
       </ul>
 
       {/* Mobile Menu Icon */}
@@ -66,6 +73,7 @@ const Navbar = () => {
         </ul>
       )}
     </nav>
+
   );
 };
 
