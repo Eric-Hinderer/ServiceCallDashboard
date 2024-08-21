@@ -1,9 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { notFound, redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Status } from "@prisma/client";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 
@@ -22,6 +20,12 @@ export default async function ServiceEditPage({
   // If no service call is found, display a 404 or a message
   if (!call) {
     notFound();
+  }
+
+  enum Status {
+    OPEN = "OPEN",
+    IN_PROGRESS = "IN_PROGRESS",
+    DONE = "DONE",
   }
 
   // Function to handle form submission
@@ -148,9 +152,9 @@ export default async function ServiceEditPage({
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             defaultValue={call.status}
           >
-            <option value={Status.OPEN}>Open</option>
-            <option value={Status.IN_PROGRESS}>In Progress</option>
-            <option value={Status.DONE}>Done</option>
+            <option value={"OPEN"}>Open</option>
+            <option value={"IN_PROGRESS"}>In Progress</option>
+            <option value={"DONE"}>Done</option>
           </select>
         </div>
         <Button
