@@ -1,87 +1,51 @@
-import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { redirect } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { notFound, redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Status } from "@prisma/client";
 import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 
-// Define your validation schema with zod
-const formSchema = z.object({
-  date: z.string().optional(),
-  location: z.string().optional(),
-  whoCalled: z.string().optional(),
-  machine: z.string().optional(),
-  reportedProblem: z.string().optional(),
-  takenBy: z.string().optional(),
-  notes: z.string().optional(),
-  status: z.string().optional(), // Add status to the schema
-});
+export default async function ServiceEditPage({
+  params,
+}: {
+  params: { id: string };
+}) {
+  const key = params.id;
 
-interface ServiceCall {
-  date?: Date;
-  location?: string;
-  whoCalled?: string;
-  machine?: string;
-  reportedProblem?: string;
-  takenBy?: string;
-  status: Status;
-  notes?: string;
-}
+  // Fetch the service call based on the key
+  const call = await prisma.serviceCall.findUnique({
+    where: { id: key },
+  });
 
-enum Status {
-  OPEN = "OPEN",
-  IN_PROGRESS = "IN_PROGRESS",
-  DONE = "DONE",
-}
+  // If no service call is found, display a 404 or a message
+  if (!call) {
+    notFound();
+  }
 
-export default function CreateServiceCall() {
-  async function createFromForm(formData: FormData) {
+  // Function to handle form submission
+  async function editCall(formData: FormData) {
     "use server";
-    const dateString = formData.get("date") as string;
-    const date = dateString ? new Date(dateString) : new Date();
-    const location = (formData.get("location") as string) || undefined;
-    const whoCalled = (formData.get("whoCalled") as string) || undefined;
-    const machine = (formData.get("machine") as string) || undefined;
-    const reportedProblem =
-      (formData.get("reportedProblem") as string) || undefined;
-    const takenBy = (formData.get("takenBy") as string) || undefined;
-    const notes = (formData.get("notes") as string) || undefined;
-    const status = (formData.get("status") as Status) || Status.OPEN; // Get the selected status or default to OPEN
-
-    const newServiceCall: ServiceCall = {
-      date,
-      location,
-      whoCalled,
-      machine,
-      reportedProblem,
-      takenBy,
-      status,
-      notes,
-    };
-
-    await prisma.serviceCall.create({ data: newServiceCall });
-    redirect("/dashboard");
+    await prisma.serviceCall.update({
+      where: { id: key },
+      data: {
+        location: formData.get("location") as string,
+        whoCalled: formData.get("whoCalled") as string,
+        machine: formData.get("machine") as string,
+        reportedProblem: formData.get("reportedProblem") as string,
+        takenBy: formData.get("takenBy") as string,
+        notes: formData.get("notes") as string,
+        status: formData.get("status") as Status,
+      },
+    });
+    redirect(`/dashboard`);
   }
 
   return (
     <div className="pt-20 max-w-2xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6">Create Service Call</h1>
-      <form action={createFromForm} className="space-y-6">
-      <div>
-          <Label
-            htmlFor="date"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Date:
-          </Label>
-          <Input
-            id="date"
-            type="datetime-local"
-            name="date"
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          />
-        </div>
+      <h1 className="text-3xl font-bold mb-6">Edit Service Call</h1>
+      <form action={editCall} className="space-y-6">
         <div>
           <Label
             htmlFor="location"
@@ -94,6 +58,7 @@ export default function CreateServiceCall() {
             type="text"
             name="location"
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            defaultValue={call.location ?? ""}
           />
         </div>
         <div>
@@ -108,6 +73,7 @@ export default function CreateServiceCall() {
             type="text"
             name="whoCalled"
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            defaultValue={call.whoCalled ?? ""}
           />
         </div>
         <div>
@@ -122,6 +88,7 @@ export default function CreateServiceCall() {
             type="text"
             name="machine"
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            defaultValue={call.machine ?? ""}
           />
         </div>
         <div>
@@ -136,6 +103,7 @@ export default function CreateServiceCall() {
             type="text"
             name="reportedProblem"
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            defaultValue={call.reportedProblem ?? ""}
           />
         </div>
         <div>
@@ -145,21 +113,13 @@ export default function CreateServiceCall() {
           >
             Taken By:
           </Label>
-
-          <select
+          <Input
             id="takenBy"
+            type="text"
             name="takenBy"
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            defaultValue="Choose a technician" // Set default value
-          >
-            <option value="Kurt">Kurt</option>
-            <option value="Chris">Chris</option>
-            <option value="Mike">Mike</option>
-            <option value="Dean">Dean</option>
-            <option value="Damon">Damon</option>
-            <option value="John">John</option>
-            <option value="Choose a technician">Choose a technician</option>
-          </select>
+            defaultValue={call.takenBy ?? ""}
+          />
         </div>
         <div>
           <Label
@@ -172,6 +132,7 @@ export default function CreateServiceCall() {
             id="notes"
             name="notes"
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            defaultValue={call.notes ?? ""}
           />
         </div>
         <div>
@@ -185,7 +146,7 @@ export default function CreateServiceCall() {
             id="status"
             name="status"
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            defaultValue={Status.OPEN} // Set default value
+            defaultValue={call.status}
           >
             <option value={Status.OPEN}>Open</option>
             <option value={Status.IN_PROGRESS}>In Progress</option>
@@ -196,7 +157,7 @@ export default function CreateServiceCall() {
           type="submit"
           className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
-          Create Service Call
+          Edit
         </Button>
       </form>
     </div>
