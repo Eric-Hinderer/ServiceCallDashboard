@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Status } from "@prisma/client";
 
 export default async function ServiceEditPage({
   params,
@@ -22,11 +23,7 @@ export default async function ServiceEditPage({
     notFound();
   }
 
-  enum Status {
-    OPEN = "OPEN",
-    IN_PROGRESS = "IN_PROGRESS",
-    DONE = "DONE",
-  }
+
 
   // Function to handle form submission
   async function editCall(formData: FormData) {
