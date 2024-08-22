@@ -15,7 +15,8 @@ export async function changeStatus(id: string, newStatus: string) {
   });
 
   // Revalidate the dashboard page to reflect the new status
-  revalidatePath("/dashboard");
+  await revalidatePath("/dashboard");
+  await revalidatePath("/");
 }
 
 export async function changeTakenBy(id: string, newTakenBy: string) {
@@ -26,5 +27,6 @@ export async function changeTakenBy(id: string, newTakenBy: string) {
   });
 
   // Revalidate the dashboard page to reflect the new takenBy value
-  revalidatePath("/dashboard");
+  await revalidatePath("/dashboard");
+  await revalidatePath("/");
 }

@@ -2,6 +2,7 @@
 import { ServiceCall } from "@/app/(definitions)/definitions";
 import { prisma } from "@/lib/prisma";
 import { Status } from "@prisma/client";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 export async function createFromForm(formData: FormData) {
@@ -29,6 +30,8 @@ export async function createFromForm(formData: FormData) {
   };
 
   await prisma.serviceCall.create({ data: newServiceCall });
+  revalidatePath("/dashboard");
+  revalidatePath("/");
   redirect("/dashboard");
 }
 
