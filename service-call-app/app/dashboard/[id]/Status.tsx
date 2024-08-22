@@ -10,7 +10,7 @@ export default function Status({ id, currentStatus }: { id: string, currentStatu
 
   useEffect(() => {
     setStatus(currentStatus); // Sync the local state when the prop changes
-    console.log("Status updated to:", currentStatus); // Debugging log
+
   }, [currentStatus]);
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {

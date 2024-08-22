@@ -12,7 +12,6 @@ export default function TakenBy({ id, currentTakenBy }: { id: string; currentTak
 
   useEffect(() => {
     setTakenBy(currentTakenBy); // Sync the local state when the prop changes
-    console.log("TakenBy updated to:", currentTakenBy); // Debugging log
   }, [currentTakenBy]);
 
   const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {

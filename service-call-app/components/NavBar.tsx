@@ -25,8 +25,7 @@ const Navbar = () => {
   useEffect(() => {
     // Any actions that should happen after route change or on mount
     if (pathname) {
-      // Handle logic after route is available
-      console.log("Current path:", pathname);
+      
     }
   }, [pathname]);
 
