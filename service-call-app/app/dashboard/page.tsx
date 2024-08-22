@@ -16,7 +16,7 @@ import TakenBy from "./[id]/TakenBy";
 // Server Component for data fetching
 export default async function DashboardPage() {
   const data = await prisma.serviceCall.findMany();
-  revalidatePath("/dashboard");
+
   return (
     <div className="pt-20 px-4 md:px-8 max-w-7xl mx-auto">
       {/* Welcome Section */}

@@ -14,7 +14,6 @@ import TakenBy from "./dashboard/[id]/TakenBy";
 
 // Server Component for data fetching
 export default async function Home() {
-  revalidatePath("/");
   // Fetch Open and In Progress service calls
   const data = await prisma.serviceCall.findMany({
     where: {
@@ -22,7 +21,9 @@ export default async function Home() {
         in: ["OPEN", "IN_PROGRESS"],
       },
     },
+    
   });
+  
 
   return (
     <main className="pt-20 px-8 max-w-7xl mx-auto space-y-16">

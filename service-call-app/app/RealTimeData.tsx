@@ -2,6 +2,9 @@
 import { useState, useEffect } from "react";
 import * as Realm from "realm-web";
 import Link from "next/link";
+import Status from "./dashboard/[id]/Status"; // Ensure path is correct
+import TakenBy from "./dashboard/[id]/TakenBy";
+ // Ensure path is correct
 
 // Your Realm App ID
 const app = new Realm.App({ id: "application-0-hpdeqzt" });
@@ -23,12 +26,10 @@ const RealTimeData = () => {
     const fetchDataAndWatchChanges = async () => {
       if (!user) return;
   
-      // Get the MongoDB collection you want to watch
       const mongodb = app.currentUser?.mongoClient("mongodb-atlas");
       const collection = mongodb?.db("your-database-name").collection("ServiceCall");
   
       try {
-        // Fetch initial data from the collection directly as an array
         const initialData = await collection?.find({});
   
         // Sort the data by date in descending order
@@ -44,11 +45,9 @@ const RealTimeData = () => {
         for await (const change of changeStream!) {
           console.log("Change detected:", change);
   
-          // Handle different types of change events using functional state updates
           setRealTimeData((prevData) => {
             switch (change.operationType) {
               case "insert":
-                // Prepend new documents to the beginning of the array
                 return [change.fullDocument, ...prevData];
               case "update":
                 return prevData.map((doc) =>
@@ -73,9 +72,6 @@ const RealTimeData = () => {
       fetchDataAndWatchChanges().catch(console.error);
     }
   }, [user]);
-  
-  
-
   return (
     <div>
       <h2 className="text-xl font-semibold mb-4">Real-time Service Calls</h2>
@@ -99,7 +95,7 @@ const RealTimeData = () => {
             </thead>
             <tbody>
               {realTimeData.map((serviceCall) => (
-                <tr key={serviceCall._id} className="hover:bg-gray-50 border-t border-gray-200">
+                <tr key={serviceCall._id.toString()} className="hover:bg-gray-50 border-t border-gray-200">
                   <td className="py-2 px-4 text-sm text-gray-700">
                     {serviceCall.date ? new Date(serviceCall.date).toLocaleString() : "N/A"}
                   </td>
@@ -118,17 +114,18 @@ const RealTimeData = () => {
                   <td className="py-2 px-4 text-sm text-gray-700">
                     {serviceCall.reportedProblem || "N/A"}
                   </td>
-                  <td className="py-2 px-4 text-sm text-gray-700">
-                    {serviceCall.status || "N/A"}
+                  {/* Status Component */}
+                  <td className="py-2 px-4 text-sm text-gray-700 break-words" style={{ width: "125px" }}>
+                    <Status id={serviceCall._id.toString()} currentStatus={serviceCall.status} />
                   </td>
                   <td className="py-2 px-4 text-sm text-gray-700">
-                    {serviceCall.takenBy || "N/A"}
+                  <TakenBy id={serviceCall._id.toString()} currentTakenBy={serviceCall.takenBy} />
                   </td>
                   <td className="py-2 px-4 text-sm text-gray-700 break-words">
                     {serviceCall.notes || "N/A"}
                   </td>
                   <td className="py-2 px-4 text-sm text-gray-700">
-                    <Link href={`/dashboard/${serviceCall._id}/edit`} passHref>
+                    <Link href={`/dashboard/${serviceCall._id.toString()}/edit`} passHref>
                       <button className="text-blue-500 hover:underline">Edit</button>
                     </Link>
                   </td>

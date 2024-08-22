@@ -14,9 +14,8 @@ export async function changeStatus(id: string, newStatus: string) {
     data: { status },
   });
 
-  // Revalidate the dashboard page to reflect the new status
-  await revalidatePath("/dashboard");
-  await revalidatePath("/");
+  // Revalidate the dashboard page to ensure the update reflects correctly
+ // Make sure this path matches the page where the data is being fetched
 }
 
 export async function changeTakenBy(id: string, newTakenBy: string) {
@@ -27,6 +26,5 @@ export async function changeTakenBy(id: string, newTakenBy: string) {
   });
 
   // Revalidate the dashboard page to reflect the new takenBy value
-  await revalidatePath("/dashboard");
-  await revalidatePath("/");
+ // Adjust this path accordingly
 }

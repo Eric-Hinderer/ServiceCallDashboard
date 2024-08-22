@@ -30,7 +30,6 @@ export async function createFromForm(formData: FormData) {
   };
 
   await prisma.serviceCall.create({ data: newServiceCall });
-  revalidatePath("/dashboard");
   revalidatePath("/");
   redirect("/dashboard");
 }
