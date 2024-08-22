@@ -1,11 +1,13 @@
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
-import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import nodemailer from "nodemailer";
+import { emailGroup, createFromForm } from "./action";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  SubmitFormButton,
+  SubmitFormButtonEmail,
+} from "@/components/SubmitFormButton";
 
 // Define your validation schema with zod
 const formSchema = z.object({
@@ -37,77 +39,6 @@ enum Status {
 }
 
 export default function CreateServiceCall() {
-  async function createFromForm(formData: FormData) {
-    "use server";
-    const dateString = formData.get("date") as string;
-    const date = dateString ? new Date(dateString) : new Date();
-    const location = (formData.get("location") as string) || undefined;
-    const whoCalled = (formData.get("whoCalled") as string) || undefined;
-    const machine = (formData.get("machine") as string) || undefined;
-    const reportedProblem =
-      (formData.get("reportedProblem") as string) || undefined;
-    const takenBy = (formData.get("takenBy") as string) || undefined;
-    const notes = (formData.get("notes") as string) || undefined;
-    const status = (formData.get("status") as Status) || Status.OPEN;
-
-    const newServiceCall: ServiceCall = {
-      date,
-      location,
-      whoCalled,
-      machine,
-      reportedProblem,
-      takenBy,
-      status,
-      notes,
-    };
-
-    await prisma.serviceCall.create({ data: newServiceCall });
-    redirect("/dashboard");
-  }
-
-  async function emailGroup(formData: FormData) {
-    "use server";
-    const date = formData.get("date");
-    const location = formData.get("location");
-    const whoCalled = formData.get("whoCalled");
-    const machine = formData.get("machine");
-    const reportedProblem = formData.get("reportedProblem");
-    const takenBy = formData.get("takenBy");
-    const status = formData.get("status");
-    const notes = formData.get("notes");
-
-    // Construct the full URL (adjust as needed if using serverless or hosted environments)
-    const baseUrl = "http://localhost:3000";
-
-    try {
-      const res = await fetch(`${baseUrl}/api/sendEmail`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          date,
-          location,
-          whoCalled,
-          machine,
-          reportedProblem,
-          takenBy,
-          status,
-          notes,
-        }),
-      });
-
-      if (res.ok) {
-        console.log("Email sent successfully");
-      } else {
-        console.error("Failed to send email");
-      }
-    } catch (err) {
-      console.error("Error sending email:", err);
-    }
-    await createFromForm(formData);
-  }
-
   return (
     <div className="pt-20 max-w-xl mx-auto px-4 sm:px-6 lg:px-8">
       <h1 className="text-2xl font-bold text-center mb-6 text-gray-800">
@@ -203,7 +134,7 @@ export default function CreateServiceCall() {
               id="takenBy"
               name="takenBy"
               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              defaultValue="Choose a technician"
+              defaultValue="Select..."
             >
               <option value="Kurt">Kurt</option>
               <option value="Chris">Chris</option>
@@ -211,7 +142,7 @@ export default function CreateServiceCall() {
               <option value="Dean">Dean</option>
               <option value="Damon">Damon</option>
               <option value="John">John</option>
-              <option value="Choose a technician">Choose a technician</option>
+              <option value="Select...">Select...</option>
             </select>
           </div>
         </div>
@@ -246,19 +177,8 @@ export default function CreateServiceCall() {
             <option value={Status.DONE}>Done</option>
           </select>
         </div>
-        <Button
-          type="submit"
-          formAction={emailGroup}
-          className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        >
-          Create Service Call & Email
-        </Button>
-        <Button
-          type="submit"
-          className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        >
-          Create Service Call No Email
-        </Button>
+        <SubmitFormButtonEmail />
+        <SubmitFormButton />{" "}
       </form>
     </div>
   );
