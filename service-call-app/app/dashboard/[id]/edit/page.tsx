@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Status } from "@prisma/client";
+import { revalidatePath } from "next/cache";
 
 export default async function ServiceEditPage({
   params,
@@ -38,6 +39,8 @@ export default async function ServiceEditPage({
         status: formData.get("status") as Status,
       },
     });
+    revalidatePath("/dashboard");
+    revalidatePath("/");
     redirect(`/dashboard`);
   }
 
