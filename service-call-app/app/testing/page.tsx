@@ -1,9 +1,9 @@
-import RealTimeData from "../RealTimeData";
+import RealTimeData from "../(Real Time Data)/RealTimeData";
+import RealTimeOpenInProgress from "../(Real Time Data)/RealTimeOpen";
 
 export default function testPage() {
   return (
     <div className="pt-20">
-      <h1>Test Page</h1>
       <RealTimeData />
     </div>
   );
