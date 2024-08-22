@@ -24,7 +24,7 @@ export default function TakenBy({
   return (
     <div>
       <select
-        value={takenBy || "Choose a technician"} // Ensure value is not null
+        value={takenBy || "Select..."} // Ensure value is not null
         onChange={handleChange}
         className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
       >
@@ -34,7 +34,7 @@ export default function TakenBy({
         <option value="Dean">Dean</option>
         <option value="Damon">Damon</option>
         <option value="John">John</option>
-        <option value="Choose a technician">Choose a technician</option>
+        <option value="Select...">Select...</option>
       </select>
     </div>
   );
