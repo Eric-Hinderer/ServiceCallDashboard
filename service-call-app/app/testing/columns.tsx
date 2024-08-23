@@ -27,7 +27,7 @@ export const columns: ColumnDef<ServiceCall>[] = [
     ),
     cell: ({ row }) => {
       const date = new Date(row.original.date?.toString() || "");
-      return date.toLocaleString(); // Format the date to locale string
+      return date.toLocaleString(); 
     }
     
   },

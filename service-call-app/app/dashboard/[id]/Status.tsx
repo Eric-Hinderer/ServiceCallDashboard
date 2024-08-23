@@ -9,7 +9,7 @@ export default function Status({ id, currentStatus }: { id: string, currentStatu
   
 
   useEffect(() => {
-    setStatus(currentStatus); // Sync the local state when the prop changes
+    setStatus(currentStatus); 
 
   }, [currentStatus]);
 
@@ -17,7 +17,7 @@ export default function Status({ id, currentStatus }: { id: string, currentStatu
     const newStatus = e.target.value;
     setStatus(newStatus);
 
-    // Trigger the server action to update the status, using transition to prevent blocking the UI
+ 
     startTransition(() => {
       changeStatus(id, newStatus);
     });

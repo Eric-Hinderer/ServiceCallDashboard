@@ -43,7 +43,7 @@ export function DataTable<TData, TValue>({
   data,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([
-    { id: "date", desc: true }, // Initial sorting by `createdAt` in descending order
+    { id: "date", desc: true }, 
   ]);
   const [columnFilters, setColumFilters] = useState<ColumnFiltersState>([]);
 

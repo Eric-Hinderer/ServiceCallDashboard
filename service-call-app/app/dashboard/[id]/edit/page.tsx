@@ -14,12 +14,12 @@ export default async function ServiceEditPage({
 }) {
   const key = params.id;
 
-  // Fetch the service call based on the key
+
   const call = await prisma.serviceCall.findUnique({
     where: { id: key },
   });
 
-  // If no service call is found, display a 404 or a message
+
   if (!call) {
     notFound();
   }

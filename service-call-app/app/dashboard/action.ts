@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { Status } from "@prisma/client"; // Ensure you are importing the enum from Prisma
 
 export async function changeStatus(id: string, newStatus: string) {
-  // Convert the newStatus string to the Status enum type
+
   const status = newStatus as Status;
 
   // Update the status in the database
@@ -14,9 +14,8 @@ export async function changeStatus(id: string, newStatus: string) {
     data: { status },
   });
 
-  // Revalidate the dashboard page to ensure the update reflects correctly
   revalidatePath("/dashboard");
- // Make sure this path matches the page where the data is being fetched
+
 }
 
 export async function changeTakenBy(id: string, newTakenBy: string) {
@@ -26,7 +25,6 @@ export async function changeTakenBy(id: string, newTakenBy: string) {
     data: { takenBy: newTakenBy },
   });
 
-  // Revalidate the dashboard page to reflect the new takenBy value
   revalidatePath("/dashboard");
- // Adjust this path accordingly
+
 }

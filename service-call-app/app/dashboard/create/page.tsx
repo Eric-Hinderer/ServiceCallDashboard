@@ -9,7 +9,7 @@ import {
   SubmitFormButtonEmail,
 } from "@/components/SubmitFormButton";
 
-// Define your validation schema with zod
+
 const formSchema = z.object({
   date: z.string().optional(),
   location: z.string().optional(),

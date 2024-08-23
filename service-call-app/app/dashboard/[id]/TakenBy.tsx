@@ -11,7 +11,7 @@ export default function TakenBy({ id, currentTakenBy }: { id: string; currentTak
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
-    setTakenBy(currentTakenBy); // Sync the local state when the prop changes
+    setTakenBy(currentTakenBy); 
   }, [currentTakenBy]);
 
   const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {

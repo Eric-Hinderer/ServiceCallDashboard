@@ -9,7 +9,7 @@ import { ServiceCall } from "@prisma/client";
 
 
 async function getData(): Promise<ServiceCall[]> {
-  // Fetch data from your API here.
+
   const res = await prisma.serviceCall.findMany();
 
   revalidatePath("/dashboard");

@@ -16,7 +16,7 @@ import RealTimeOpenInProgress from "./(Real Time Data)/RealTimeOpen";
 
 // Server Component for data fetching
 export default async function Home() {
-  // Fetch Open and In Progress service calls
+ 
   const data = await prisma.serviceCall.findMany({
     where: {
       status: {

@@ -2,10 +2,9 @@
 import { useState, useEffect } from "react";
 import * as Realm from "realm-web";
 import Link from "next/link";
-import Status from "../dashboard/[id]/Status"; // Ensure path is correct
-import TakenBy from "../dashboard/[id]/TakenBy"; // Ensure path is correct
+import Status from "../dashboard/[id]/Status"; 
+import TakenBy from "../dashboard/[id]/TakenBy"; 
 
-// Your Realm App ID
 const app = new Realm.App({ id: "application-0-hpdeqzt" });
 
 const RealTimeOpenInProgress = () => {
@@ -35,10 +34,10 @@ const RealTimeOpenInProgress = () => {
         .collection("ServiceCall");
 
       try {
-        // Fetch all service calls
+
         const initialData = await collection?.find({});
 
-        // Set the data into state
+
         setAllServiceCalls(initialData || []);
 
         // Open a change stream to listen for changes

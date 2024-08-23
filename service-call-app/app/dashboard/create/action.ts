@@ -45,7 +45,6 @@ export async function emailGroup(formData: FormData) {
   const status = formData.get("status");
   const notes = formData.get("notes");
 
-  // Construct the full URL (adjust as needed if using serverless or hosted environments)
   const baseUrl = "http://localhost:3000";
 
   try {
