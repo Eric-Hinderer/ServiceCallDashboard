@@ -40,7 +40,6 @@ export default async function ServiceEditPage({
       },
     });
     revalidatePath("/dashboard");
-    revalidatePath("/");
     redirect(`/dashboard`);
   }
 
