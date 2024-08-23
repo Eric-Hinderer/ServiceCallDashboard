@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { revalidatePath } from "next/cache";
 import TakenBy from "./dashboard/[id]/TakenBy";
-import RealTimeData from "./(Real Time Data)/RealTimeData";
+
 import RealTimeOpenInProgress from "./(Real Time Data)/RealTimeOpen";
 
 // Server Component for data fetching
