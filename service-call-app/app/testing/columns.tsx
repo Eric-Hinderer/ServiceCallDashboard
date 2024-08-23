@@ -20,12 +20,16 @@ import Status from "../dashboard/[id]/Status";
 
 export const columns: ColumnDef<ServiceCall>[] = [
   {
-    header: "Date",
+  
     accessorKey: "date",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Date" />
+    ),
     cell: ({ row }) => {
       const date = new Date(row.original.date?.toString() || "");
       return date.toLocaleString(); // Format the date to locale string
-    },
+    }
+    
   },
   {
     accessorKey: "location",
@@ -53,7 +57,9 @@ export const columns: ColumnDef<ServiceCall>[] = [
   },
   {
     accessorKey: "takenBy",
-    header: "Taken By",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Taken By" />
+    ),
     cell: ({ row }) => {
       const serviceCall = row.original;
       return <TakenBy id={serviceCall.id.toString()} currentTakenBy={serviceCall.takenBy!} />;
@@ -61,7 +67,9 @@ export const columns: ColumnDef<ServiceCall>[] = [
   },
   {
     accessorKey: "status",
-    header: "Status",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Status" />
+    ),
     cell: ({ row }) => {
       const serviceCall = row.original;
       return <Status id={serviceCall.id.toString()} currentStatus={serviceCall.status} />;

@@ -103,7 +103,7 @@ export function DataTable<TData, TValue>({
           className="w-full pr-10"
         />
           <AiOutlineClose
-            onClick={() => table.getColumn("location")?.setFilterValue("")}
+            onClick={() => table.getColumn("reportedProblem")?.setFilterValue("")}
             className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-400"
           />
       </div>
