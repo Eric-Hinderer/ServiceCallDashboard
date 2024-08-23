@@ -88,15 +88,32 @@ export async function getAfterHoursCallsByDayOfWeek(
   const afterHoursResult = await serviceCallsCollection
     .aggregate([
       {
+        // Convert the UTC date to CST (Central Time)
         $addFields: {
-          hourOfDay: { $hour: "$date" },
-          dayOfWeek: { $dayOfWeek: "$date" },
+          localDate: {
+            $dateAdd: {
+              startDate: "$date",
+              unit: "hour",
+              amount: -5, 
+            },
+          },
         },
       },
       {
+        
+        $addFields: {
+          hourOfDay: { $hour: "$localDate" },
+          dayOfWeek: { $dayOfWeek: "$localDate" },  
+        },
+      },
+      {
+      
         $match: {
-          $or: [{ hourOfDay: { $lt: 8 } }, { hourOfDay: { $gte: 17 } }],
-          dayOfWeek: { $gte: 2, $lte: 6 },
+          $or: [
+            { hourOfDay: { $gte: 17 } },  
+            { hourOfDay: { $lt: 8 } },    
+          ],
+          dayOfWeek: { $gte: 2, $lte: 6 },  
           date: {
             $gte: startDate,
             $lte: endDate,
@@ -108,7 +125,7 @@ export async function getAfterHoursCallsByDayOfWeek(
           countByDay: [
             {
               $group: {
-                _id: "$dayOfWeek",
+                _id: "$dayOfWeek", 
                 callCount: { $sum: 1 },
               },
             },
@@ -129,6 +146,7 @@ export async function getAfterHoursCallsByDayOfWeek(
     ])
     .toArray();
 
+  // Convert complex objects to plain objects
   const plainAfterHoursResult = afterHoursResult[0].countByDay.map(
     (dayCount: any) => {
       const correspondingCalls = afterHoursResult[0].callsByDay.find(
@@ -140,8 +158,8 @@ export async function getAfterHoursCallsByDayOfWeek(
             ...call,
             _id: call._id.toString(),
             date: call.date.toISOString(),
-            createdAt: call.createdAt.toISOString(),
-            updatedAt: call.updatedAt.toISOString(),
+            createdAt: call.createdAt?.toISOString(),
+            updatedAt: call.updatedAt?.toISOString(), 
           }))
         : [];
 
@@ -157,3 +175,4 @@ export async function getAfterHoursCallsByDayOfWeek(
 
   return plainAfterHoursResult;
 }
+
