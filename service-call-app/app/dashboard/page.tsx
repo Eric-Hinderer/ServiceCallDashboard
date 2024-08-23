@@ -13,33 +13,34 @@ import {
 import { revalidatePath } from "next/cache";
 import TakenBy from "./[id]/TakenBy";
 import RealTimeData from "../(Real Time Data)/RealTimeData";
+import { DataTable } from "../testing/data-table";
+import { columns } from "../testing/columns";
+import { ServiceCall } from "@prisma/client";
 
+
+async function getData(): Promise<ServiceCall[]> {
+  // Fetch data from your API here.
+  const res = await prisma.serviceCall.findMany();
+
+  revalidatePath("/dashboard");
+
+  return res;
+}
 // Server Component for data fetching
 export default async function DashboardPage() {
-  const data = await prisma.serviceCall.findMany();
+  const data = await getData();
+
 
   return (
-    <div className="pt-20 px-4 md:px-8 max-w-7xl mx-auto">
-      {/* Welcome Section */}
-      <section className="text-center space-y-4">
-        <h1 className="text-3xl md:text-4xl font-bold">
-          Welcome to the Service Call Dashboard
-        </h1>
-        <p className="text-base md:text-lg text-gray-600">
-          Here you can track and manage ongoing service calls. Check below for
-          service calls that are currently in progress or open.
-        </p>
+    <div className=" px-4 md:px-8">
+      <div className="flex justify-between items-center mb-4"></div>
+
+      <div className="container mx-auto py-10 pt-20">
         <Button asChild className="mt-4">
           <Link href="/dashboard/create">Create a New Service Call</Link>
         </Button>
-      </section>
-
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl md:text-2xl font-semibold">Service Calls</h2>
+        <DataTable columns={columns} data={data} />
       </div>
-
-      {/* Service Calls Table */}
-      <RealTimeData />
     </div>
   );
 }

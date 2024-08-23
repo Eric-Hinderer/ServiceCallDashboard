@@ -12,6 +12,7 @@ import {
   VisibilityState,
   getFilteredRowModel,
 } from "@tanstack/react-table";
+import {AiOutlineClose } from "react-icons/ai";
 
 import {
   Table,
@@ -41,7 +42,9 @@ export function DataTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = useState<SortingState>([]);
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: "date", desc: true }, // Initial sorting by `createdAt` in descending order
+  ]);
   const [columnFilters, setColumFilters] = useState<ColumnFiltersState>([]);
 
   const table = useReactTable({
@@ -62,31 +65,63 @@ export function DataTable<TData, TValue>({
   return (
     <div>
       <div className="flex py-4 items-center justify-center ">
+      <div className="relative max-w-sm mr-4">
         <Input
           placeholder="Search Location"
           value={(table.getColumn("location")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("location")?.setFilterValue(event.target.value)
           }
-          className="max-w-sm mr-4"
+          className="w-full pr-10"
         />
-         <Input
+          <AiOutlineClose
+            onClick={() => table.getColumn("location")?.setFilterValue("")}
+            className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-400"
+          />
+      </div>
+      <div className="relative max-w-sm mr-4">
+        <Input
           placeholder="Search Machine"
           value={(table.getColumn("machine")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("machine")?.setFilterValue(event.target.value)
           }
-          className="max-w-sm mr-4"
+          className="w-full pr-10"
         />
-         <Input
+          <AiOutlineClose
+            onClick={() => table.getColumn("machine")?.setFilterValue("")}
+            className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-400"
+          />
+      </div>
+      <div className="relative max-w-sm mr-4">
+        <Input
           placeholder="Search Problem"
           value={(table.getColumn("reportedProblem")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("reportedProblem")?.setFilterValue(event.target.value)
           }
-          className="max-w-sm"
+          className="w-full pr-10"
         />
-  
+          <AiOutlineClose
+            onClick={() => table.getColumn("location")?.setFilterValue("")}
+            className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-400"
+          />
+      </div>
+      <div className="relative max-w-sm mr-4">
+        <Input
+          placeholder="Search Notes"
+          value={(table.getColumn("notes")?.getFilterValue() as string) ?? ""}
+          onChange={(event) =>{
+            table.getColumn("notes")?.setFilterValue(event.target.value);
+          }
+          }
+          className="w-full pr-10"
+        />
+          <AiOutlineClose
+            onClick={() => table.getColumn("notes")?.setFilterValue("")}
+            className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-400"
+          />
+          </div>
       </div>
       <div className="rounded-md border">
         <Table>
