@@ -5,37 +5,47 @@ import { Card, CardContent } from "@/components/ui/card";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { subDays } from "date-fns";
-import { getWeekendCallCount, getAfterHoursCallsByDayOfWeek } from "./action"; // Import your functions
-
-// Mapping dayOfWeek numbers to day names
-const dayNames: { [key: number]: string } = {
-  2: "Monday",
-  3: "Tuesday",
-  4: "Wednesday",
-  5: "Thursday",
-  6: "Friday",
-};
+import {
+  getWeekendServiceCalls,
+  getAfterHoursCallsByDayOfWeek,
+} from "./action";
+import Link from "next/link";
+import { dayNames } from "../(definitions)/definitions";
 
 interface DayData {
   _id: number;
   callCount: number;
+  serviceCalls: any[];
+}
+
+interface WeekendData {
+  count: number;
+  serviceCalls: any[];
 }
 
 export default function AnalyticsPage() {
-  const [startDate, setStartDate] = React.useState<Date | undefined>(subDays(new Date(), 30)); 
+  const [startDate, setStartDate] = React.useState<Date | undefined>(
+    subDays(new Date(), 30)
+  );
   const [endDate, setEndDate] = React.useState<Date | undefined>(new Date());
-  const [weekendCallCount, setWeekendCallCount] = React.useState<number>(0);
-  const [afterHoursCallsByDayOfWeek, setAfterHoursCallsByDayOfWeek] = React.useState<DayData[]>([]);
+  const [weekendData, setWeekendData] = React.useState<WeekendData | undefined>(
+    { count: 0, serviceCalls: [] }
+  );
+  const [afterHoursCallsByDayOfWeek, setAfterHoursCallsByDayOfWeek] =
+    React.useState<DayData[]>([]);
 
   React.useEffect(() => {
     async function fetchData() {
-      if (!startDate || !endDate) return; 
+      if (!startDate || !endDate) return;
 
       try {
-        const weekendCount = await getWeekendCallCount(startDate, endDate);
-        setWeekendCallCount(weekendCount);
+        const weekendResult = await getWeekendServiceCalls(startDate, endDate);
+        setWeekendData(weekendResult);
 
-        const afterHoursCalls = await getAfterHoursCallsByDayOfWeek(startDate, endDate);
+        const afterHoursCalls = await getAfterHoursCallsByDayOfWeek(
+          startDate,
+          endDate
+        );
         setAfterHoursCallsByDayOfWeek(afterHoursCalls);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -49,6 +59,20 @@ export default function AnalyticsPage() {
     (total, dayData) => total + dayData.callCount,
     0
   );
+
+  const handleDayClick = (dayData: DayData) => {
+    sessionStorage.setItem(
+      "serviceCalls",
+      JSON.stringify(dayData.serviceCalls)
+    );
+  };
+
+  const handleWeekendClick = (weekendData: WeekendData) => {
+    sessionStorage.setItem(
+      "weekendServiceCalls",
+      JSON.stringify(weekendData.serviceCalls)
+    );
+  };
 
   const charts = [
     {
@@ -77,7 +101,7 @@ export default function AnalyticsPage() {
           </label>
           <DatePicker
             selected={startDate}
-            onChange={(date: Date | null) => setStartDate(date ?? undefined)} 
+            onChange={(date: Date | null) => setStartDate(date ?? undefined)}
             selectsStart
             startDate={startDate}
             endDate={endDate}
@@ -90,7 +114,7 @@ export default function AnalyticsPage() {
           </label>
           <DatePicker
             selected={endDate}
-            onChange={(date: Date | null) => setEndDate(date ?? undefined)} 
+            onChange={(date: Date | null) => setEndDate(date ?? undefined)}
             selectsEnd
             startDate={startDate}
             endDate={endDate}
@@ -128,9 +152,15 @@ export default function AnalyticsPage() {
               <div className="space-y-4">
                 {afterHoursCallsByDayOfWeek.map((dayData) => (
                   <div key={dayData._id} className="text-center">
-                    <p className="text-xl">
+                    <Link
+                      href={{
+                        pathname: `/analytics/day/${dayData._id}`,
+                      }}
+                      passHref
+                      onClick={() => handleDayClick(dayData)}
+                    >
                       {dayNames[dayData._id]}: {dayData.callCount} call(s)
-                    </p>
+                    </Link>
                   </div>
                 ))}
                 <div className="text-center mt-6">
@@ -147,7 +177,15 @@ export default function AnalyticsPage() {
           <CardContent className="flex items-center justify-center">
             <div className="text-center">
               <h2 className="text-3xl font-bold">Weekend Service Calls</h2>
-              <p className="text-5xl font-semibold mt-4">{weekendCallCount}</p>
+              <Link
+                href="/analytics/day/weekend"
+                onClick={() => handleWeekendClick(weekendData!)}
+                passHref
+              >
+                <p className="text-5xl font-semibold mt-4">
+                  {weekendData!.count}
+                </p>
+              </Link>
             </div>
           </CardContent>
         </Card>
