@@ -1,6 +1,11 @@
+"use client";
+
 import * as React from "react";
-import { MongoClient } from "mongodb";
 import { Card, CardContent } from "@/components/ui/card";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { subDays } from "date-fns";
+import { getWeekendCallCount, getAfterHoursCallsByDayOfWeek } from "./action"; // Import your functions
 
 // Mapping dayOfWeek numbers to day names
 const dayNames: { [key: number]: string } = {
@@ -16,93 +21,34 @@ interface DayData {
   callCount: number;
 }
 
+export default function AnalyticsPage() {
+  const [startDate, setStartDate] = React.useState<Date | undefined>(subDays(new Date(), 30)); 
+  const [endDate, setEndDate] = React.useState<Date | undefined>(new Date());
+  const [weekendCallCount, setWeekendCallCount] = React.useState<number>(0);
+  const [afterHoursCallsByDayOfWeek, setAfterHoursCallsByDayOfWeek] = React.useState<DayData[]>([]);
 
-export default async function AnalyticsPage() {
-  const client = new MongoClient(process.env.DATABASE_URL || "");
+  React.useEffect(() => {
+    async function fetchData() {
+      if (!startDate || !endDate) return; 
 
-  let weekendCallCount = 0;
-  let afterHoursCallsByDayOfWeek: DayData[] = [];
+      try {
+        const weekendCount = await getWeekendCallCount(startDate, endDate);
+        setWeekendCallCount(weekendCount);
 
-  try {
-    console.log("Connecting to MongoDB...");
-    await client.connect();
-    const db = client.db("your-database-name"); 
-    console.log("Connected to database:", db.databaseName);
-
-    const serviceCallsCollection = db.collection("ServiceCall");
-
-    console.log("Starting aggregation pipeline for weekend service calls...");
-    const weekendResult = await serviceCallsCollection.aggregate([
-      {
-        $addFields: {
-          dayOfWeek: { $dayOfWeek: "$date" },
-        },
-      },
-      {
-        $match: {
-          dayOfWeek: { $in: [1, 7] }, // 1 is Sunday, 7 is Saturday
-        },
-      },
-      {
-        $count: "weekendCallsCount",
-      },
-    ]).toArray();
-
-    if (weekendResult.length > 0) {
-      weekendCallCount = weekendResult[0].weekendCallsCount;
-      console.log("Weekend Call Count:", weekendCallCount);
-    } else {
-      console.log("No weekend calls found.");
-      weekendCallCount = 0;
+        const afterHoursCalls = await getAfterHoursCallsByDayOfWeek(startDate, endDate);
+        setAfterHoursCallsByDayOfWeek(afterHoursCalls);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
     }
 
-    // Fetch after-hours calls grouped by day of the week
-    console.log("Starting aggregation pipeline for after-hours calls grouped by day of the week...");
-    const afterHoursResult = await serviceCallsCollection.aggregate([
-      {
-        $addFields: {
-          hourOfDay: { $hour: "$date" },
-          dayOfWeek: { $dayOfWeek: "$date" },
-        },
-      },
-      {
-        $match: {
-          $or: [
-            { hourOfDay: { $lt: 8 } },
-            { hourOfDay: { $gte: 17 } },
-          ],
-          dayOfWeek: { $gte: 2, $lte: 6 }, 
-        },
-      },
-      {
-        $group: {
-          _id: "$dayOfWeek", 
-          callCount: { $sum: 1 },
-        },
-      },
-      {
-        $sort: { _id: 1 }, 
-      },
-    ]).toArray();
-
-    // Type cast the result to DayData[]
-    afterHoursCallsByDayOfWeek = afterHoursResult as DayData[];
-
-    console.log("After-hours calls grouped by day of the week:", afterHoursCallsByDayOfWeek);
-  } catch (error) {
-    console.error("Error during MongoDB query:", error);
-  } finally {
-    console.log("Closing MongoDB connection...");
-    await client.close();  
-    console.log("MongoDB connection closed.");
-  }
-
+    fetchData();
+  }, [startDate, endDate]);
 
   const totalAfterHoursCalls = afterHoursCallsByDayOfWeek.reduce(
     (total, dayData) => total + dayData.callCount,
     0
   );
-
 
   const charts = [
     {
@@ -121,14 +67,39 @@ export default async function AnalyticsPage() {
 
   return (
     <div className="pt-20 px-6 pb-20">
-      {" "}
-
       <h1 className="text-2xl font-semibold text-center text-gray-800 mb-10">
         Dashboard Charts
       </h1>
+      <div className="flex justify-center mb-8 space-x-4">
+        <div>
+          <label className="block text-gray-700 font-semibold mb-2">
+            Start Date
+          </label>
+          <DatePicker
+            selected={startDate}
+            onChange={(date: Date | null) => setStartDate(date ?? undefined)} 
+            selectsStart
+            startDate={startDate}
+            endDate={endDate}
+            className="p-2 border rounded"
+          />
+        </div>
+        <div>
+          <label className="block text-gray-700 font-semibold mb-2">
+            End Date
+          </label>
+          <DatePicker
+            selected={endDate}
+            onChange={(date: Date | null) => setEndDate(date ?? undefined)} 
+            selectsEnd
+            startDate={startDate}
+            endDate={endDate}
+            minDate={startDate}
+            className="p-2 border rounded"
+          />
+        </div>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-
-
         {charts.map((chart, index) => (
           <Card key={index} className="w-full">
             <CardContent className="flex items-center justify-center">
@@ -148,7 +119,6 @@ export default async function AnalyticsPage() {
           </Card>
         ))}
 
-  
         {afterHoursCallsByDayOfWeek.length > 0 && (
           <Card className="w-full">
             <CardContent>
@@ -172,6 +142,7 @@ export default async function AnalyticsPage() {
             </CardContent>
           </Card>
         )}
+
         <Card className="w-full">
           <CardContent className="flex items-center justify-center">
             <div className="text-center">
