@@ -2,17 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import Status from "./[id]/Status";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
 import { revalidatePath } from "next/cache";
-import TakenBy from "./[id]/TakenBy";
-import RealTimeData from "../(Real Time Data)/RealTimeData";
 import { DataTable } from "../testing/data-table";
 import { columns } from "../testing/columns";
 import { ServiceCall } from "@prisma/client";

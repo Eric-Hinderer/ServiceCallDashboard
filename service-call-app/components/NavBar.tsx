@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation"; // Instead of useRouter
 import { FaBars, FaTimes } from "react-icons/fa";
+import { link } from "fs";
 
 const Navbar = () => {
   const [nav, setNav] = useState(false);
@@ -19,6 +20,11 @@ const Navbar = () => {
       id: 2,
       link: "/dashboard",
       label: "Dashboard",
+    },
+    {
+      id: 3,
+      link: "/analytics",
+      label: "Analytics",
     },
   ];
 
