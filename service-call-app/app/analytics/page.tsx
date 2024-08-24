@@ -11,6 +11,7 @@ import {
 } from "./action";
 import Link from "next/link";
 import { dayNames } from "../(definitions)/definitions";
+import { withPageAuthRequired } from "@auth0/nextjs-auth0/client";
 
 interface DayData {
   _id: number;
@@ -23,7 +24,7 @@ interface WeekendData {
   serviceCalls: any[];
 }
 
-export default function AnalyticsPage() {
+export default withPageAuthRequired( function AnalyticsPage() {
   const [startDate, setStartDate] = React.useState<Date | undefined>(
     subDays(new Date(), 30)
   );
@@ -94,7 +95,79 @@ export default function AnalyticsPage() {
       <h1 className="text-2xl font-semibold text-center text-gray-800 mb-10">
         Dashboard Charts
       </h1>
-      <div className="flex justify-center mb-8 space-x-4">
+  
+      {/* Charts Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+        {charts.map((chart, index) => (
+          <Card key={index} className="w-full">
+            <CardContent className="flex items-center justify-center">
+              <iframe
+                style={{
+                  ...chart.style,
+                  border: "none",
+                  borderRadius: "2px",
+                  boxShadow: "0 2px 10px 0 rgba(70, 76, 79, .2)",
+                }}
+                width="640"
+                height="480"
+                src={chart.src}
+                title={`MongoDB Chart ${index + 1}`}
+              />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+  
+      {/* After-Hours Calls and Weekend Service Calls Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+        <Card className="w-full">
+          <CardContent>
+            <h2 className="text-3xl font-bold text-center mb-4">
+              After-Hours Calls by Day of the Week
+            </h2>
+            <div className="space-y-4">
+              {afterHoursCallsByDayOfWeek.map((dayData) => (
+                <div key={dayData._id} className="text-center">
+                  <Link
+                    href={{
+                      pathname: `/analytics/day/${dayData._id}`,
+                    }}
+                    passHref
+                    onClick={() => handleDayClick(dayData)}
+                  >
+                    {dayNames[dayData._id]}: {dayData.callCount} call(s)
+                  </Link>
+                </div>
+              ))}
+              <div className="text-center mt-6">
+                <p className="text-2xl font-bold">
+                  Total: {totalAfterHoursCalls} call(s)
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+  
+        <Card className="w-full">
+          <CardContent className="flex items-center justify-center">
+            <div className="text-center">
+              <h2 className="text-3xl font-bold">Weekend Service Calls</h2>
+              <Link
+                href="/analytics/day/weekend"
+                onClick={() => handleWeekendClick(weekendData!)}
+                passHref
+              >
+                <p className="text-5xl font-semibold mt-4">
+                  {weekendData!.count}
+                </p>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+  
+      {/* Date Pickers */}
+      <div className="flex justify-center space-x-4 mt-8">
         <div>
           <label className="block text-gray-700 font-semibold mb-2">
             Start Date
@@ -123,73 +196,8 @@ export default function AnalyticsPage() {
           />
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {charts.map((chart, index) => (
-          <Card key={index} className="w-full">
-            <CardContent className="flex items-center justify-center">
-              <iframe
-                style={{
-                  ...chart.style,
-                  border: "none",
-                  borderRadius: "2px",
-                  boxShadow: "0 2px 10px 0 rgba(70, 76, 79, .2)",
-                }}
-                width="640"
-                height="480"
-                src={chart.src}
-                title={`MongoDB Chart ${index + 1}`}
-              />
-            </CardContent>
-          </Card>
-        ))}
-
-        {afterHoursCallsByDayOfWeek.length > 0 && (
-          <Card className="w-full">
-            <CardContent>
-              <h2 className="text-3xl font-bold text-center mb-4">
-                After-Hours Calls by Day of the Week
-              </h2>
-              <div className="space-y-4">
-                {afterHoursCallsByDayOfWeek.map((dayData) => (
-                  <div key={dayData._id} className="text-center">
-                    <Link
-                      href={{
-                        pathname: `/analytics/day/${dayData._id}`,
-                      }}
-                      passHref
-                      onClick={() => handleDayClick(dayData)}
-                    >
-                      {dayNames[dayData._id]}: {dayData.callCount} call(s)
-                    </Link>
-                  </div>
-                ))}
-                <div className="text-center mt-6">
-                  <p className="text-2xl font-bold">
-                    Total: {totalAfterHoursCalls} call(s)
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        <Card className="w-full">
-          <CardContent className="flex items-center justify-center">
-            <div className="text-center">
-              <h2 className="text-3xl font-bold">Weekend Service Calls</h2>
-              <Link
-                href="/analytics/day/weekend"
-                onClick={() => handleWeekendClick(weekendData!)}
-                passHref
-              >
-                <p className="text-5xl font-semibold mt-4">
-                  {weekendData!.count}
-                </p>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
     </div>
   );
-}
+  
+  
+});

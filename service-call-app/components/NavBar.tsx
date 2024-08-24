@@ -4,11 +4,25 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation"; // Instead of useRouter
 import { FaBars, FaTimes } from "react-icons/fa";
-import { link } from "fs";
+import { useUser } from "@auth0/nextjs-auth0/client";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 
 const Navbar = () => {
   const [nav, setNav] = useState(false);
   const pathname = usePathname(); // Get current path
+
+  const { user, error, isLoading } = useUser();
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>{error.message}</div>;
 
   const links = [
     {
@@ -27,13 +41,6 @@ const Navbar = () => {
       label: "Analytics",
     },
   ];
-
-  useEffect(() => {
-    // Any actions that should happen after route change or on mount
-    if (pathname) {
-      
-    }
-  }, [pathname]);
 
   return (
     <nav className="fixed top-0 left-0 right-0 bg-black text-white shadow-md z-50 h-20 flex justify-between items-center px-4">
@@ -57,6 +64,31 @@ const Navbar = () => {
             <Link href={link}>{label}</Link>
           </li>
         ))}
+        <li className="nav-links px-4 cursor-pointer capitalize font-medium text-gray-500 hover:scale-105 hover:text-white duration-200 active:text-red active:scale-100">
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Avatar>
+                  <AvatarImage src={user.picture ?? ""} />
+                  <AvatarFallback>{user.name}</AvatarFallback>
+                </Avatar>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuSeparator />
+                <Link href="/profile">
+                <DropdownMenuItem>
+                  Profile
+                </DropdownMenuItem>
+                </Link>
+                <a href="api/auth/logout">
+                  <DropdownMenuItem>Log Out</DropdownMenuItem>
+                </a>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <a href="/api/auth/login">Login</a>
+          )}
+        </li>
       </ul>
 
       {/* Mobile Menu Icon */}
