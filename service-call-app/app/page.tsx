@@ -14,19 +14,9 @@ import TakenBy from "./dashboard/[id]/TakenBy";
 
 import RealTimeOpenInProgress from "./(Real Time Data)/RealTimeOpen";
 
+
 // Server Component for data fetching
 export default async function Home() {
- 
-  const data = await prisma.serviceCall.findMany({
-    where: {
-      status: {
-        in: ["OPEN", "IN_PROGRESS"],
-      },
-    },
-    
-  });
-  
-
   return (
     <main className="pt-20 px-8 max-w-7xl mx-auto space-y-16">
       {/* Welcome Section */}

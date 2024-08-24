@@ -5,10 +5,13 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation"; // Instead of useRouter
 import { FaBars, FaTimes } from "react-icons/fa";
 import { link } from "fs";
+import { getSession } from "@auth0/nextjs-auth0";
 
 const Navbar = () => {
   const [nav, setNav] = useState(false);
   const pathname = usePathname(); // Get current path
+
+
 
   const links = [
     {
@@ -26,14 +29,8 @@ const Navbar = () => {
       link: "/analytics",
       label: "Analytics",
     },
+    
   ];
-
-  useEffect(() => {
-    // Any actions that should happen after route change or on mount
-    if (pathname) {
-      
-    }
-  }, [pathname]);
 
   return (
     <nav className="fixed top-0 left-0 right-0 bg-black text-white shadow-md z-50 h-20 flex justify-between items-center px-4">
@@ -82,6 +79,7 @@ const Navbar = () => {
           ))}
         </ul>
       )}
+      
     </nav>
   );
 };
