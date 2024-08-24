@@ -13,10 +13,11 @@ import { revalidatePath } from "next/cache";
 import TakenBy from "./dashboard/[id]/TakenBy";
 
 import RealTimeOpenInProgress from "./(Real Time Data)/RealTimeOpen";
+import { withPageAuthRequired } from "@auth0/nextjs-auth0";
 
 
-// Server Component for data fetching
-export default async function Home() {
+
+export default withPageAuthRequired( async function Home() {
   return (
     <main className="pt-20 px-8 max-w-7xl mx-auto space-y-16">
       {/* Welcome Section */}
@@ -53,4 +54,7 @@ export default async function Home() {
       </section>
     </main>
   );
-}
+
+},);
+
+
