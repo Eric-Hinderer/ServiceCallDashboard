@@ -43,7 +43,11 @@ jobs:
       working-directory: ./service-call-app
       run: |
         ssh -o StrictHostKeyChecking=no -i private_key.pem ubuntu@${{ secrets.LIGHTSAIL_SERVER_IP }} << 'EOF'
-          pm2 restart service-call-app
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # Load nvm
+          cd /home/ubuntu/ServiceCallDashboard/service-call-app
+          npm install
+          /home/ubuntu/.nvm/versions/node/v22.6.0/bin/pm2 restart service-call-app  # Restart the app using pm2
         EOF
 
     - name: Clean Up SSH Key
