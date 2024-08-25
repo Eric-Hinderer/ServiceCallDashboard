@@ -29,8 +29,9 @@ jobs:
       
 
     - name: Set up SSH Key
+      working-directory: ./service-call-app
       run: |
-        echo "${{ secrets.SSH_PRIVATE_KEY_PEM }}" > private_key.pem
+        echo "${{ secrets.SSH_PRIVATE_KEY_PEM }}" | tr -d '\r' > private_key.pem
         chmod 600 private_key.pem
 
     - name: Upload Built Files to Lightsail with rsync
