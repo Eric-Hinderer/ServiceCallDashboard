@@ -40,6 +40,7 @@ jobs:
         rsync -avz -e "ssh -o StrictHostKeyChecking=no -i private_key.pem" .next/ ubuntu@${{ secrets.LIGHTSAIL_SERVER_IP }}:/home/ubuntu/ServiceCallDashboard/service-call-app/.next
 
     - name: Restart PM2 Using SSH
+      working-directory: ./service-call-app
       run: |
         ssh -o StrictHostKeyChecking=no -i private_key.pem ubuntu@${{ secrets.LIGHTSAIL_SERVER_IP }} << 'EOF'
           cd /home/ubuntu/ServiceCallDashboard/service-call-app
@@ -47,4 +48,5 @@ jobs:
         EOF
 
     - name: Clean Up SSH Key
+      working-directory: ./service-call-app
       run: rm private_key.pem
