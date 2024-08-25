@@ -13,9 +13,16 @@ jobs:
       
     - name: Navigate to service-call-app directory
       working-directory: ./service-call-app
-      run: |
-        npm install
-        npm run build
+      run: npm install
+
+    - name: Generate Prisma Client
+      working-directory: ./service-call-app
+      run: npx prisma generate
+
+    - name: Build App
+      working-directory: ./service-call-app
+      run: npm run build
+      
 
     - name: Upload Built Files to Lightsail
       uses: appleboy/scp-action@v0.1.4
