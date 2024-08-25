@@ -22,27 +22,21 @@ jobs:
     - name: Build App
       working-directory: ./service-call-app
       run: npm run build
+
+    - name: List .next Directory Contents for Verification
+      working-directory: ./service-call-app
+      run: ls -la .next
       
 
-    - name: Upload Built Files to Lightsail
-      uses: appleboy/scp-action@v0.1.4
-      with:
-        host: ${{ secrets.LIGHTSAIL_SERVER_IP }}
-        username: ubuntu
-        key: ${{ secrets.SSH_PRIVATE_KEY_PEM }}
-        source: ".next/*"
-        target: "/home/ubuntu/ServiceCallDashboard/service-call-app/.next"
+    - name: Upload Built Files to Lightsail with rsync
+      run: |
+        rsync -avz -e "ssh -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY_PEM }}" ./ServiceCallDashboard/service-call-app/.next/ ubuntu@${{ secrets.LIGHTSAIL_SERVER_IP }}:/home/ubuntu/ServiceCallDashboard/service-call-app/.next
+      shell: bash
 
     - name: Upload Other Files (Optional)
-      uses: appleboy/scp-action@v0.1.4
-      with:
-        host: ${{ secrets.LIGHTSAIL_SERVER_IP }}
-        username: ubuntu
-        key: ${{ secrets.SSH_PRIVATE_KEY_PEM }}
-        source: |
-          package.json
-          public/*
-        target: "/home/ubuntu/ServiceCallDashboard/service-call-app/"
+      run: |
+        rsync -avz -e "ssh -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY_PEM }}" ./ServiceCallDashboard/service-call-app/package.json ./ServiceCallDashboard/service-call-app/public/ ubuntu@${{ secrets.LIGHTSAIL_SERVER_IP }}:/home/ubuntu/ServiceCallDashboard/service-call-app/
+      shell: bash
 
     - name: Restart PM2
       uses: appleboy/ssh-action@master
