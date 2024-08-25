@@ -9,10 +9,9 @@ jobs:
 
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       
     - name: Navigate to service-call-app directory
-      working-directory: ServiceCallDashboard/service-call-app
       run: |
         npm install
         npm run build
