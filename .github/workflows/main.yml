@@ -12,7 +12,7 @@ jobs:
       uses: actions/checkout@v2
       
     - name: Navigate to the service-call-app directory
-      run: cd ./ServiceCallDashboard/service-call-app
+      run: cd service-call-app
 
     - name: Install Dependencies and Build Locally
       run: |
