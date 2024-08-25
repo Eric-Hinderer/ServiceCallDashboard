@@ -43,6 +43,7 @@ jobs:
       working-directory: ./service-call-app
       run: |
         ssh -o StrictHostKeyChecking=no -i private_key.pem ubuntu@${{ secrets.LIGHTSAIL_SERVER_IP }} << 'EOF'
+          export PATH=$PATH:/usr/local/bin
           cd /home/ubuntu/ServiceCallDashboard/service-call-app
           pm2 restart service-call-app
         EOF
