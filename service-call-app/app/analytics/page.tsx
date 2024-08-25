@@ -167,9 +167,9 @@ export default withPageAuthRequired(function AnalyticsPage() {
       </div>
 
       {/* Date Pickers */}
-      <div className="flex justify-center space-x-4 mt-8">
-        <div>
-          <label className="block text-gray-700 font-semibold mb-2">
+      <div className="flex justify-center space-x-6 mt-12">
+        <div className="text-center">
+          <label className="block text-gray-700 font-semibold mb-2 text-lg">
             Start Date
           </label>
           <DatePicker
@@ -178,11 +178,12 @@ export default withPageAuthRequired(function AnalyticsPage() {
             selectsStart
             startDate={startDate}
             endDate={endDate}
-            className="p-2 border rounded"
+            className="p-3 border border-gray-300 rounded-lg shadow-md focus:ring focus:ring-indigo-500 w-full"
+            placeholderText="Select start date"
           />
         </div>
-        <div className="w-full max-w-xs mx-auto">
-          <label className="block text-gray-700 font-semibold mb-2 text-sm sm:text-base">
+        <div className="text-center">
+          <label className="block text-gray-700 font-semibold mb-2 text-lg">
             End Date
           </label>
           <DatePicker
@@ -192,7 +193,8 @@ export default withPageAuthRequired(function AnalyticsPage() {
             startDate={startDate}
             endDate={endDate}
             minDate={startDate}
-            className="p-2 border rounded w-full sm:w-auto"
+            className="p-3 border border-gray-300 rounded-lg shadow-md focus:ring focus:ring-indigo-500 w-full"
+            placeholderText="Select end date"
           />
         </div>
       </div>
