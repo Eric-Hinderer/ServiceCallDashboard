@@ -24,7 +24,7 @@ interface WeekendData {
   serviceCalls: any[];
 }
 
-export default withPageAuthRequired( function AnalyticsPage() {
+export default withPageAuthRequired(function AnalyticsPage() {
   const [startDate, setStartDate] = React.useState<Date | undefined>(
     subDays(new Date(), 30)
   );
@@ -95,7 +95,7 @@ export default withPageAuthRequired( function AnalyticsPage() {
       <h1 className="text-2xl font-semibold text-center text-gray-800 mb-10">
         Dashboard Charts
       </h1>
-  
+
       {/* Charts Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
         {charts.map((chart, index) => (
@@ -117,7 +117,7 @@ export default withPageAuthRequired( function AnalyticsPage() {
           </Card>
         ))}
       </div>
-  
+
       {/* After-Hours Calls and Weekend Service Calls Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
         <Card className="w-full">
@@ -147,7 +147,7 @@ export default withPageAuthRequired( function AnalyticsPage() {
             </div>
           </CardContent>
         </Card>
-  
+
         <Card className="w-full">
           <CardContent className="flex items-center justify-center">
             <div className="text-center">
@@ -165,7 +165,7 @@ export default withPageAuthRequired( function AnalyticsPage() {
           </CardContent>
         </Card>
       </div>
-  
+
       {/* Date Pickers */}
       <div className="flex justify-center space-x-4 mt-8">
         <div>
@@ -181,8 +181,8 @@ export default withPageAuthRequired( function AnalyticsPage() {
             className="p-2 border rounded"
           />
         </div>
-        <div>
-          <label className="block text-gray-700 font-semibold mb-2">
+        <div className="w-full max-w-xs mx-auto">
+          <label className="block text-gray-700 font-semibold mb-2 text-sm sm:text-base">
             End Date
           </label>
           <DatePicker
@@ -192,12 +192,10 @@ export default withPageAuthRequired( function AnalyticsPage() {
             startDate={startDate}
             endDate={endDate}
             minDate={startDate}
-            className="p-2 border rounded"
+            className="p-2 border rounded w-full sm:w-auto"
           />
         </div>
       </div>
     </div>
   );
-  
-  
 });
