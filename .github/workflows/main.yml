@@ -28,14 +28,19 @@ jobs:
       run: ls -la .next
       
 
+    - name: Set up SSH Key
+      run: |
+        echo "${{ secrets.SSH_PRIVATE_KEY_PEM }}" > private_key.pem
+        chmod 600 private_key.pem
+
     - name: Upload Built Files to Lightsail with rsync
       run: |
-        rsync -avz -e "ssh -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY_PEM }}" ./ServiceCallDashboard/service-call-app/.next/ ubuntu@${{ secrets.LIGHTSAIL_SERVER_IP }}:/home/ubuntu/ServiceCallDashboard/service-call-app/.next
+        rsync -avz -e "ssh -o StrictHostKeyChecking=no -i private_key.pem" ./ServiceCallDashboard/service-call-app/.next/ ubuntu@${{ secrets.LIGHTSAIL_SERVER_IP }}:/home/ubuntu/ServiceCallDashboard/service-call-app/.next
       shell: bash
 
     - name: Upload Other Files (Optional)
       run: |
-        rsync -avz -e "ssh -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY_PEM }}" ./ServiceCallDashboard/service-call-app/package.json ./ServiceCallDashboard/service-call-app/public/ ubuntu@${{ secrets.LIGHTSAIL_SERVER_IP }}:/home/ubuntu/ServiceCallDashboard/service-call-app/
+        rsync -avz -e "ssh -o StrictHostKeyChecking=no -i private_key.pem" ./ServiceCallDashboard/service-call-app/package.json ./ServiceCallDashboard/service-call-app/public/ ubuntu@${{ secrets.LIGHTSAIL_SERVER_IP }}:/home/ubuntu/ServiceCallDashboard/service-call-app/
       shell: bash
 
     - name: Restart PM2
