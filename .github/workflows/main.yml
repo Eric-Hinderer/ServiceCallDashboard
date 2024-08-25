@@ -43,7 +43,6 @@ jobs:
       run: |
         ssh -o StrictHostKeyChecking=no -i private_key.pem ubuntu@${{ secrets.LIGHTSAIL_SERVER_IP }} << 'EOF'
           cd /home/ubuntu/ServiceCallDashboard/service-call-app
-          npm install --production
           pm2 restart service-call-app
         EOF
 
