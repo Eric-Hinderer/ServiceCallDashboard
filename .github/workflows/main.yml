@@ -34,14 +34,14 @@ jobs:
         chmod 600 private_key.pem
 
     - name: Upload Built Files to Lightsail with rsync
+      working-directory: ./service-call-app
       run: |
-        rsync -avz -e "ssh -o StrictHostKeyChecking=no -i private_key.pem" ./ServiceCallDashboard/service-call-app/.next/ ubuntu@${{ secrets.LIGHTSAIL_SERVER_IP }}:/home/ubuntu/ServiceCallDashboard/service-call-app/.next
-      shell: bash
+        rsync -avz -e "ssh -o StrictHostKeyChecking=no -i private_key.pem" .next/ ubuntu@${{ secrets.LIGHTSAIL_SERVER_IP }}:/home/ubuntu/ServiceCallDashboard/service-call-app/.next
 
     - name: Upload Other Files (Optional)
+      working-directory: ./service-call-app
       run: |
-        rsync -avz -e "ssh -o StrictHostKeyChecking=no -i private_key.pem" ./ServiceCallDashboard/service-call-app/package.json ./ServiceCallDashboard/service-call-app/public/ ubuntu@${{ secrets.LIGHTSAIL_SERVER_IP }}:/home/ubuntu/ServiceCallDashboard/service-call-app/
-      shell: bash
+        rsync -avz -e "ssh -o StrictHostKeyChecking=no -i private_key.pem" package.json public/ ubuntu@${{ secrets.LIGHTSAIL_SERVER_IP }}:/home/ubuntu/ServiceCallDashboard/service-call-app/
 
     - name: Restart PM2
       uses: appleboy/ssh-action@master
