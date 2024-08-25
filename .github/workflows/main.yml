@@ -11,10 +11,8 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v2
       
-    - name: Navigate to the service-call-app directory
-      run: cd service-call-app
-
-    - name: Install Dependencies and Build Locally
+    - name: Navigate to service-call-app directory
+      working-directory: ./ServiceCallDashboard/service-call-app
       run: |
         npm install
         npm run build
