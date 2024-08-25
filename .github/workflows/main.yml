@@ -1,0 +1,48 @@
+name: Deploy Next.js App
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+
+    - name: Install Dependencies and Build Locally
+      run: |
+        npm install
+        npm run build
+
+    - name: Upload Built Files to Lightsail
+      uses: appleboy/scp-action@v0.1.4
+      with:
+        host: ${{ secrets.LIGHTSAIL_SERVER_IP }}
+        username: ubuntu
+        key: ${{ secrets.SSH_PRIVATE_KEY_PEM }}
+        source: ".next/*"
+        target: "/home/ubuntu/ServiceCallDashboard/service-call-app/.next"
+
+    - name: Upload Other Files (Optional)
+      uses: appleboy/scp-action@v0.1.4
+      with:
+        host: ${{ secrets.LIGHTSAIL_SERVER_IP }}
+        username: ubuntu
+        key: ${{ secrets.SSH_PRIVATE_KEY_PEM }}
+        source: |
+          package.json
+          public/*
+        target: "/home/ubuntu/ServiceCallDashboard/service-call-app/"
+
+    - name: Restart PM2
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.LIGHTSAIL_SERVER_IP }}
+        username: ubuntu
+        key: ${{ secrets.SSH_PRIVATE_KEY_PEM }}
+        script: |
+          cd /home/ubuntu/ServiceCallDashboard/service-call-app
+          npm install
+          pm2 restart service-call-app
