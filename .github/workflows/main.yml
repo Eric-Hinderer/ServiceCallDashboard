@@ -12,7 +12,7 @@ jobs:
       uses: actions/checkout@v2
       
     - name: Navigate to service-call-app directory
-      working-directory: /service-call-app
+      working-directory: ServiceCallDashboard/service-call-app
       run: |
         npm install
         npm run build
