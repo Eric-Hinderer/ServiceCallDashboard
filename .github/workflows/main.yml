@@ -39,18 +39,13 @@ jobs:
       run: |
         rsync -avz -e "ssh -o StrictHostKeyChecking=no -i private_key.pem" .next/ ubuntu@${{ secrets.LIGHTSAIL_SERVER_IP }}:/home/ubuntu/ServiceCallDashboard/service-call-app/.next
 
-    - name: Upload Other Files (Optional)
-      working-directory: ./service-call-app
+    - name: Restart PM2 Using SSH
       run: |
-        rsync -avz -e "ssh -o StrictHostKeyChecking=no -i private_key.pem" package.json public/ ubuntu@${{ secrets.LIGHTSAIL_SERVER_IP }}:/home/ubuntu/ServiceCallDashboard/service-call-app/
-
-    - name: Restart PM2
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.LIGHTSAIL_SERVER_IP }}
-        username: ubuntu
-        key: ${{ secrets.SSH_PRIVATE_KEY_PEM }}
-        script: |
+        ssh -o StrictHostKeyChecking=no -i private_key.pem ubuntu@${{ secrets.LIGHTSAIL_SERVER_IP }} << 'EOF'
           cd /home/ubuntu/ServiceCallDashboard/service-call-app
-          npm install
+          npm install --production
           pm2 restart service-call-app
+        EOF
+
+    - name: Clean Up SSH Key
+      run: rm private_key.pem
