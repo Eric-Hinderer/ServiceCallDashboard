@@ -23,5 +23,5 @@ export const dayNames: { [key: number]: string } = {
 export enum Status {
   OPEN = "OPEN",
   IN_PROGRESS = "IN_PROGRESS",
-  CLOSED = "CLOSED",
+  DONE = "DONE",
 }
