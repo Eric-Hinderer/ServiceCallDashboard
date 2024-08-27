@@ -27,7 +27,7 @@ async function testForm(formData: FormData) {
   const status = (formData.get("status") as Status) || Status.OPEN;
 
   try {
-    const docRef = await addDoc(collection(db, "serviceCalls"), {
+    const docRef = await addDoc(collection(db, "ServiceCalls"), {
         date,
         location,
         whoCalled,

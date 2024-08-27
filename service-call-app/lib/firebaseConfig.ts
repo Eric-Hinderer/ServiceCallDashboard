@@ -2,14 +2,14 @@ import {initializeApp} from 'firebase/app';
 
 
 const firebaseConfig = {
-    apiKey: "AIzaSyBwIsI585H56yMMCQKnbD2PlsroCLausNU",
-    authDomain: "service-call-manager-e7ca2.firebaseapp.com",
-    projectId: "service-call-manager-e7ca2",
-    storageBucket: "service-call-manager-e7ca2.appspot.com",
-    messagingSenderId: "190938188627",
-    appId: "1:190938188627:web:5620f68de5bbea1d882fa6",
-    measurementId: "G-7YN3VJ9Q31"
-  };
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
+};
 
   const app = initializeApp(firebaseConfig);
 

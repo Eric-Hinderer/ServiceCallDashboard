@@ -1,7 +1,13 @@
 "use client";
-import { useEffect, useState } from 'react';
-import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
-import db from '@/lib/firebase'; // Import your Firestore db
+import { useEffect, useState } from "react";
+import {
+  collection,
+  onSnapshot,
+  orderBy,
+  query,
+  Timestamp,
+} from "firebase/firestore";
+import db from "@/lib/firebase";
 
 // Define the structure of a Service Call
 interface ServiceCall {
@@ -22,14 +28,17 @@ export default function ServiceCalls() {
 
   useEffect(() => {
     // Set up Firestore onSnapshot listener for real-time updates
-    const q = query(collection(db, "serviceCalls"), orderBy("date", "desc"));
+    const q = query(collection(db, "ServiceCalls"), orderBy("date", "desc"));
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-        const updatedServiceCalls = snapshot.docs.map((doc) => ({
-          id: doc.id, // Include the document ID
-          ...doc.data() // Spread the document's data
-        } as ServiceCall));// Ensure the returned object is typed as ServiceCall
-      
+      const updatedServiceCalls = snapshot.docs.map(
+        (doc) =>
+          ({
+            id: doc.id, // Include the document ID
+            ...doc.data(), // Spread the document's data
+          } as ServiceCall)
+      ); // Ensure the returned object is typed as ServiceCall
+
       setServiceCalls(updatedServiceCalls); // Update state with new data
     });
 
@@ -38,8 +47,9 @@ export default function ServiceCalls() {
   }, []);
 
   return (
-    <div>
+    <div className="pt-20">
       <h1>Service Calls</h1>
+
       <table>
         <thead>
           <tr>
@@ -56,7 +66,9 @@ export default function ServiceCalls() {
         <tbody>
           {serviceCalls.map((serviceCall) => (
             <tr key={serviceCall.id}>
-              <td>{new Date(serviceCall.date.seconds * 1000).toLocaleString()}</td>
+              <td>
+                {new Date(serviceCall.date.seconds * 1000).toLocaleString()}
+              </td>
               <td>{serviceCall.location}</td>
               <td>{serviceCall.whoCalled}</td>
               <td>{serviceCall.machine}</td>
