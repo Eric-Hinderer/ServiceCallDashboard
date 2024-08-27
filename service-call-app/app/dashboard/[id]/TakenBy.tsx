@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { changeTakenBy } from "../action";
+import { changeTakenBy } from "./action";
 
 
 const predefinedNames = ["Kurt", "Chris", "Mike", "Dean", "Damon", "John", "Select..."];

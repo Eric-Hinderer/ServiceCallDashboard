@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useTransition } from "react";
-import { changeStatus } from "../action";
+import { changeStatus } from "./action";
 
 export default function Status({ id, currentStatus }: { id: string, currentStatus: string }) {
   const [status, setStatus] = useState(currentStatus);

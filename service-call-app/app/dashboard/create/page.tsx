@@ -158,9 +158,9 @@ export default withPageAuthRequired(async function CreateServiceCall() {
             id="status"
             name="status"
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            defaultValue={Status.Open}
+            defaultValue={Status.OPEN}
           >
-            <option value={Status.Open}>Open</option>
+            <option value={Status.OPEN}>Open</option>
             <option value={Status.IN_PROGRESS}>In Progress</option>
             <option value={Status.CLOSED}>Done</option>
           </select>
