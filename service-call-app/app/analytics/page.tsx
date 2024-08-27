@@ -14,9 +14,9 @@ import { dayNames, ServiceCall } from "../(definitions)/definitions";
 import { withPageAuthRequired } from "@auth0/nextjs-auth0/client";
 
 interface DayData {
-  _id: number;
+  dayOfWeek: number;
   callCount: number;
-  serviceCalls: ServiceCall[];
+  serviceCalls: any[];
 }
 
 interface WeekendData {
@@ -43,11 +43,11 @@ export default withPageAuthRequired(function AnalyticsPage() {
         const weekendResult = await getWeekendServiceCalls(startDate, endDate);
         setWeekendData(weekendResult);
 
-        // const afterHoursCalls = await getAfterHoursCallsByDayOfWeek(
-        //   startDate,
-        //   endDate
-        // );
-        // setAfterHoursCallsByDayOfWeek(afterHoursCalls);
+        const afterHoursCalls = await getAfterHoursCallsByDayOfWeek(
+          startDate,
+          endDate
+        );
+        setAfterHoursCallsByDayOfWeek(afterHoursCalls);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -90,15 +90,15 @@ export default withPageAuthRequired(function AnalyticsPage() {
             </h2>
             <div className="space-y-4">
               {afterHoursCallsByDayOfWeek.map((dayData) => (
-                <div key={dayData._id} className="text-center">
+                <div key={dayData.dayOfWeek} className="text-center">
                   <Link
                     href={{
-                      pathname: `/analytics/day/${dayData._id}`,
+                      pathname: `/analytics/day/${dayData.dayOfWeek}`,
                     }}
                     passHref
                     onClick={() => handleDayClick(dayData)}
                   >
-                    {dayNames[dayData._id]}: {dayData.callCount} call(s)
+                    {dayNames[dayData.dayOfWeek]}: {dayData.callCount} call(s)
                   </Link>
                 </div>
               ))}

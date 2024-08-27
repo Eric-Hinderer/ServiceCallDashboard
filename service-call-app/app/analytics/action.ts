@@ -8,17 +8,16 @@ import {
   Timestamp,
   where,
 } from "firebase/firestore";
-import { MongoClient } from "mongodb";
+
 import { ServiceCall } from "../(definitions)/definitions";
 
-
-const uri = process.env.DATABASE_URL || "";
-const client = new MongoClient(uri);
+interface CallsByDay {
+  callCount: number;
+  serviceCalls: any[];
+}
 
 export async function getWeekendServiceCalls(startDate: Date, endDate: Date) {
   const serviceCallsRef = collection(db, "ServiceCalls");
-
-
 
   const q = query(
     serviceCallsRef,
@@ -33,7 +32,7 @@ export async function getWeekendServiceCalls(startDate: Date, endDate: Date) {
       const data = doc.data();
       return {
         ...data,
-        date: data.date ? data.date.toDate() : null, 
+        date: data.date ? data.date.toDate() : null,
         createdAt: data.createdAt ? data.createdAt.toDate() : null,
         updatedAt: data.updatedAt ? data.updatedAt.toDate() : null,
         id: doc.id,
@@ -44,7 +43,6 @@ export async function getWeekendServiceCalls(startDate: Date, endDate: Date) {
       return dayOfWeek === 0 || dayOfWeek === 6;
     });
 
-
   return {
     count: weekendServiceCalls.length,
     serviceCalls: weekendServiceCalls,
@@ -54,102 +52,60 @@ export async function getWeekendServiceCalls(startDate: Date, endDate: Date) {
 export async function getAfterHoursCallsByDayOfWeek(
   startDate: Date,
   endDate: Date
-): Promise<{ _id: number; callCount: number; serviceCalls: any[] }[]> {
-  await client.connect();
-  const db = client.db("your-database-name");
-  const serviceCallsCollection = db.collection("ServiceCall");
+): Promise<{ dayOfWeek: number; callCount: number; serviceCalls: any[] }[]> {
+  const serviceCallsRef = collection(db, "ServiceCalls");
 
-  const afterHoursResult = await serviceCallsCollection
-    .aggregate([
-      {
-  
-        $addFields: {
-          localDate: {
-            $dateAdd: {
-              startDate: "$date",
-              unit: "hour",
-              amount: -5,
-            },
-          },
-        },
-      },
-      {
-        $addFields: {
-          hourOfDay: { $hour: "$localDate" },
-          dayOfWeek: { $dayOfWeek: "$localDate" },
-        },
-      },
-      {
-        $match: {
-          $or: [{ hourOfDay: { $gte: 17 } }, { hourOfDay: { $lt: 8 } }],
-          dayOfWeek: { $gte: 2, $lte: 6 },
-          date: {
-            $gte: startDate,
-            $lte: endDate,
-          },
-        },
-      },
-      {
-        $facet: {
-          countByDay: [
-            {
-              $group: {
-                _id: "$dayOfWeek",
-                callCount: { $sum: 1 },
-              },
-            },
-            { $sort: { _id: 1 } },
-          ],
-
-          callsByDay: [
-            {
-              $group: {
-                _id: "$dayOfWeek",
-                serviceCalls: { $push: "$$ROOT" },
-              },
-            },
-            { $sort: { _id: 1 } },
-          ],
-        },
-      },
-    ])
-    .toArray();
-
-  // Convert complex objects to plain objects
-  const plainAfterHoursResult = afterHoursResult[0].countByDay.map(
-    (dayCount: any) => {
-      const correspondingCalls = afterHoursResult[0].callsByDay.find(
-        (dayCalls: any) => dayCalls._id === dayCount._id
-      );
-
-      const convertedServiceCalls = correspondingCalls
-        ? correspondingCalls.serviceCalls.map((call: any) => ({
-            ...call,
-            _id: call._id.toString(),
-            date: call.date.toISOString(),
-            createdAt: call.createdAt?.toISOString(),
-            updatedAt: call.updatedAt?.toISOString(),
-          }))
-        : [];
-
-      return {
-        _id: dayCount._id,
-        callCount: dayCount.callCount,
-        serviceCalls: convertedServiceCalls,
-      };
-    }
+  const q = query(
+    serviceCallsRef,
+    where("date", ">=", Timestamp.fromDate(startDate)),
+    where("date", "<=", Timestamp.fromDate(endDate))
   );
 
-  client.close();
+  const querySnapshot = await getDocs(q);
 
-  return plainAfterHoursResult;
-}
+ 
+  const callsByDayOfWeek: { [key: string]: CallsByDay } = {};
 
-function convertFirestoreTimestamps(serviceCall: any) {
-  return {
-    ...serviceCall,
-    createdAt: serviceCall.createdAt?.toDate(),
-    updatedAt: serviceCall.updatedAt?.toDate(),
-    date: serviceCall.date?.toDate(),
-  };
+  querySnapshot.forEach((doc) => {
+    const data = doc.data();
+
+  
+    const localDate = new Date(data.date.toDate());
+
+    const hourOfDay = localDate.getHours();
+    const dayOfWeek = localDate.getDay(); 
+
+
+    if (
+      (hourOfDay >= 17 || hourOfDay < 8) &&
+      dayOfWeek >= 1 &&
+      dayOfWeek <= 5
+    ) {
+      if (!callsByDayOfWeek[dayOfWeek]) {
+        callsByDayOfWeek[dayOfWeek] = { callCount: 0, serviceCalls: [] };
+      }
+
+
+      callsByDayOfWeek[dayOfWeek].callCount += 1;
+
+
+      callsByDayOfWeek[dayOfWeek].serviceCalls.push({
+        ...data,
+        id: doc.id,
+        date: localDate.toISOString(),
+        createdAt: data.createdAt?.toDate().toISOString(),
+        updatedAt: data.updatedAt?.toDate().toISOString(),
+      });
+    }
+  });
+
+  const result = Object.keys(callsByDayOfWeek)
+    .map((day: string) => ({
+      dayOfWeek: Number(day),
+      callCount: callsByDayOfWeek[day].callCount,
+      serviceCalls: callsByDayOfWeek[day].serviceCalls,
+    }))
+    .sort((a, b) => a.dayOfWeek - b.dayOfWeek);
+
+  return result;
 }
