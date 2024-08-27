@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect } from "react";
-import * as Realm from "realm-web";
 import Link from "next/link";
 import Status from "../dashboard/[id]/Status";
 import TakenBy from "../dashboard/[id]/TakenBy";
@@ -8,7 +7,6 @@ import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
 import { ServiceCall } from "../(definitions)/definitions";
 import db from "@/lib/firebase";
 
-const app = new Realm.App({ id: "application-0-hpdeqzt" });
 
 const RealTimeOpenInProgress = () => {
   const [serviceCalls, setServiceCalls] = useState<ServiceCall[]>([]);
