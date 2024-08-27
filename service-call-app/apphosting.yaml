@@ -1,0 +1,45 @@
+env:
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    secret: NEXT_PUBLIC_FIREBASE_API_KEY
+
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    value: "service-call-manager-e7ca2.firebaseapp.com"
+
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    secret: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    value: "service-call-manager-e7ca2.appspot.com"
+
+  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+    secret: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    secret: NEXT_PUBLIC_FIREBASE_APP_ID
+
+  - variable: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
+    secret: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
+
+  - variable: NEXT_PUBLIC_FIREBASE_DATABASE_URL
+    secret: NEXT_PUBLIC_FIREBASE_DATABASE_URL
+
+  - variable: AUTH0_SECRET
+    secret: AUTH0_SECRET
+
+  - variable: AUTH0_CLIENT_SECRET
+    secret: AUTH0_CLIENT_SECRET
+
+  - variable: AUTH0_BASE_URL
+    value: "service-call-manager--service-call-manager-e7ca2.us-central1.hosted.app"
+
+  - variable: AUTH0_ISSUER_BASE_URL
+    value: "https://dev-piglz25f1zp7b0fs.us.auth0.com"
+
+  - variable: GMAIL_APP_PASSWORD
+    secret: GMAIL_APP_PASSWORD
+
+  - variable: AUTH0_CLIENT_ID
+    secret: AUTH0_CLIENT_ID
+
+  - variable: GMAIL_FROM
+    value: "joe@gamesales.com"
