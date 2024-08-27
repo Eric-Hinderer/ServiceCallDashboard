@@ -20,19 +20,19 @@ import { DataTablePagination } from "@/components/PaginationTable";
 
 import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
 import db from "@/lib/firebase";
-import { ServiceCall } from "../(definitions)/definitions"; // Import your ServiceCall type
+import { ServiceCall } from "../(definitions)/definitions"; 
 
 interface DataTableProps {
-  columns: ColumnDef<ServiceCall, any>[]; // Keep columns as props
+  columns: ColumnDef<ServiceCall, any>[]; 
 }
 
 export function DataTable({ columns }: DataTableProps) {
-  const [serviceCalls, setServiceCalls] = useState<ServiceCall[]>([]); // Internal state for data
+  const [serviceCalls, setServiceCalls] = useState<ServiceCall[]>([]); 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
   useEffect(() => {
-    // Set up Firestore onSnapshot listener for real-time updates
+
     const q = query(collection(db, "ServiceCalls"), orderBy("date", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const updatedServiceCalls = snapshot.docs.map(
@@ -42,10 +42,10 @@ export function DataTable({ columns }: DataTableProps) {
             ...doc.data(),
           } as ServiceCall)
       );
-      setServiceCalls(updatedServiceCalls); // Update state with new data
+      setServiceCalls(updatedServiceCalls); 
     });
 
-    return () => unsubscribe(); // Cleanup listener on unmount
+    return () => unsubscribe(); 
   }, []);
 
   const table = useReactTable({

@@ -3,7 +3,7 @@ import { ServiceCall } from "@/app/(definitions)/definitions";
 import db from "@/lib/firebase";
 import { addDoc, collection, setDoc, Timestamp } from "@firebase/firestore";
 import { Status } from "@prisma/client";
-import { revalidatePath } from "next/cache";
+
 import { redirect } from "next/navigation";
 
 export async function createFromForm(formData: FormData) {
@@ -40,7 +40,7 @@ export async function createFromForm(formData: FormData) {
     console.error("Error creating service call:", err);
   }
 
-  revalidatePath("/dashboard");
+  
   redirect("/dashboard");
 }
 
