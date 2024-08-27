@@ -162,7 +162,7 @@ const RealTimeOpenInProgress = () => {
                 {serviceCall.location || "Unknown Location"}
               </h3>
               <div className="text-sm text-gray-600">
-                {serviceCall.date ? new Date().toLocaleString() : "N/A"}
+                {serviceCall.date ? serviceCall.date.toDate().toLocaleString() : "N/A"}
               </div>
             </div>
             <div className="mt-2 space-y-2">

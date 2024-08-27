@@ -13,10 +13,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DataTableColumnHeader } from "@/components/DataColumnHeader";
-import { ServiceCall } from "@prisma/client";
+
 import Link from "next/link";
 import TakenBy from "../dashboard/[id]/TakenBy";
 import Status from "../dashboard/[id]/Status";
+import { ServiceCall } from "../(definitions)/definitions";
 
 export const columns: ColumnDef<ServiceCall>[] = [
   {
@@ -26,8 +27,8 @@ export const columns: ColumnDef<ServiceCall>[] = [
       <DataTableColumnHeader column={column} title="Date" />
     ),
     cell: ({ row }) => {
-      const date = new Date(row.original.date?.toString() || "");
-      return date.toLocaleString(); 
+      const date = row.original.date.toDate().toLocaleString()
+      return date; 
     }
     
   },
@@ -86,8 +87,8 @@ export const columns: ColumnDef<ServiceCall>[] = [
     accessorKey: "updatedAt",
     header: "Updated At",
     cell: ({ row }) => {
-      const date = new Date(row.original.updatedAt?.toString() || "");
-      return date.toLocaleString(); // Format the date to locale string
+      const date = row.original.updatedAt.toDate().toLocaleString()
+      return date;  // Format the date to locale string
     }
   },
   {
