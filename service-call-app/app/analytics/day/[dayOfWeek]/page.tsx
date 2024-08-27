@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { dayNames } from "@/app/(definitions)/definitions";
 import { columns } from "@/app/analytics/day/weekend/columns";
-import { DataTable } from "@/app/testing/data-table";
+import { DataTable } from "../../data-table";
+
 
 export default function DayAnalyticsPage() {
   const params = useParams();
@@ -12,7 +13,7 @@ export default function DayAnalyticsPage() {
   const [serviceCalls, setServiceCalls] = useState<any[]>([]);
 
   useEffect(() => {
-    // Retrieve the serviceCalls from sessionStorage
+
     const storedData = sessionStorage.getItem("serviceCalls");
     if (storedData) {
       setServiceCalls(JSON.parse(storedData));

@@ -1,11 +1,11 @@
-import { prisma } from "@/lib/prisma";
-import { notFound, redirect } from "next/navigation";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Status } from "@prisma/client";
-import { revalidatePath } from "next/cache";
+import { doc, getDoc, updateDoc } from "@firebase/firestore";
+import db from "@/lib/firebase";
+import { redirect } from "next/navigation";
+import { getData } from "./action";
 
 export default async function ServiceEditPage({
   params,
@@ -13,34 +13,24 @@ export default async function ServiceEditPage({
   params: { id: string };
 }) {
   const key = params.id;
+  const data = await getData(key);
 
-
-  const call = await prisma.serviceCall.findUnique({
-    where: { id: key },
-  });
-
-
-  if (!call) {
-    notFound();
-  }
-
-  // Function to handle form submission
-  async function editCall(formData: FormData) {
+  async function editServiceCall(formData: FormData) {
     "use server";
-    await prisma.serviceCall.update({
-      where: { id: key },
-      data: {
-        location: formData.get("location") as string,
-        whoCalled: formData.get("whoCalled") as string,
-        machine: formData.get("machine") as string,
-        reportedProblem: formData.get("reportedProblem") as string,
-        takenBy: formData.get("takenBy") as string,
-        notes: formData.get("notes") as string,
-        status: formData.get("status") as Status,
-      },
+    const docRef = doc(db, "ServiceCalls", key);
+
+    const test = await getDoc(docRef);
+    const test1 = await updateDoc(docRef, {
+      location: formData.get("location"),
+      whoCalled: formData.get("whoCalled"),
+      machine: formData.get("machine"),
+      reportedProblem: formData.get("reportedProblem"),
+      takenBy: formData.get("takenBy"),
+      status: formData.get("status"),
+      notes: formData.get("notes"),
     });
-    revalidatePath("/dashboard");
-    redirect(`/dashboard`);
+
+    redirect("/dashboard");
   }
 
   return (
@@ -48,10 +38,16 @@ export default async function ServiceEditPage({
       <h1 className="text-2xl font-bold text-center mb-6 text-gray-800">
         Edit Service Call
       </h1>
-      <form action={editCall} className="space-y-4 bg-white p-6 shadow rounded-lg">
+      <form
+        action={editServiceCall}
+        className="space-y-4 bg-white p-6 shadow rounded-lg"
+      >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="location" className="block text-sm font-medium text-gray-700">
+            <Label
+              htmlFor="location"
+              className="block text-sm font-medium text-gray-700"
+            >
               Location:
             </Label>
             <Input
@@ -59,11 +55,14 @@ export default async function ServiceEditPage({
               type="text"
               name="location"
               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              defaultValue={call.location ?? ""}
+              defaultValue={data?.location ?? ""}
             />
           </div>
           <div>
-            <Label htmlFor="whoCalled" className="block text-sm font-medium text-gray-700">
+            <Label
+              htmlFor="whoCalled"
+              className="block text-sm font-medium text-gray-700"
+            >
               Who Called:
             </Label>
             <Input
@@ -71,13 +70,16 @@ export default async function ServiceEditPage({
               type="text"
               name="whoCalled"
               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              defaultValue={call.whoCalled ?? ""}
+              defaultValue={data?.whoCalled ?? ""}
             />
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="machine" className="block text-sm font-medium text-gray-700">
+            <Label
+              htmlFor="machine"
+              className="block text-sm font-medium text-gray-700"
+            >
               Machine:
             </Label>
             <Input
@@ -85,11 +87,14 @@ export default async function ServiceEditPage({
               type="text"
               name="machine"
               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              defaultValue={call.machine ?? ""}
+              defaultValue={data?.machine ?? ""}
             />
           </div>
           <div>
-            <Label htmlFor="reportedProblem" className="block text-sm font-medium text-gray-700">
+            <Label
+              htmlFor="reportedProblem"
+              className="block text-sm font-medium text-gray-700"
+            >
               Reported Problem:
             </Label>
             <Input
@@ -97,13 +102,16 @@ export default async function ServiceEditPage({
               type="text"
               name="reportedProblem"
               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              defaultValue={call.reportedProblem ?? ""}
+              defaultValue={data?.reportedProblem ?? ""}
             />
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="takenBy" className="block text-sm font-medium text-gray-700">
+            <Label
+              htmlFor="takenBy"
+              className="block text-sm font-medium text-gray-700"
+            >
               Taken By:
             </Label>
             <Input
@@ -111,18 +119,21 @@ export default async function ServiceEditPage({
               type="text"
               name="takenBy"
               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              defaultValue={call.takenBy ?? ""}
+              defaultValue={data?.takenBy ?? ""}
             />
           </div>
           <div>
-            <Label htmlFor="status" className="block text-sm font-medium text-gray-700">
+            <Label
+              htmlFor="status"
+              className="block text-sm font-medium text-gray-700"
+            >
               Status:
             </Label>
             <select
               id="status"
               name="status"
               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              defaultValue={call.status}
+              defaultValue={data?.status ?? ""}
             >
               <option value={"OPEN"}>Open</option>
               <option value={"IN_PROGRESS"}>In Progress</option>
@@ -131,14 +142,16 @@ export default async function ServiceEditPage({
           </div>
         </div>
         <div>
-          <Label htmlFor="notes" className="block text-sm font-medium text-gray-700">
+          <Label
+            htmlFor="notes"
+            className="block text-sm font-medium text-gray-700"
+          >
             Notes:
           </Label>
           <Textarea
             id="notes"
             name="notes"
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            defaultValue={call.notes ?? ""}
           />
         </div>
         <Button

@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { emailGroup, createFromForm } from "./action";
 import { Label } from "@/components/ui/label";
@@ -9,6 +8,7 @@ import {
   SubmitFormButtonEmail,
 } from "@/components/SubmitFormButton";
 import { withPageAuthRequired } from "@auth0/nextjs-auth0";
+import { Status } from "@/app/(definitions)/definitions";
 
 
 const formSchema = z.object({
@@ -22,22 +22,9 @@ const formSchema = z.object({
   status: z.string().optional(),
 });
 
-interface ServiceCall {
-  date?: Date;
-  location?: string;
-  whoCalled?: string;
-  machine?: string;
-  reportedProblem?: string;
-  takenBy?: string;
-  status: Status;
-  notes?: string;
-}
 
-enum Status {
-  OPEN = "OPEN",
-  IN_PROGRESS = "IN_PROGRESS",
-  DONE = "DONE",
-}
+
+
 
 export default withPageAuthRequired(async function CreateServiceCall() {
   return (
@@ -171,7 +158,6 @@ export default withPageAuthRequired(async function CreateServiceCall() {
             id="status"
             name="status"
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            defaultValue={Status.OPEN}
           >
             <option value={Status.OPEN}>Open</option>
             <option value={Status.IN_PROGRESS}>In Progress</option>

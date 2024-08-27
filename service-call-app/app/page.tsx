@@ -1,17 +1,6 @@
-import { prisma } from "@/lib/prisma";
+
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import Status from "./dashboard/[id]/Status";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
-import { revalidatePath } from "next/cache";
-import TakenBy from "./dashboard/[id]/TakenBy";
-
 import RealTimeOpenInProgress from "./(Real Time Data)/RealTimeOpen";
 import { withPageAuthRequired } from "@auth0/nextjs-auth0";
 

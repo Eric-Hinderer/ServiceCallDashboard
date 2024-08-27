@@ -1,21 +1,20 @@
 "use server";
 import { ServiceCall } from "@/app/(definitions)/definitions";
-import { prisma } from "@/lib/prisma";
+import db from "@/lib/firebase";
+import { addDoc, collection, setDoc, Timestamp } from "@firebase/firestore";
 import { Status } from "@prisma/client";
-import { revalidatePath } from "next/cache";
+
 import { redirect } from "next/navigation";
 
 export async function createFromForm(formData: FormData) {
-
   const dateString = formData.get("date") as string;
   const date = dateString ? new Date(dateString) : new Date();
-  const location = (formData.get("location") as string) || undefined;
-  const whoCalled = (formData.get("whoCalled") as string) || undefined;
-  const machine = (formData.get("machine") as string) || undefined;
-  const reportedProblem =
-    (formData.get("reportedProblem") as string) || undefined;
-  const takenBy = (formData.get("takenBy") as string) || undefined;
-  const notes = (formData.get("notes") as string) || undefined;
+  const location = formData.get("location") as string;
+  const whoCalled = formData.get("whoCalled") as string;
+  const machine = formData.get("machine") as string;
+  const reportedProblem = formData.get("reportedProblem") as string;
+  const takenBy = formData.get("takenBy") as string;
+  const notes = formData.get("notes") as string;
   const status = (formData.get("status") as Status) || Status.OPEN;
 
   const newServiceCall: ServiceCall = {
@@ -25,25 +24,36 @@ export async function createFromForm(formData: FormData) {
     machine,
     reportedProblem,
     takenBy,
-    status,
     notes,
+    status,
+    updatedAt: new Date(),
+    id: ""
   };
 
-  await prisma.serviceCall.create({ data: newServiceCall });
-  revalidatePath("/dashboard");
+  try {
+    const docRef = await addDoc(collection(db, "ServiceCalls"), newServiceCall);
+
+    await setDoc(docRef, { id: docRef.id }, { merge: true });
+    console.log("Document written with ID: ", docRef.id);
+  } catch (err) {
+    console.error("Error creating service call:", err);
+  }
+
+  
   redirect("/dashboard");
 }
 
 export async function emailGroup(formData: FormData) {
-
-  const date = formData.get("date");
-  const location = formData.get("location");
-  const whoCalled = formData.get("whoCalled");
-  const machine = formData.get("machine");
-  const reportedProblem = formData.get("reportedProblem");
-  const takenBy = formData.get("takenBy");
-  const status = formData.get("status");
-  const notes = formData.get("notes");
+  const dateString = formData.get("date") as string;
+  const tempDate = dateString ? new Date(dateString) : new Date();
+  const date = Timestamp.fromDate(tempDate);
+  const location = formData.get("location") as string;
+  const whoCalled = formData.get("whoCalled") as string;
+  const machine = formData.get("machine") as string;
+  const reportedProblem = formData.get("reportedProblem") as string;
+  const takenBy = formData.get("takenBy") as string;
+  const notes = formData.get("notes") as string;
+  const status = (formData.get("status") as Status) || Status.OPEN;
 
   const baseUrl = "http://localhost:3000";
 
@@ -54,7 +64,7 @@ export async function emailGroup(formData: FormData) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        date,
+        date: date.toDate().toLocaleString(),
         location,
         whoCalled,
         machine,

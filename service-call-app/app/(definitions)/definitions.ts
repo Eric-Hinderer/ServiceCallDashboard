@@ -1,20 +1,27 @@
-import { Status } from "@prisma/client";
-
 export interface ServiceCall {
-  date?: Date;
-  location?: string;
-  whoCalled?: string;
-  machine?: string;
-  reportedProblem?: string;
-  takenBy?: string;
-  status: Status;
-  notes?: string;
+  id: string;
+  date: Date;
+  location: string;
+  whoCalled: string;
+  machine: string;
+  reportedProblem: string;
+  takenBy: string;
+  notes: string;
+  status: string;
+  updatedAt: Date;
+  createdAt?: Date;
 }
 
 export const dayNames: { [key: number]: string } = {
-  2: "Monday",
-  3: "Tuesday",
-  4: "Wednesday",
-  5: "Thursday",
-  6: "Friday",
+  1: "Monday",
+  2: "Tuesday",
+  3: "Wednesday",
+  4: "Thursday",
+  5: "Friday",
 };
+
+export enum Status {
+  OPEN = "OPEN",
+  IN_PROGRESS = "IN_PROGRESS",
+  DONE = "DONE",
+}
