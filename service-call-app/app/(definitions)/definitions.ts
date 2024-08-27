@@ -1,9 +1,8 @@
-import { Timestamp } from "@firebase/firestore";
 
 
 export interface ServiceCall {
   id: string;
-  date: Timestamp;
+  date: Date;
   location: string;
   whoCalled: string;
   machine: string;
@@ -11,7 +10,8 @@ export interface ServiceCall {
   takenBy: string;
   notes: string;
   status: string;
-  updatedAt: Timestamp;
+  updatedAt: Date;
+  createdAt?: Date;
 }
 
 export const dayNames: { [key: number]: string } = {

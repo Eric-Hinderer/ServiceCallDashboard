@@ -14,32 +14,34 @@ const RealTimeOpenInProgress = () => {
   const [serviceCalls, setServiceCalls] = useState<ServiceCall[]>([]);
 
   useEffect(() => {
-    // Set up Firestore onSnapshot listener for real-time updates
+
     const q = query(collection(db, "ServiceCalls"), orderBy("date", "desc"));
 
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
-        const updatedServiceCalls = snapshot.docs.map(
-          (doc) =>
-            ({
-              id: doc.id, 
-              ...doc.data(), 
-            } as ServiceCall)
-        );
+        const updatedServiceCalls = snapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id, 
+            ...data,
+            date: data.date ? data.date.toDate() : null,
+            updatedAt: data.updatedAt ? data.updatedAt.toDate() : null,
+            createdAt: data.createdAt ? data.createdAt.toDate() : null,
+          } as ServiceCall;
+        });
 
-        setServiceCalls(updatedServiceCalls); // Update state with new data
+        setServiceCalls(updatedServiceCalls); 
       },
       (error) => {
         console.error("Error fetching Firestore data: ", error);
       }
     );
 
-    // Cleanup listener when the component unmounts
     return () => unsubscribe();
   }, []);
 
-  // Filter and sort data client-side to show only 'OPEN' and 'IN_PROGRESS'
+
   const filteredServiceCalls = serviceCalls.filter(
     (serviceCall) =>
       serviceCall.status === "OPEN" || serviceCall.status === "IN_PROGRESS"
@@ -96,11 +98,11 @@ const RealTimeOpenInProgress = () => {
               >
                 <td className="py-2 px-4 text-sm text-gray-700">
                   {serviceCall.date
-                    ? serviceCall.date.toDate().toLocaleString()
+                    ? serviceCall.date.toLocaleString()
                     : "N/A"}
                 </td>
                 <td className="py-2 px-4 text-sm text-gray-700">
-                  {serviceCall.updatedAt ? serviceCall.updatedAt.toDate().toLocaleString() : "N/A"}
+                  {serviceCall.updatedAt ? serviceCall.updatedAt.toLocaleString() : "N/A"}
                 </td>
                 <td className="py-2 px-4 text-sm text-gray-700">
                   {serviceCall.location || "N/A"}
@@ -162,7 +164,7 @@ const RealTimeOpenInProgress = () => {
                 {serviceCall.location || "Unknown Location"}
               </h3>
               <div className="text-sm text-gray-600">
-                {serviceCall.date ? serviceCall.date.toDate().toLocaleString() : "N/A"}
+                {serviceCall.date ? serviceCall.date.toLocaleString() : "N/A"}
               </div>
             </div>
             <div className="mt-2 space-y-2">

@@ -1,80 +1,54 @@
 "use server";
 
+import db from "@/lib/firebase";
+import {
+  collection,
+  getDocs,
+  query,
+  Timestamp,
+  where,
+} from "firebase/firestore";
 import { MongoClient } from "mongodb";
+import { ServiceCall } from "../(definitions)/definitions";
+
 
 const uri = process.env.DATABASE_URL || "";
 const client = new MongoClient(uri);
 
-export async function getWeekendServiceCalls(
-  startDate: Date,
-  endDate: Date
-): Promise<{ count: number; serviceCalls: any[] }> {
-  await client.connect();
-  const db = client.db("your-database-name");
-  const serviceCallsCollection = db.collection("ServiceCall");
+export async function getWeekendServiceCalls(startDate: Date, endDate: Date) {
+  const serviceCallsRef = collection(db, "ServiceCalls");
 
-  const weekendResult = await serviceCallsCollection
-    .aggregate([
-      {
-        $addFields: {
-          dayOfWeek: { $dayOfWeek: "$date" },
-        },
-      },
-      {
-        $match: {
-          dayOfWeek: { $in: [1, 7] },
-          date: {
-            $gte: startDate,
-            $lte: endDate,
-          },
-        },
-      },
-      {
-        $facet: {
-          weekendCallsCount: [{ $count: "count" }],
-          weekendCallsDocuments: [
-            {
-              $project: {
-                _id: 1,
-                date: 1,
-                location: 1,
-                machine: 1,
-                reportedProblem: 1,
-                whoCalled: 1,
-                status: 1,
-                takenBy: 1,
-                createdAt: 1,
-                updatedAt: 1,
-              },
-            },
-          ],
-        },
-      },
-    ])
-    .toArray();
 
-  client.close();
 
-  const count =
-    weekendResult[0].weekendCallsCount.length > 0
-      ? weekendResult[0].weekendCallsCount[0].count
-      : 0;
-  const serviceCalls = weekendResult[0].weekendCallsDocuments.map(
-    (call: any) => ({
-      _id: call._id.toString(),
-      date: call.date ? call.date.toISOString() : null,
-      location: call.location,
-      machine: call.machine,
-      reportedProblem: call.reportedProblem,
-      whoCalled: call.whoCalled,
-      status: call.status,
-      takenBy: call.takenBy,
-      createdAt: call.createdAt ? call.createdAt.toISOString() : null,
-      updatedAt: call.updatedAt ? call.updatedAt.toISOString() : null,
-    })
+  const q = query(
+    serviceCallsRef,
+    where("date", ">=", Timestamp.fromDate(startDate)),
+    where("date", "<=", Timestamp.fromDate(endDate))
   );
 
-  return { count, serviceCalls };
+  const querySnapshot = await getDocs(q);
+
+  const weekendServiceCalls = querySnapshot.docs
+    .map((doc) => {
+      const data = doc.data();
+      return {
+        ...data,
+        date: data.date ? data.date.toDate() : null, 
+        createdAt: data.createdAt ? data.createdAt.toDate() : null,
+        updatedAt: data.updatedAt ? data.updatedAt.toDate() : null,
+        id: doc.id,
+      } as ServiceCall;
+    })
+    .filter((serviceCall) => {
+      const dayOfWeek = serviceCall.date.getDay();
+      return dayOfWeek === 0 || dayOfWeek === 6;
+    });
+
+
+  return {
+    count: weekendServiceCalls.length,
+    serviceCalls: weekendServiceCalls,
+  };
 }
 
 export async function getAfterHoursCallsByDayOfWeek(
@@ -88,32 +62,27 @@ export async function getAfterHoursCallsByDayOfWeek(
   const afterHoursResult = await serviceCallsCollection
     .aggregate([
       {
-        // Convert the UTC date to CST (Central Time)
+  
         $addFields: {
           localDate: {
             $dateAdd: {
               startDate: "$date",
               unit: "hour",
-              amount: -5, 
+              amount: -5,
             },
           },
         },
       },
       {
-        
         $addFields: {
           hourOfDay: { $hour: "$localDate" },
-          dayOfWeek: { $dayOfWeek: "$localDate" },  
+          dayOfWeek: { $dayOfWeek: "$localDate" },
         },
       },
       {
-      
         $match: {
-          $or: [
-            { hourOfDay: { $gte: 17 } },  
-            { hourOfDay: { $lt: 8 } },    
-          ],
-          dayOfWeek: { $gte: 2, $lte: 6 },  
+          $or: [{ hourOfDay: { $gte: 17 } }, { hourOfDay: { $lt: 8 } }],
+          dayOfWeek: { $gte: 2, $lte: 6 },
           date: {
             $gte: startDate,
             $lte: endDate,
@@ -125,7 +94,7 @@ export async function getAfterHoursCallsByDayOfWeek(
           countByDay: [
             {
               $group: {
-                _id: "$dayOfWeek", 
+                _id: "$dayOfWeek",
                 callCount: { $sum: 1 },
               },
             },
@@ -159,7 +128,7 @@ export async function getAfterHoursCallsByDayOfWeek(
             _id: call._id.toString(),
             date: call.date.toISOString(),
             createdAt: call.createdAt?.toISOString(),
-            updatedAt: call.updatedAt?.toISOString(), 
+            updatedAt: call.updatedAt?.toISOString(),
           }))
         : [];
 
@@ -176,3 +145,11 @@ export async function getAfterHoursCallsByDayOfWeek(
   return plainAfterHoursResult;
 }
 
+function convertFirestoreTimestamps(serviceCall: any) {
+  return {
+    ...serviceCall,
+    createdAt: serviceCall.createdAt?.toDate(),
+    updatedAt: serviceCall.updatedAt?.toDate(),
+    date: serviceCall.date?.toDate(),
+  };
+}

@@ -13,20 +13,23 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DataTableColumnHeader } from "@/components/DataColumnHeader";
-import { ServiceCall } from "@prisma/client";
+
 import Link from "next/link";
 
 
-export const columns: ColumnDef<ServiceCall>[] = [
+
+
+
+export const columns: ColumnDef<any>[] = [
   {
-  
     accessorKey: "date",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Date" />
     ),
     cell: ({ row }) => {
-      const date = new Date(row.original.date?.toString() || "");
-      return date.toLocaleString(); 
+      const dateValue = row.original.date;
+      const formattedDate = dateValue ? new Date(dateValue).toLocaleString() : "Invalid Date";
+      return formattedDate;
     }
     
   },
@@ -68,7 +71,7 @@ export const columns: ColumnDef<ServiceCall>[] = [
   },
   {
     accessorKey: "notes",
-    filterFn: 'includesString',
+    filterFn: "includesString",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Notes" />
     ),
@@ -77,8 +80,30 @@ export const columns: ColumnDef<ServiceCall>[] = [
     accessorKey: "updatedAt",
     header: "Updated At",
     cell: ({ row }) => {
-      const date = new Date(row.original.updatedAt?.toString() || "");
-      return date.toLocaleString(); // Format the date to locale string
+      const dateValue = row.original.updatedAt;
+      const formattedDate = dateValue ? new Date(dateValue).toLocaleString() : "Invalid Date";
+      return formattedDate;
     }
+  },
+  {
+    id: "actions",
+    cell: ({ row }) => {
+      const serviceCall = row.original;
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm">
+              <MoreHorizontal />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <Link href={`/dashboard/${serviceCall.id}/edit`}>
+              <DropdownMenuItem>Edit</DropdownMenuItem>
+            </Link>
+            <DropdownMenuSeparator />
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+    },
   },
 ];

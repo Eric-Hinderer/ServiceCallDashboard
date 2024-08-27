@@ -8,8 +8,7 @@ import { redirect } from "next/navigation";
 
 export async function createFromForm(formData: FormData) {
   const dateString = formData.get("date") as string;
-  const tempDate = dateString ? new Date(dateString) : new Date();
-  const date = Timestamp.fromDate(tempDate);
+  const date = dateString ? new Date(dateString) : new Date();
   const location = formData.get("location") as string;
   const whoCalled = formData.get("whoCalled") as string;
   const machine = formData.get("machine") as string;
@@ -27,7 +26,7 @@ export async function createFromForm(formData: FormData) {
     takenBy,
     notes,
     status,
-    updatedAt: Timestamp.now(),
+    updatedAt: new Date(),
     id: ""
   };
 

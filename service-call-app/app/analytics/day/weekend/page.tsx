@@ -1,7 +1,8 @@
 "use client";
 
+import { DataTable } from "../../data-table";
 import { columns } from "./columns";
-import { DataTable } from "@/app/testing/data-table";
+
 import { useEffect, useState } from "react";
 
 export default function WeekendServiceCallsPage() {

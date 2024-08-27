@@ -10,18 +10,18 @@ import {
   getAfterHoursCallsByDayOfWeek,
 } from "./action";
 import Link from "next/link";
-import { dayNames } from "../(definitions)/definitions";
+import { dayNames, ServiceCall } from "../(definitions)/definitions";
 import { withPageAuthRequired } from "@auth0/nextjs-auth0/client";
 
 interface DayData {
   _id: number;
   callCount: number;
-  serviceCalls: any[];
+  serviceCalls: ServiceCall[];
 }
 
 interface WeekendData {
   count: number;
-  serviceCalls: any[];
+  serviceCalls: ServiceCall[];
 }
 
 export default withPageAuthRequired(function AnalyticsPage() {
@@ -43,11 +43,11 @@ export default withPageAuthRequired(function AnalyticsPage() {
         const weekendResult = await getWeekendServiceCalls(startDate, endDate);
         setWeekendData(weekendResult);
 
-        const afterHoursCalls = await getAfterHoursCallsByDayOfWeek(
-          startDate,
-          endDate
-        );
-        setAfterHoursCallsByDayOfWeek(afterHoursCalls);
+        // const afterHoursCalls = await getAfterHoursCallsByDayOfWeek(
+        //   startDate,
+        //   endDate
+        // );
+        // setAfterHoursCallsByDayOfWeek(afterHoursCalls);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -68,55 +68,18 @@ export default withPageAuthRequired(function AnalyticsPage() {
     );
   };
 
-  const handleWeekendClick = (weekendData: WeekendData) => {
+  const handleWeekendClick = async (weekendData: WeekendData) => {
     sessionStorage.setItem(
       "weekendServiceCalls",
       JSON.stringify(weekendData.serviceCalls)
     );
   };
 
-  const charts = [
-    {
-      src: "https://charts.mongodb.com/charts-project-0-umtdugs/embed/charts?id=66c818af-f79d-4326-8cd8-634c8d0a2d52&maxDataAge=3600&theme=dark&autoRefresh=true",
-      style: {
-        background: "#21313C",
-      },
-    },
-    {
-      src: "https://charts.mongodb.com/charts-project-0-umtdugs/embed/charts?id=66c81c6d-d25c-4df6-8654-a631eab1c9b5&maxDataAge=3600&theme=dark&autoRefresh=true",
-      style: {
-        background: "#21313C",
-      },
-    },
-  ];
-
   return (
     <div className="pt-20 px-6 pb-20">
       <h1 className="text-2xl font-semibold text-center text-gray-800 mb-10">
         Dashboard Charts
       </h1>
-
-      {/* Charts Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-        {charts.map((chart, index) => (
-          <Card key={index} className="w-full">
-            <CardContent className="flex items-center justify-center">
-              <iframe
-                style={{
-                  ...chart.style,
-                  border: "none",
-                  borderRadius: "2px",
-                  boxShadow: "0 2px 10px 0 rgba(70, 76, 79, .2)",
-                }}
-                width="640"
-                height="480"
-                src={chart.src}
-                title={`MongoDB Chart ${index + 1}`}
-              />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
 
       {/* After-Hours Calls and Weekend Service Calls Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
