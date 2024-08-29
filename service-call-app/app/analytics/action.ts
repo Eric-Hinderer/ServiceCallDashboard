@@ -18,19 +18,13 @@ interface CallsByDay {
 
 export async function getWeekendServiceCalls(startDate: Date, endDate: Date) {
   const serviceCallsRef = collection(db, "ServiceCalls");
-  const toCentralTime = (date: Date) => {
-    const centralTimeOffset = -5; // Central Standard Time is UTC-6
-    const centralDate = new Date(date.getTime() + centralTimeOffset * 60 * 60 * 1000);
-    return centralDate;
-  };
-  const centralStartDate = toCentralTime(startDate);
-  const centralEndDate = toCentralTime(endDate);
+
 
 
   const q = query(
     serviceCallsRef,
-    where("date", ">=", Timestamp.fromDate(centralStartDate)),
-    where("date", "<=", Timestamp.fromDate(centralEndDate))
+    where("date", ">=", Timestamp.fromDate(startDate)),
+    where("date", "<=", Timestamp.fromDate(endDate))
   );
 
   const querySnapshot = await getDocs(q);
@@ -63,37 +57,27 @@ export async function getAfterHoursCallsByDayOfWeek(
 ): Promise<{ dayOfWeek: number; callCount: number; serviceCalls: any[] }[]> {
   const serviceCallsRef = collection(db, "ServiceCalls");
 
-  const toCentralTime = (date: Date) => {
-    const centralTimeOffset = -5; // Central Standard Time is UTC-6
-    const centralDate = new Date(date.getTime() + centralTimeOffset * 60 * 60 * 1000);
-    return centralDate;
-  };
-  const centralStartDate = toCentralTime(startDate);
-  const centralEndDate = toCentralTime(endDate);
-
   const q = query(
     serviceCallsRef,
-    where("date", ">=", Timestamp.fromDate(centralStartDate)),
-    where("date", "<=", Timestamp.fromDate(centralEndDate))
+    where("date", ">=", Timestamp.fromDate(startDate)),
+    where("date", "<=", Timestamp.fromDate(endDate))
   );
 
   const querySnapshot = await getDocs(q);
 
- 
   const callsByDayOfWeek: { [key: string]: CallsByDay } = {};
 
   querySnapshot.forEach((doc) => {
     const data = doc.data();
 
-  
-    const localDate = new Date(data.date.toDate());
+    const utcDate = new Date(data.date.toDate().toISOString());
 
-    const hourOfDay = localDate.getHours();
-    const dayOfWeek = localDate.getDay(); 
+    const hourOfDay = utcDate.getUTCHours(); 
+    const dayOfWeek = utcDate.getUTCDay(); 
 
 
     if (
-      (hourOfDay >= 17 || hourOfDay < 8) &&
+      (hourOfDay >= 22 || hourOfDay < 13) &&
       dayOfWeek >= 1 &&
       dayOfWeek <= 5
     ) {
@@ -101,14 +85,12 @@ export async function getAfterHoursCallsByDayOfWeek(
         callsByDayOfWeek[dayOfWeek] = { callCount: 0, serviceCalls: [] };
       }
 
-
       callsByDayOfWeek[dayOfWeek].callCount += 1;
-
 
       callsByDayOfWeek[dayOfWeek].serviceCalls.push({
         ...data,
         id: doc.id,
-        date: localDate.toISOString(),
+        date: utcDate.toISOString(),
         createdAt: data.createdAt?.toDate().toISOString(),
         updatedAt: data.updatedAt?.toDate().toISOString(),
       });
