@@ -2,11 +2,11 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import RealTimeOpenInProgress from "./(Real Time Data)/RealTimeOpen";
-import { withPageAuthRequired } from "@auth0/nextjs-auth0";
 
 
 
-export default withPageAuthRequired( async function Home() {
+
+export default async function Home() {
   return (
     <main className="pt-20 px-8 max-w-7xl mx-auto space-y-16">
       {/* Welcome Section */}
@@ -44,6 +44,6 @@ export default withPageAuthRequired( async function Home() {
     </main>
   );
 
-},);
+}
 
 

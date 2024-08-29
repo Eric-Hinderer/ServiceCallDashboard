@@ -3,11 +3,11 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { DataTable } from "../testing/data-table";
 import { columns } from "../testing/columns";
-import { withPageAuthRequired } from "@auth0/nextjs-auth0";
+
 
 
 // Server Component for data fetching
-export default withPageAuthRequired(async function DashboardPage() {
+export default async function DashboardPage() {
 
 
   return (
@@ -22,4 +22,4 @@ export default withPageAuthRequired(async function DashboardPage() {
       </div>
     </div>
   );
-});
+}

@@ -7,7 +7,7 @@ import {
   SubmitFormButton,
   SubmitFormButtonEmail,
 } from "@/components/SubmitFormButton";
-import { withPageAuthRequired } from "@auth0/nextjs-auth0";
+
 import { Status } from "@/app/(definitions)/definitions";
 
 
@@ -26,7 +26,7 @@ const formSchema = z.object({
 
 
 
-export default withPageAuthRequired(async function CreateServiceCall() {
+export default async function CreateServiceCall() {
   return (
     <div className="pt-20 max-w-xl mx-auto px-4 sm:px-6 lg:px-8">
       <h1 className="text-2xl font-bold text-center mb-6 text-gray-800">
@@ -169,4 +169,4 @@ export default withPageAuthRequired(async function CreateServiceCall() {
       </form>
     </div>
   );
-});
+}

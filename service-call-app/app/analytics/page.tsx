@@ -11,7 +11,7 @@ import {
 } from "./action";
 import Link from "next/link";
 import { dayNames, ServiceCall } from "../(definitions)/definitions";
-import { withPageAuthRequired } from "@auth0/nextjs-auth0/client";
+
 
 interface DayData {
   dayOfWeek: number;
@@ -24,7 +24,7 @@ interface WeekendData {
   serviceCalls: ServiceCall[];
 }
 
-export default withPageAuthRequired(function AnalyticsPage() {
+export default function AnalyticsPage() {
   const [startDate, setStartDate] = React.useState<Date | undefined>(
     subDays(new Date(), 30)
   );
@@ -163,4 +163,4 @@ export default withPageAuthRequired(function AnalyticsPage() {
       </div>
     </div>
   );
-});
+}
