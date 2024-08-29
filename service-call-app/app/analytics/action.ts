@@ -9,7 +9,10 @@ import {
   where,
 } from "firebase/firestore";
 
+import { DateTime } from "luxon";
+
 import { ServiceCall } from "../(definitions)/definitions";
+
 
 interface CallsByDay {
   callCount: number;
@@ -19,14 +22,14 @@ interface CallsByDay {
 export async function getWeekendServiceCalls(startDate: Date, endDate: Date) {
   const serviceCallsRef = collection(db, "ServiceCalls");
 
-
+  const startInCentralTime = DateTime.fromJSDate(startDate, { zone: 'UTC' }).setZone('America/Chicago');
+  const endInCentralTime = DateTime.fromJSDate(endDate, { zone: 'UTC' }).setZone('America/Chicago');
 
   const q = query(
     serviceCallsRef,
-    where("date", ">=", Timestamp.fromDate(startDate)),
-    where("date", "<=", Timestamp.fromDate(endDate))
+    where("date", ">=", Timestamp.fromDate(startInCentralTime.toJSDate())),
+    where("date", "<=", Timestamp.fromDate(endInCentralTime.toJSDate()))
   );
-
   const querySnapshot = await getDocs(q);
 
   const weekendServiceCalls = querySnapshot.docs
@@ -44,7 +47,6 @@ export async function getWeekendServiceCalls(startDate: Date, endDate: Date) {
       const dayOfWeek = serviceCall.date.getDay();
       return dayOfWeek === 0 || dayOfWeek === 6;
     });
-
   return {
     count: weekendServiceCalls.length,
     serviceCalls: weekendServiceCalls,
@@ -57,40 +59,44 @@ export async function getAfterHoursCallsByDayOfWeek(
 ): Promise<{ dayOfWeek: number; callCount: number; serviceCalls: any[] }[]> {
   const serviceCallsRef = collection(db, "ServiceCalls");
 
+  const startInCentralTime = DateTime.fromJSDate(startDate, { zone: 'UTC' }).setZone('America/Chicago');
+const endInCentralTime = DateTime.fromJSDate(endDate, { zone: 'UTC' }).setZone('America/Chicago');
+
+
   const q = query(
     serviceCallsRef,
-    where("date", ">=", Timestamp.fromDate(startDate)),
-    where("date", "<=", Timestamp.fromDate(endDate))
+    where("date", ">=", Timestamp.fromDate(startInCentralTime.toJSDate())),
+    where("date", "<=", Timestamp.fromDate(endInCentralTime.toJSDate()))
   );
 
   const querySnapshot = await getDocs(q);
 
+ 
   const callsByDayOfWeek: { [key: string]: CallsByDay } = {};
 
   querySnapshot.forEach((doc) => {
     const data = doc.data();
 
-    const utcDate = new Date(data.date.toDate().toISOString());
+  
+   const localDate = data.date.toDate();
 
-    const hourOfDay = utcDate.getUTCHours(); 
-    const dayOfWeek = utcDate.getUTCDay(); 
+    const hourOfDay = localDate.getHours();
+    const dayOfWeek = localDate.getDay(); 
 
 
     if (
-      (hourOfDay >= 22 || hourOfDay < 13) &&
+      (hourOfDay >= 17 && hourOfDay <= 24 || hourOfDay >= 0  && hourOfDay <= 8) &&
       dayOfWeek >= 1 &&
       dayOfWeek <= 5
     ) {
       if (!callsByDayOfWeek[dayOfWeek]) {
         callsByDayOfWeek[dayOfWeek] = { callCount: 0, serviceCalls: [] };
       }
-
       callsByDayOfWeek[dayOfWeek].callCount += 1;
-
       callsByDayOfWeek[dayOfWeek].serviceCalls.push({
         ...data,
         id: doc.id,
-        date: utcDate.toISOString(),
+        date: localDate.toISOString(),
         createdAt: data.createdAt?.toDate().toISOString(),
         updatedAt: data.updatedAt?.toDate().toISOString(),
       });
