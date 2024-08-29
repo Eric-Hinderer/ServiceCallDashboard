@@ -1,0 +1,15 @@
+env:
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: service-call-manager-e7ca2
+
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    secret: API-KEY
+
+  - variable: GMAIL_APP_PASSWORD
+    secret: APP-PASSWORD
+
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    value: 1:190938188627:web:5620f68de5bbea1d882fa6
+
+  - variable: GMAIL_FROM
+    value: joe@gamesales.com
