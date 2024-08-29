@@ -47,12 +47,13 @@ export async function getWeekendServiceCalls(startDate: Date, endDate: Date) {
       } as ServiceCall;
     })
     .filter((serviceCall) => {
-      const serviceCallDateInCentralTime = DateTime.fromJSDate(serviceCall.date, {
-        zone: "UTC",
-      }).setZone("America/Chicago");
-      const dayOfWeek = serviceCallDateInCentralTime.toJSDate().getDay();
+      const serviceCallDateInCentralTime = DateTime.fromJSDate(
+        serviceCall.date,
+        { zone: "UTC" }
+      ).setZone("America/Chicago");
 
-      return dayOfWeek === 0 || dayOfWeek === 6;
+      const dayOfWeek = serviceCallDateInCentralTime.weekday;
+      return dayOfWeek === 6 || dayOfWeek === 7;
     });
   return {
     count: weekendServiceCalls.length,
@@ -93,21 +94,24 @@ export async function getAfterHoursCallsByDayOfWeek(
     const utcDate = data.date.toDate();
 
     // Convert the UTC date to Central Time
-    const localDate = DateTime.fromJSDate(utcDate, { zone: "UTC" }).setZone("America/Chicago");
-  
-    const hourOfDay = localDate.hour; 
-    const dayOfWeek = localDate.weekday; 
-  
-  
-    console.log(`UTC Date: ${utcDate.toISOString()}, Central Time Date: ${localDate.toISO()}, Day of Week: ${dayOfWeek}`);
-  
-   
-    const afterHoursStart = 17; 
-    const afterHoursEnd = 8;   
-  
+    const localDate = DateTime.fromJSDate(utcDate, { zone: "UTC" }).setZone(
+      "America/Chicago"
+    );
+
+    const hourOfDay = localDate.hour;
+    const dayOfWeek = localDate.weekday;
+
+    console.log(
+      `UTC Date: ${utcDate.toISOString()}, Central Time Date: ${localDate.toISO()}, Day of Week: ${dayOfWeek}`
+    );
+
+    const afterHoursStart = 17;
+    const afterHoursEnd = 8;
+
     if (
-      ((hourOfDay >= afterHoursStart || hourOfDay < afterHoursEnd)) &&
-      dayOfWeek >= 1 && dayOfWeek <= 5
+      (hourOfDay >= afterHoursStart || hourOfDay < afterHoursEnd) &&
+      dayOfWeek >= 1 &&
+      dayOfWeek <= 5
     ) {
       if (!callsByDayOfWeek[dayOfWeek]) {
         callsByDayOfWeek[dayOfWeek] = { callCount: 0, serviceCalls: [] };
