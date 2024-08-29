@@ -21,6 +21,7 @@ interface CallsByDay {
 export async function getWeekendServiceCalls(startDate: Date, endDate: Date) {
   const serviceCallsRef = collection(db, "ServiceCalls");
 
+  // Convert startDate and endDate from UTC to Central Time (America/Chicago)
   const startInCentralTime = DateTime.fromJSDate(startDate, {
     zone: "UTC",
   }).setZone("America/Chicago");
@@ -33,14 +34,28 @@ export async function getWeekendServiceCalls(startDate: Date, endDate: Date) {
     where("date", ">=", Timestamp.fromDate(startInCentralTime.toJSDate())),
     where("date", "<=", Timestamp.fromDate(endInCentralTime.toJSDate()))
   );
+
   const querySnapshot = await getDocs(q);
 
   const weekendServiceCalls = querySnapshot.docs
     .map((doc) => {
       const data = doc.data();
+      const serviceCallDateInUTC = data.date.toDate();
+
+    
+      const serviceCallDateInCentralTime = DateTime.fromJSDate(
+        serviceCallDateInUTC,
+        { zone: "UTC" }
+      ).setZone("America/Chicago");
+
+      // Log for debugging
+      console.log(
+        `UTC Date: ${serviceCallDateInUTC.toISOString()}, Central Time Date: ${serviceCallDateInCentralTime.toISO()}`
+      );
+
       return {
         ...data,
-        date: data.date ? data.date.toDate() : null,
+        date: serviceCallDateInCentralTime.toJSDate(), 
         createdAt: data.createdAt ? data.createdAt.toDate() : null,
         updatedAt: data.updatedAt ? data.updatedAt.toDate() : null,
         id: doc.id,
@@ -49,12 +64,18 @@ export async function getWeekendServiceCalls(startDate: Date, endDate: Date) {
     .filter((serviceCall) => {
       const serviceCallDateInCentralTime = DateTime.fromJSDate(
         serviceCall.date,
-        { zone: "UTC" }
-      ).setZone("America/Chicago");
+        { zone: "America/Chicago" }
+      );
+      const dayOfWeek = serviceCallDateInCentralTime.weekday; 
 
-      const dayOfWeek = serviceCallDateInCentralTime.weekday;
+
+      console.log(
+        `Central Time Date: ${serviceCall.date.toISOString()}, Day of Week: ${dayOfWeek}`
+      );
+
       return dayOfWeek === 6 || dayOfWeek === 7;
     });
+
   return {
     count: weekendServiceCalls.length,
     serviceCalls: weekendServiceCalls,
@@ -101,9 +122,9 @@ export async function getAfterHoursCallsByDayOfWeek(
     const hourOfDay = localDate.hour;
     const dayOfWeek = localDate.weekday;
 
-    console.log(
-      `UTC Date: ${utcDate.toISOString()}, Central Time Date: ${localDate.toISO()}, Day of Week: ${dayOfWeek}`
-    );
+    // console.log(
+    //   `UTC Date: ${utcDate.toISOString()}, Central Time Date: ${localDate.toISO()}, Day of Week: ${dayOfWeek}`
+    // );
 
     const afterHoursStart = 17;
     const afterHoursEnd = 8;
