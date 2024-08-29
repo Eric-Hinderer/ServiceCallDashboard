@@ -18,11 +18,19 @@ interface CallsByDay {
 
 export async function getWeekendServiceCalls(startDate: Date, endDate: Date) {
   const serviceCallsRef = collection(db, "ServiceCalls");
+  const toCentralTime = (date: Date) => {
+    const centralTimeOffset = -5; // Central Standard Time is UTC-6
+    const centralDate = new Date(date.getTime() + centralTimeOffset * 60 * 60 * 1000);
+    return centralDate;
+  };
+  const centralStartDate = toCentralTime(startDate);
+  const centralEndDate = toCentralTime(endDate);
+
 
   const q = query(
     serviceCallsRef,
-    where("date", ">=", Timestamp.fromDate(startDate)),
-    where("date", "<=", Timestamp.fromDate(endDate))
+    where("date", ">=", Timestamp.fromDate(centralStartDate)),
+    where("date", "<=", Timestamp.fromDate(centralEndDate))
   );
 
   const querySnapshot = await getDocs(q);
@@ -55,10 +63,18 @@ export async function getAfterHoursCallsByDayOfWeek(
 ): Promise<{ dayOfWeek: number; callCount: number; serviceCalls: any[] }[]> {
   const serviceCallsRef = collection(db, "ServiceCalls");
 
+  const toCentralTime = (date: Date) => {
+    const centralTimeOffset = -5; // Central Standard Time is UTC-6
+    const centralDate = new Date(date.getTime() + centralTimeOffset * 60 * 60 * 1000);
+    return centralDate;
+  };
+  const centralStartDate = toCentralTime(startDate);
+  const centralEndDate = toCentralTime(endDate);
+
   const q = query(
     serviceCallsRef,
-    where("date", ">=", Timestamp.fromDate(startDate)),
-    where("date", "<=", Timestamp.fromDate(endDate))
+    where("date", ">=", Timestamp.fromDate(centralStartDate)),
+    where("date", "<=", Timestamp.fromDate(centralEndDate))
   );
 
   const querySnapshot = await getDocs(q);
