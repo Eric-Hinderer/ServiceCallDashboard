@@ -47,7 +47,11 @@ export async function getWeekendServiceCalls(startDate: Date, endDate: Date) {
       } as ServiceCall;
     })
     .filter((serviceCall) => {
-      const dayOfWeek = serviceCall.date.getDay();
+      const serviceCallDateInCentralTime = DateTime.fromJSDate(serviceCall.date, {
+        zone: "UTC",
+      }).setZone("America/Chicago");
+      const dayOfWeek = serviceCallDateInCentralTime.toJSDate().getDay();
+
       return dayOfWeek === 0 || dayOfWeek === 6;
     });
   return {
@@ -86,21 +90,24 @@ export async function getAfterHoursCallsByDayOfWeek(
   querySnapshot.forEach((doc) => {
     const data = doc.data();
 
-    const localDate = data.date.toDate();
-    console.log("local date" + localDate.getTimezoneOffset());
+    const utcDate = data.date.toDate();
 
-    let hourOfDay = localDate.getUTCHours() - 5;
-    const dayOfWeek = localDate.getDay();
-
-    if (hourOfDay < 0) {
-      hourOfDay += 24;
-    }
-
+    // Convert the UTC date to Central Time
+    const localDate = DateTime.fromJSDate(utcDate, { zone: "UTC" }).setZone("America/Chicago");
+  
+    const hourOfDay = localDate.hour; 
+    const dayOfWeek = localDate.weekday; 
+  
+  
+    console.log(`UTC Date: ${utcDate.toISOString()}, Central Time Date: ${localDate.toISO()}, Day of Week: ${dayOfWeek}`);
+  
+   
+    const afterHoursStart = 17; 
+    const afterHoursEnd = 8;   
+  
     if (
-      ((hourOfDay >= 17 && hourOfDay < 24) ||
-        (hourOfDay >= 0 && hourOfDay <= 8)) &&
-      dayOfWeek >= 1 &&
-      dayOfWeek <= 5
+      ((hourOfDay >= afterHoursStart || hourOfDay < afterHoursEnd)) &&
+      dayOfWeek >= 1 && dayOfWeek <= 5
     ) {
       if (!callsByDayOfWeek[dayOfWeek]) {
         callsByDayOfWeek[dayOfWeek] = { callCount: 0, serviceCalls: [] };
@@ -109,7 +116,7 @@ export async function getAfterHoursCallsByDayOfWeek(
       callsByDayOfWeek[dayOfWeek].serviceCalls.push({
         ...data,
         id: doc.id,
-        date: localDate.toISOString(),
+        date: localDate.toJSDate().toISOString(),
         createdAt: data.createdAt?.toDate().toISOString(),
         updatedAt: data.updatedAt?.toDate().toISOString(),
       });
