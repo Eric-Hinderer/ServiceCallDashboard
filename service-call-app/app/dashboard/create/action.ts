@@ -2,7 +2,7 @@
 import { ServiceCall, Status } from "@/app/(definitions)/definitions";
 import db from "@/lib/firebase";
 import { addDoc, collection, setDoc, Timestamp } from "@firebase/firestore";
-
+import { useRouter } from "next/router";
 
 import { redirect } from "next/navigation";
 
@@ -27,7 +27,7 @@ export async function createFromForm(formData: FormData) {
     notes,
     status,
     updatedAt: new Date(),
-    id: ""
+    id: "",
   };
 
   try {
@@ -39,7 +39,6 @@ export async function createFromForm(formData: FormData) {
     console.error("Error creating service call:", err);
   }
 
-  
   redirect("/dashboard");
 }
 
@@ -54,9 +53,7 @@ export async function emailGroup(formData: FormData) {
   const takenBy = formData.get("takenBy") as string;
   const notes = formData.get("notes") as string;
   const status = (formData.get("status") as Status) || Status.OPEN;
-
-  const baseUrl = "http://localhost:3000";
-
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
   try {
     const res = await fetch(`${baseUrl}/api/sendEmail`, {
       method: "POST",
