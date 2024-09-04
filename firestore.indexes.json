@@ -1,0 +1,10 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "ServiceCalls",
+      "queryScope": "COLLECTION",
+      "fields": []
+    }
+  ],
+  "fieldOverrides": []
+}

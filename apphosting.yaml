@@ -13,6 +13,8 @@ env:
 
   - variable: GMAIL_FROM
     value: joe@gamesales.com
-  
+
   - variable: NEXT_PUBLIC_BASE_URL
     value: https://service.gamesales.com
+  - variable: GEMINI_API_KEY
+    secret: gemini-api-key
