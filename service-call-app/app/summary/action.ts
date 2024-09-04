@@ -10,8 +10,16 @@ export async function getServiceCalls() {
   const serviceCallSnapshot = await getDocs(serviceCallCollection);
 
   const serviceCalls = serviceCallSnapshot.docs.map((doc) => {
-    const { createdAt, updatedAt, date, ...otherFields } = doc.data();
-    return otherFields; 
+    const call = doc.data();
+    return {
+      date: call.date.toDate(),
+      machine: call.machine,
+      reportedProblem: call.reportedProblem,
+      location: call.location,
+      notes: call.notes,
+      status: call.status,
+      takenBy: call.takenBy,
+    };
   });
 
   return serviceCalls;
@@ -24,13 +32,13 @@ export async function generateGeminiSummary(
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-
   const context = serviceCalls
     .map((call) => {
-     
-      return `Machine: ${call.machine || "N/A"}
-      Problem: ${call.reportedProblem || "N/A"}
-      Location: ${call.location || "N/A"}
+      return `Date: ${ call.date|| "N/A"},
+      Day: ${call.date.getDay() || "N/A"},
+      Machine: ${call.machine || "N/A"},
+      Problem: ${call.reportedProblem || "N/A"},
+      Location: ${call.location || "N/A"},
       Notes: ${call.notes || "N/A"},
       Status: ${call.status || "N/A"},
       Taken By: ${call.takenBy || "N/A"}`;
@@ -42,8 +50,6 @@ export async function generateGeminiSummary(
     ${context}
 
     Respond to the user's question: "${question}"
-
-    Respond in a concise and informative manner.
   `;
 
   const result = await model.generateContent(prompt);
