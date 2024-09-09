@@ -8,10 +8,11 @@ import { subDays } from "date-fns";
 import {
   getWeekendServiceCalls,
   getAfterHoursCallsByDayOfWeek,
+  getCallsPerLocation,
 } from "./action";
 import Link from "next/link";
 import { dayNames, ServiceCall } from "../(definitions)/definitions";
-
+import Chart from "chart.js/auto";
 
 interface DayData {
   dayOfWeek: number;
@@ -35,6 +36,13 @@ export default function AnalyticsPage() {
   const [afterHoursCallsByDayOfWeek, setAfterHoursCallsByDayOfWeek] =
     React.useState<DayData[]>([]);
 
+  const [callsPerLocation, setCallsPerLocation] = React.useState<{
+    [key: string]: number;
+  }>({});
+
+  const chartRef = React.useRef<HTMLCanvasElement | null>(null);
+  const chartInstance = React.useRef<Chart | null>(null);
+
   React.useEffect(() => {
     async function fetchData() {
       if (!startDate || !endDate) return;
@@ -48,6 +56,9 @@ export default function AnalyticsPage() {
           endDate
         );
         setAfterHoursCallsByDayOfWeek(afterHoursCalls);
+
+        const temp = await getCallsPerLocation(startDate, endDate);
+        setCallsPerLocation(temp);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -55,6 +66,41 @@ export default function AnalyticsPage() {
 
     fetchData();
   }, [startDate, endDate]);
+
+  React.useEffect(() => {
+    if (!chartRef.current) return;
+
+    if (chartInstance.current) {
+      chartInstance.current.destroy();
+    }
+
+    chartInstance.current = new Chart(chartRef.current, {
+      type: "bar",
+      data: {
+        labels: Object.keys(callsPerLocation),
+        datasets: [
+          {
+            label: "Calls per Location",
+            data: Object.values(callsPerLocation),
+            backgroundColor: "#3B82F6",
+          },
+        ],
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true,
+          },
+        },
+      },
+    });
+
+    return () => {
+      if (chartInstance.current) {
+        chartInstance.current.destroy();
+      }
+    };
+  }, [callsPerLocation]);
 
   const totalAfterHoursCalls = afterHoursCallsByDayOfWeek.reduce(
     (total, dayData) => total + dayData.callCount,
@@ -124,6 +170,23 @@ export default function AnalyticsPage() {
                   {weekendData!.count}
                 </p>
               </Link>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="w-full">
+          <CardContent className="flex items-center justify-center">
+            <div className="text-center">
+              <h2 className="text-3xl font-bold">Calls per Location</h2>
+              <div className="mt-4">
+                <canvas
+                  id="callsPerLocation"
+                  ref={chartRef}
+                  width={800} 
+                  height={400}
+                  style={{ maxWidth: "100%", maxHeight: "500px" }} 
+                />
+              </div>
             </div>
           </CardContent>
         </Card>

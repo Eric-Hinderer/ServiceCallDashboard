@@ -48,10 +48,7 @@ export async function getWeekendServiceCalls(startDate: Date, endDate: Date) {
         { zone: "UTC" }
       ).setZone("America/Chicago");
 
-      // Log for debugging
-      console.log(
-        `UTC Date: ${serviceCallDateInUTC.toISOString()}, Central Time Date: ${serviceCallDateInCentralTime.toISO()}`
-      );
+
 
       return {
         ...data,
@@ -69,9 +66,6 @@ export async function getWeekendServiceCalls(startDate: Date, endDate: Date) {
       const dayOfWeek = serviceCallDateInCentralTime.weekday; 
 
 
-      console.log(
-        `Central Time Date: ${serviceCall.date.toISOString()}, Day of Week: ${dayOfWeek}`
-      );
 
       return dayOfWeek === 6 || dayOfWeek === 7;
     });
@@ -104,7 +98,7 @@ export async function getAfterHoursCallsByDayOfWeek(
   const querySnapshot = await getDocs(q);
   querySnapshot.forEach((doc) => {
     const date: Date = doc.data().date.toDate();
-    console.log(date.getTimezoneOffset());
+
   });
 
   const callsByDayOfWeek: { [key: string]: CallsByDay } = {};
@@ -122,9 +116,7 @@ export async function getAfterHoursCallsByDayOfWeek(
     const hourOfDay = localDate.hour;
     const dayOfWeek = localDate.weekday;
 
-    // console.log(
-    //   `UTC Date: ${utcDate.toISOString()}, Central Time Date: ${localDate.toISO()}, Day of Week: ${dayOfWeek}`
-    // );
+
 
     const afterHoursStart = 17;
     const afterHoursEnd = 8;
@@ -157,4 +149,36 @@ export async function getAfterHoursCallsByDayOfWeek(
     .sort((a, b) => a.dayOfWeek - b.dayOfWeek);
 
   return result;
+}
+
+export async function getCallsPerLocation(startDate: Date, endDate: Date){
+  const startInCentralTime = DateTime.fromJSDate(startDate, {
+    zone: "UTC",
+  }).setZone("America/Chicago");
+  const endInCentralTime = DateTime.fromJSDate(endDate, {
+    zone: "UTC",
+  }).setZone("America/Chicago");
+
+  const serviceCallsRef = collection(db, "ServiceCalls");
+  const q = query(
+    serviceCallsRef,
+    where("date", ">=", Timestamp.fromDate(startInCentralTime.toJSDate())),
+    where("date", "<=", Timestamp.fromDate(endInCentralTime.toJSDate()))
+  );
+
+  const querySnapshot = await getDocs(q);
+
+  const callsPerLocation: { [key: string]: number } = {};
+  querySnapshot.forEach((doc) => {
+    const data = doc.data();
+    const location = data.location;
+
+    if (!callsPerLocation[location]) {
+      callsPerLocation[location] = 0;
+    }
+    callsPerLocation[location] += 1;
+  });
+
+  return callsPerLocation;
+
 }

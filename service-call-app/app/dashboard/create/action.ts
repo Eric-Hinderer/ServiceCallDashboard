@@ -34,7 +34,7 @@ export async function createFromForm(formData: FormData) {
     const docRef = await addDoc(collection(db, "ServiceCalls"), newServiceCall);
 
     await setDoc(docRef, { id: docRef.id }, { merge: true });
-    console.log("Document written with ID: ", docRef.id);
+
   } catch (err) {
     console.error("Error creating service call:", err);
   }
@@ -73,7 +73,6 @@ export async function emailGroup(formData: FormData) {
     });
 
     if (res.ok) {
-      console.log("Email sent successfully");
     } else {
       console.error("Failed to send email");
     }
