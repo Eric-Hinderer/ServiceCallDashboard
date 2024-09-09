@@ -9,6 +9,7 @@ import {
   getWeekendServiceCalls,
   getAfterHoursCallsByDayOfWeek,
   getCallsPerLocation,
+  getCallsPerTakenBy,
 } from "./action";
 import Link from "next/link";
 import { dayNames, ServiceCall } from "../(definitions)/definitions";
@@ -40,8 +41,15 @@ export default function AnalyticsPage() {
     [key: string]: number;
   }>({});
 
+  const [callsPerTakenBy, setCallsPerTakenBy] = React.useState<{
+    [key: string]: number;
+  }>({});
+
   const chartRef = React.useRef<HTMLCanvasElement | null>(null);
   const chartInstance = React.useRef<Chart | null>(null);
+
+  const chartPerTakenByRef = React.useRef<HTMLCanvasElement | null>(null);
+  const chartPerTakenByInstance = React.useRef<Chart | null>(null);
 
   React.useEffect(() => {
     async function fetchData() {
@@ -59,6 +67,9 @@ export default function AnalyticsPage() {
 
         const temp = await getCallsPerLocation(startDate, endDate);
         setCallsPerLocation(temp);
+
+        const tempTakenBy = await getCallsPerTakenBy(startDate, endDate);
+        setCallsPerTakenBy(tempTakenBy);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -88,6 +99,16 @@ export default function AnalyticsPage() {
       },
       options: {
         scales: {
+          x: {
+            ticks: {
+              autoSkip: false,
+              maxRotation: 90,
+              minRotation: 90,
+              font: {
+                size: 10,
+              },
+            },
+          },
           y: {
             beginAtZero: true,
           },
@@ -101,6 +122,51 @@ export default function AnalyticsPage() {
       }
     };
   }, [callsPerLocation]);
+
+  React.useEffect(() => {
+    if (!chartPerTakenByRef.current) return;
+
+    if (chartPerTakenByInstance.current) {
+      chartPerTakenByInstance.current.destroy();
+    }
+
+    chartPerTakenByInstance.current = new Chart(chartPerTakenByRef.current, {
+      type: "bar",
+      data: {
+        labels: Object.keys(callsPerTakenBy),
+        datasets: [
+          {
+            label: "Calls per Person",
+            data: Object.values(callsPerTakenBy),
+            backgroundColor: "#3B82F6",
+          },
+        ],
+      },
+      options: {
+        scales: {
+          x: {
+            ticks: {
+              autoSkip: false,
+              maxRotation: 90,
+              minRotation: 90,
+              font: {
+                size: 10,
+              },
+            },
+          },
+          y: {
+            beginAtZero: true,
+          },
+        },
+      },
+    });
+
+    return () => {
+      if (chartPerTakenByInstance.current) {
+        chartPerTakenByInstance.current.destroy();
+      }
+    };
+  }, [callsPerTakenBy]);
 
   const totalAfterHoursCalls = afterHoursCallsByDayOfWeek.reduce(
     (total, dayData) => total + dayData.callCount,
@@ -180,11 +246,26 @@ export default function AnalyticsPage() {
               <h2 className="text-3xl font-bold">Calls per Location</h2>
               <div className="mt-4">
                 <canvas
-                  id="callsPerLocation"
                   ref={chartRef}
-                  width={800} 
+                  width={800}
                   height={400}
-                  style={{ maxWidth: "100%", maxHeight: "500px" }} 
+                  style={{ maxWidth: "100%", maxHeight: "500px" }}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="w-full">
+          <CardContent className="flex items-center justify-center">
+            <div className="text-center">
+              <h2 className="text-3xl font-bold">Calls per Taken By</h2>
+              <div className="mt-4">
+                <canvas
+                  ref={chartPerTakenByRef}
+                  width={800}
+                  height={400}
+                  style={{ maxWidth: "100%", maxHeight: "500px" }}
                 />
               </div>
             </div>
