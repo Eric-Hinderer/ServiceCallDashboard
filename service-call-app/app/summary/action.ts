@@ -1,11 +1,11 @@
 "use server";
 
-import app from "@/lib/firebaseConfig";
+import db from "@/lib/firebase";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { collection, getDocs, getFirestore } from "firebase/firestore";
 
 export async function getServiceCalls() {
-  const db = getFirestore(app);
+
   const serviceCallCollection = collection(db, "ServiceCalls");
   const serviceCallSnapshot = await getDocs(serviceCallCollection);
 
