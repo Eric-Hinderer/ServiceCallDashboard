@@ -2,7 +2,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { doc, getDoc, updateDoc } from "@firebase/firestore";
+import { doc, getDoc, Timestamp, updateDoc } from "@firebase/firestore";
 import db from "@/lib/firebase";
 import { redirect } from "next/navigation";
 import { getData } from "./action";
@@ -19,8 +19,7 @@ export default async function ServiceEditPage({
     "use server";
     const docRef = doc(db, "ServiceCalls", key);
 
-    const test = await getDoc(docRef);
-    const test1 = await updateDoc(docRef, {
+    await updateDoc(docRef, {
       location: formData.get("location"),
       whoCalled: formData.get("whoCalled"),
       machine: formData.get("machine"),
@@ -28,6 +27,7 @@ export default async function ServiceEditPage({
       takenBy: formData.get("takenBy"),
       status: formData.get("status"),
       notes: formData.get("notes"),
+      updatedAt: Timestamp.now(),
     });
 
     redirect("/dashboard");
@@ -152,6 +152,7 @@ export default async function ServiceEditPage({
             id="notes"
             name="notes"
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            defaultValue={data?.notes ?? ""}
           />
         </div>
         <Button
