@@ -11,6 +11,9 @@ env:
   - variable: NEXT_PUBLIC_FIREBASE_APP_ID
     value: 1:190938188627:web:5620f68de5bbea1d882fa6
 
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    value: service-call-manager-e7ca2.firebaseapp.com
+
   - variable: GMAIL_FROM
     value: joe@gamesales.com
 
