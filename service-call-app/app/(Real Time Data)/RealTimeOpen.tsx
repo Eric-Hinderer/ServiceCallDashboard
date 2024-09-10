@@ -6,13 +6,23 @@ import TakenBy from "../dashboard/[id]/TakenBy";
 import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
 import { ServiceCall } from "../(definitions)/definitions";
 import db from "@/lib/firebase";
-
+import { User } from "firebase/auth";
+import { onAuthStateChanged, signInWithGoogle } from "@/lib/auth";
+import { Button } from "@/components/ui/button";
 
 const RealTimeOpenInProgress = () => {
   const [serviceCalls, setServiceCalls] = useState<ServiceCall[]>([]);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   useEffect(() => {
+    const unsubscribe = onAuthStateChanged((user: User) => {
+      setCurrentUser(user);
+    });
 
+    return () => unsubscribe(); // Clean up the subscription on component unmount
+  }, []);
+
+  useEffect(() => {
     const q = query(collection(db, "ServiceCalls"), orderBy("date", "desc"));
 
     const unsubscribe = onSnapshot(
@@ -21,7 +31,7 @@ const RealTimeOpenInProgress = () => {
         const updatedServiceCalls = snapshot.docs.map((doc) => {
           const data = doc.data();
           return {
-            id: doc.id, 
+            id: doc.id,
             ...data,
             date: data.date ? data.date.toDate() : null,
             updatedAt: data.updatedAt ? data.updatedAt.toDate() : null,
@@ -29,7 +39,7 @@ const RealTimeOpenInProgress = () => {
           } as ServiceCall;
         });
 
-        setServiceCalls(updatedServiceCalls); 
+        setServiceCalls(updatedServiceCalls);
       },
       (error) => {
         console.error("Error fetching Firestore data: ", error);
@@ -38,7 +48,21 @@ const RealTimeOpenInProgress = () => {
 
     return () => unsubscribe();
   }, []);
-
+  if (!currentUser) {
+    return (
+      <div className="flex flex-col items-center justify-center mt-12 space-y-6">
+        <p className="text-xl text-gray-700 text-center">
+          Please sign in to start managing your service calls.
+        </p>
+        <Button
+          onClick={signInWithGoogle}
+          className="bg-yellow-600 hover:bg-yellow-500 text-white font-semibold py-3 px-8 rounded-md shadow-lg transition-transform transform hover:scale-105"
+        >
+          Sign In with Google
+        </Button>
+      </div>
+    );
+  }
 
   const filteredServiceCalls = serviceCalls.filter(
     (serviceCall) =>
@@ -47,6 +71,9 @@ const RealTimeOpenInProgress = () => {
 
   return (
     <div className="p-4 md:p-8">
+      <Button asChild className="mt-4">
+        <Link href="/dashboard/create">Create a New Service Call</Link>
+      </Button>
       <h2 className="text-xl font-semibold mb-6 text-center">
         Current Service Calls (Open/In Progress)
       </h2>
@@ -95,12 +122,12 @@ const RealTimeOpenInProgress = () => {
                 className="hover:bg-gray-50 border-t border-gray-200"
               >
                 <td className="py-2 px-4 text-sm text-gray-700">
-                  {serviceCall.date
-                    ? serviceCall.date.toLocaleString()
-                    : "N/A"}
+                  {serviceCall.date ? serviceCall.date.toLocaleString() : "N/A"}
                 </td>
                 <td className="py-2 px-4 text-sm text-gray-700">
-                  {serviceCall.updatedAt ? serviceCall.updatedAt.toLocaleString() : "N/A"}
+                  {serviceCall.updatedAt
+                    ? serviceCall.updatedAt.toLocaleString()
+                    : "N/A"}
                 </td>
                 <td className="py-2 px-4 text-sm text-gray-700">
                   {serviceCall.location || "N/A"}

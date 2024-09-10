@@ -18,9 +18,6 @@ export default async function Home() {
           Here you can track and manage ongoing service calls. Check below for
           service calls that are currently in progress or open.
         </p>
-        <Button asChild className="mt-4">
-          <Link href="/dashboard/create">Create a New Service Call</Link>
-        </Button>
       </section>
 
       {/* Service Calls Table */}

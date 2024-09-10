@@ -1,10 +1,6 @@
-import {getFirestore} from 'firebase/firestore';
+import { getFirestore } from "firebase/firestore";
+import { firebaseApp } from "./firebaseConfig";
 
-import { FirebaseApp } from 'firebase/app';
-import app from './firebaseConfig';
-
-
-const db = getFirestore(app);
+const db = getFirestore(firebaseApp);
 
 export default db;
-
