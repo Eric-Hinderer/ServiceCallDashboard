@@ -10,6 +10,7 @@ export interface ServiceCall {
   status: string;
   updatedAt: Date;
   createdAt?: Date;
+  overDue?: boolean;
 }
 
 export const dayNames: { [key: number]: string } = {
