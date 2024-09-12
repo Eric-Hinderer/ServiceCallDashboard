@@ -153,9 +153,9 @@ const RealTimeOpenInProgress = () => {
             {filteredServiceCalls.map((serviceCall) => (
               <tr
                 key={serviceCall.id}
-                className={`border-t border-gray-200 ${
+                className={`border border-gray-200 ${
                   serviceCall.overDue
-                    ? "bg-red-100 hover:bg-red-200 transition-colors duration-300 ease-in-out" // Lighter red by default, darker red on hover, smooth transition
+                    ? "bg-red-50 border-2 hover:bg-red-200 transition-colors duration-300 ease-in-out" // Lighter red by default, darker red on hover, smooth transition
                     : "hover:bg-gray-50 transition-colors duration-300 ease-in-out" // Smooth gray hover for non-overdue rows
                 }`}
               >
