@@ -45,9 +45,9 @@ const RealTimeOpenInProgress = () => {
         console.error("Error fetching Firestore data: ", error);
       }
     );
-
     return () => unsubscribe();
   }, []);
+
   if (!currentUser) {
     return (
       <div className="flex flex-col items-center justify-center mt-12 space-y-6">
@@ -69,6 +69,16 @@ const RealTimeOpenInProgress = () => {
       serviceCall.status === "OPEN" || serviceCall.status === "IN_PROGRESS"
   );
 
+  const openCalls = filteredServiceCalls.filter(
+    (serviceCall) => serviceCall.status === "OPEN"
+  );
+  const unAssignedCalls = filteredServiceCalls.filter(
+    (serviceCall) => serviceCall.takenBy === "Select..."
+  );
+  const overDueCalls = filteredServiceCalls.filter(
+    (serviceCall) => serviceCall.overDue
+  );
+
   return (
     <div className="p-4 md:p-8">
       <Button asChild className="mt-4">
@@ -77,6 +87,44 @@ const RealTimeOpenInProgress = () => {
       <h2 className="text-xl font-semibold mb-6 text-center">
         Current Service Calls (Open/In Progress)
       </h2>
+
+      <div className="flex space-x-4">
+        <div className="bg-green-100 p-4 rounded-lg shadow-md w-1/3">
+          <h3 className="text-lg font-semibold text-green-800">Open Calls</h3>
+          <div className="flex items-center space-x-2">
+            <span className="text-gray-600">Total:</span>
+            <span className="text-gray-800 font-semibold">
+              {openCalls.length}
+            </span>
+          </div>
+        </div>
+
+        <div className="bg-yellow-100 p-4 rounded-lg shadow-md w-1/3">
+          <h3 className="text-lg font-semibold text-yellow-800">
+            Unassigned Calls
+          </h3>
+          <div className="flex items-center space-x-2">
+            <span className="text-gray-600">Total:</span>
+            <span className="text-gray-800 font-semibold">
+              {unAssignedCalls.length}
+            </span>
+          </div>
+        </div>
+
+        <Link
+          className="bg-red-100 p-4 rounded-lg shadow-md hover:bg-red-200 transition duration-200 cursor-pointer w-1/3"
+          href="/overdue-calls"
+          passHref
+        >
+          <h3 className="text-lg font-semibold text-red-800">Overdue Calls</h3>
+          <div className="flex items-center space-x-2">
+            <span className="text-gray-600">Total:</span>
+            <span className="text-gray-800 font-semibold">
+              {overDueCalls.length}
+            </span>
+          </div>
+        </Link>
+      </div>
 
       {/* Table Layout for Desktop */}
       <div className="hidden md:block mx-auto max-w-6xl">
