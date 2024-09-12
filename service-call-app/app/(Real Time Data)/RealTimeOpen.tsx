@@ -88,8 +88,8 @@ const RealTimeOpenInProgress = () => {
         Current Service Calls (Open/In Progress)
       </h2>
 
-      <div className="flex space-x-4">
-        <div className="bg-green-100 p-4 rounded-lg shadow-md w-1/3">
+      <div className="flex flex-col md:flex-row md:space-x-4 space-y-4 md:space-y-0">
+        <div className="bg-green-100 p-4 rounded-lg shadow-md w-full md:w-1/2">
           <h3 className="text-lg font-semibold text-green-800">Open Calls</h3>
           <div className="flex items-center space-x-2">
             <span className="text-gray-600">Total:</span>
@@ -99,7 +99,7 @@ const RealTimeOpenInProgress = () => {
           </div>
         </div>
 
-        <div className="bg-yellow-100 p-4 rounded-lg shadow-md w-1/3">
+        <div className="bg-yellow-100 p-4 rounded-lg shadow-md w-full md:w-1/2">
           <h3 className="text-lg font-semibold text-yellow-800">
             Unassigned Calls
           </h3>
@@ -110,20 +110,6 @@ const RealTimeOpenInProgress = () => {
             </span>
           </div>
         </div>
-
-        <Link
-          className="bg-red-100 p-4 rounded-lg shadow-md hover:bg-red-200 transition duration-200 cursor-pointer w-1/3"
-          href="/overdue-calls"
-          passHref
-        >
-          <h3 className="text-lg font-semibold text-red-800">Overdue Calls</h3>
-          <div className="flex items-center space-x-2">
-            <span className="text-gray-600">Total:</span>
-            <span className="text-gray-800 font-semibold">
-              {overDueCalls.length}
-            </span>
-          </div>
-        </Link>
       </div>
 
       {/* Table Layout for Desktop */}
@@ -133,9 +119,6 @@ const RealTimeOpenInProgress = () => {
             <tr>
               <th className="py-2 px-4 text-left text-sm font-semibold text-gray-600">
                 Date
-              </th>
-              <th className="py-2 px-4 text-left text-sm font-semibold text-gray-600">
-                Updated At
               </th>
               <th className="py-2 px-4 text-left text-sm font-semibold text-gray-600">
                 Location
@@ -159,6 +142,9 @@ const RealTimeOpenInProgress = () => {
                 Notes
               </th>
               <th className="py-2 px-4 text-left text-sm font-semibold text-gray-600">
+                Updated At
+              </th>
+              <th className="py-2 px-4 text-left text-sm font-semibold text-gray-600">
                 Actions
               </th>
             </tr>
@@ -167,15 +153,14 @@ const RealTimeOpenInProgress = () => {
             {filteredServiceCalls.map((serviceCall) => (
               <tr
                 key={serviceCall.id}
-                className="hover:bg-gray-50 border-t border-gray-200"
+                className={`border-t border-gray-200 ${
+                  serviceCall.overDue
+                    ? "bg-red-100 hover:bg-red-200 transition-colors duration-300 ease-in-out" // Lighter red by default, darker red on hover, smooth transition
+                    : "hover:bg-gray-50 transition-colors duration-300 ease-in-out" // Smooth gray hover for non-overdue rows
+                }`}
               >
                 <td className="py-2 px-4 text-sm text-gray-700">
                   {serviceCall.date ? serviceCall.date.toLocaleString() : "N/A"}
-                </td>
-                <td className="py-2 px-4 text-sm text-gray-700">
-                  {serviceCall.updatedAt
-                    ? serviceCall.updatedAt.toLocaleString()
-                    : "N/A"}
                 </td>
                 <td className="py-2 px-4 text-sm text-gray-700">
                   {serviceCall.location || "N/A"}
@@ -201,7 +186,7 @@ const RealTimeOpenInProgress = () => {
                   )}
                 </td>
                 <td
-                  className="py-2 px-4 text-sm text-gray-700 "
+                  className="py-2 px-4 text-sm text-gray-700"
                   style={{ width: "125px" }}
                 >
                   <TakenBy
@@ -211,6 +196,11 @@ const RealTimeOpenInProgress = () => {
                 </td>
                 <td className="py-2 px-4 text-sm text-gray-700 break-words">
                   {serviceCall.notes || "N/A"}
+                </td>
+                <td className="py-2 px-4 text-sm text-gray-700">
+                  {serviceCall.updatedAt
+                    ? serviceCall.updatedAt.toLocaleString()
+                    : "N/A"}
                 </td>
                 <td className="py-2 px-4 text-sm text-gray-700">
                   <Link href={`/dashboard/${serviceCall.id}/edit`} passHref>
@@ -230,7 +220,11 @@ const RealTimeOpenInProgress = () => {
         {filteredServiceCalls.map((serviceCall) => (
           <div
             key={serviceCall.id}
-            className="border border-gray-200 rounded-lg shadow-md p-6 bg-white"
+            className={`border border-gray-200 rounded-lg shadow-md p-6 ${
+              serviceCall.overDue
+                ? "bg-red-100 hover:bg-red-200 transition-colors duration-300 ease-in-out" // Light red by default, darker red on hover
+                : "bg-white hover:bg-gray-50 transition-colors duration-300 ease-in-out" // Default white, gray on hover
+            }`}
           >
             <div className="flex justify-between items-center mb-2">
               <h3 className="text-lg font-semibold">
