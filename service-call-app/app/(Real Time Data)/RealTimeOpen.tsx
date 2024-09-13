@@ -74,9 +74,7 @@ const RealTimeOpenInProgress = () => {
   const unAssignedCalls = filteredServiceCalls.filter(
     (serviceCall) => serviceCall.takenBy === "Select..."
   );
-  const overDueCalls = filteredServiceCalls.filter(
-    (serviceCall) => serviceCall.overDue
-  );
+
 
   return (
     <div className="p-4 md:p-8">

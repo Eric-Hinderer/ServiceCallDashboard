@@ -5,18 +5,10 @@ import { createFromForm, emailGroup } from "@/app/dashboard/create/action";
 import { useState, useTransition } from "react";
 import { useFormStatus } from "react-dom";
 
-export function SubmitFormButton() {
-  const [isPending, startTransition] = useTransition();
+export function SubmitFormButtonEmail() {
+
   const { pending } = useFormStatus();
 
-  const handleSubmit = async (e: any) => {
-    e.preventDefault();
-    const formData = new FormData(e.target.form);
-
-    startTransition(() => {
-      createFromForm(formData); // Calling your server function
-    });
-  };
 
   return (
     <button
@@ -30,18 +22,11 @@ export function SubmitFormButton() {
   );
 }
 
-export function SubmitFormButtonEmail() {
-  const [isPending, startTransition] = useTransition();
+export function SubmitFormButton() {
+
   const { pending } = useFormStatus();
 
-  const handleSubmit = async (e: any) => {
-    e.preventDefault();
-    const formData = new FormData(e.target.form);
 
-    startTransition(() => {
-      emailGroup(formData);
-    });
-  };
 
   return (
     <button
