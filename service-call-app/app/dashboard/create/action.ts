@@ -5,6 +5,7 @@ import { addDoc, collection, setDoc, Timestamp } from "@firebase/firestore";
 import { useRouter } from "next/router";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 export async function createFromForm(formData: FormData) {
   const dateString = formData.get("date") as string;
@@ -38,8 +39,7 @@ export async function createFromForm(formData: FormData) {
   } catch (err) {
     console.error("Error creating service call:", err);
   }
-
-  redirect("/dashboard");
+  revalidatePath("/");
 }
 
 export async function emailGroup(formData: FormData) {

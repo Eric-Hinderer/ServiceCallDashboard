@@ -9,6 +9,7 @@ import db from "@/lib/firebase";
 import { User } from "firebase/auth";
 import { onAuthStateChanged, signInWithGoogle } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
+import ServiceCallModalButton from "@/components/ServiceCallModalButton";
 
 const RealTimeOpenInProgress = () => {
   const [serviceCalls, setServiceCalls] = useState<ServiceCall[]>([]);
@@ -79,9 +80,7 @@ const RealTimeOpenInProgress = () => {
 
   return (
     <div className="p-4 md:p-8">
-      <Button asChild className="mt-4">
-        <Link href="/dashboard/create">Create a New Service Call</Link>
-      </Button>
+      <ServiceCallModalButton />
       <h2 className="text-xl font-semibold mb-6 text-center">
         Current Service Calls (Open/In Progress)
       </h2>
