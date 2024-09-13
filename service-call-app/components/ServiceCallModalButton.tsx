@@ -10,7 +10,7 @@ export default function ServiceCallModalButton() {
         <DialogTrigger asChild>
           <Button className="m-4">Create a New Service Call</Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-xl">
+        <DialogContent className="max-h-[90vh] overflow-y-auto p-6 sm:max-w-xl w-full">
           <DialogHeader>
             <DialogTitle>Create Service Call</DialogTitle>
             <DialogDescription>Fill out the details to create a new service call.</DialogDescription>

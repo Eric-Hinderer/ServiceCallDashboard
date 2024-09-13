@@ -83,7 +83,7 @@ const RealTimeOpenInProgress = () => {
         Current Service Calls (Open/In Progress)
       </h2>
 
-      <div className="flex flex-col md:flex-row md:space-x-4 space-y-4 md:space-y-0">
+      <div className="hidden md:flex flex-col md:flex-row md:space-x-4 space-y-4 md:space-y-0 ">
         <div className="bg-green-100 p-4 rounded-lg shadow-md w-full md:w-1/2">
           <h3 className="text-lg font-semibold text-green-800">Open / In Progress</h3>
           <div className="flex items-center space-x-2">
