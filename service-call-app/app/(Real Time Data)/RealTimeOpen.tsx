@@ -69,9 +69,7 @@ const RealTimeOpenInProgress = () => {
       serviceCall.status === "OPEN" || serviceCall.status === "IN_PROGRESS"
   );
 
-  const openCalls = filteredServiceCalls.filter(
-    (serviceCall) => serviceCall.status === "OPEN"
-  );
+  const openCalls = filteredServiceCalls.length;
   const unAssignedCalls = filteredServiceCalls.filter(
     (serviceCall) => serviceCall.takenBy === "Select..."
   );
@@ -90,18 +88,18 @@ const RealTimeOpenInProgress = () => {
 
       <div className="flex flex-col md:flex-row md:space-x-4 space-y-4 md:space-y-0">
         <div className="bg-green-100 p-4 rounded-lg shadow-md w-full md:w-1/2">
-          <h3 className="text-lg font-semibold text-green-800">Open Calls</h3>
+          <h3 className="text-lg font-semibold text-green-800">Open / In Progress</h3>
           <div className="flex items-center space-x-2">
             <span className="text-gray-600">Total:</span>
             <span className="text-gray-800 font-semibold">
-              {openCalls.length}
+              {openCalls}
             </span>
           </div>
         </div>
 
         <div className="bg-yellow-100 p-4 rounded-lg shadow-md w-full md:w-1/2">
           <h3 className="text-lg font-semibold text-yellow-800">
-            Unassigned Calls
+            Unassigned
           </h3>
           <div className="flex items-center space-x-2">
             <span className="text-gray-600">Total:</span>
