@@ -28,6 +28,8 @@ import { DataTablePagination } from "@/components/PaginationTable";
 import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
 import db from "@/lib/firebase";
 import { ServiceCall } from "../(definitions)/definitions";
+import * as XLSX from "xlsx";
+import { Button } from "@/components/ui/button";
 
 interface DataTableProps {
   columns: ColumnDef<ServiceCall, any>[];
@@ -57,6 +59,27 @@ export function DataTable({ columns }: DataTableProps) {
     return () => unsubscribe();
   }, []);
 
+  const handleClick = async () => {
+    const renderedData = table.getRowModel().rows.map((row) => row.original);
+
+    const data = renderedData.map((serviceCall) => ({
+      Date: serviceCall.date?.toLocaleDateString(),
+      Location: serviceCall.location,
+      "Who Called": serviceCall.whoCalled,
+      Machine: serviceCall.machine,
+      "Reported Problem": serviceCall.reportedProblem,
+      "Taken By": serviceCall.takenBy,
+      Notes: serviceCall.notes,
+      Status: serviceCall.status,
+    }));
+    const ws = XLSX.utils.json_to_sheet(data);
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Rendered Data");
+
+    XLSX.writeFile(wb, "service-calls.xlsx");
+  };
+
   const table = useReactTable({
     data: serviceCalls,
     columns,
@@ -74,6 +97,7 @@ export function DataTable({ columns }: DataTableProps) {
 
   return (
     <div>
+      <Button onClick={handleClick}>Export to Excel</Button>
       <div className="flex py-4 items-center justify-center ">
         <div className="relative max-w-sm mr-4">
           <Input
