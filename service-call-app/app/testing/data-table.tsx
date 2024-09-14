@@ -59,7 +59,7 @@ export function DataTable({ columns }: DataTableProps) {
     return () => unsubscribe();
   }, []);
 
-  const handleClick = async () => {
+  const handleClickCurrent = async () => {
     const renderedData = table.getRowModel().rows.map((row) => row.original);
 
     const data = renderedData.map((serviceCall) => ({
@@ -78,6 +78,26 @@ export function DataTable({ columns }: DataTableProps) {
     XLSX.utils.book_append_sheet(wb, ws, "Rendered Data");
 
     XLSX.writeFile(wb, "service-calls.xlsx");
+  };
+
+  const handleClickAll = async () => {
+    const data = serviceCalls.map((serviceCall) => ({
+      Date: serviceCall.date?.toLocaleDateString(),
+      Location: serviceCall.location,
+      "Who Called": serviceCall.whoCalled,
+      Machine: serviceCall.machine,
+      "Reported Problem": serviceCall.reportedProblem,
+      "Taken By": serviceCall.takenBy,
+      Notes: serviceCall.notes,
+      Status: serviceCall.status,
+    }));
+    const ws = XLSX.utils.json_to_sheet(data);
+
+    const wb = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(wb, ws, "All Data");
+
+    XLSX.writeFile(wb, "service-calls-all.xlsx");
   };
 
   const table = useReactTable({
@@ -166,7 +186,10 @@ export function DataTable({ columns }: DataTableProps) {
             className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-400"
           />
         </div>
-        <Button onClick={handleClick}>Export to Excel</Button>
+        <Button onClick={handleClickCurrent} className="mr-4">
+          Export Current Table to Excel
+        </Button>
+        <Button onClick={handleClickAll}>Export All to Excel</Button>
       </div>
       <div className="rounded-md border">
         <Table>
