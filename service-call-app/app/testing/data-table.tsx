@@ -97,7 +97,6 @@ export function DataTable({ columns }: DataTableProps) {
 
   return (
     <div>
-      <Button onClick={handleClick}>Export to Excel</Button>
       <div className="flex py-4 items-center justify-center ">
         <div className="relative max-w-sm mr-4">
           <Input
@@ -167,6 +166,7 @@ export function DataTable({ columns }: DataTableProps) {
             className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-400"
           />
         </div>
+        <Button onClick={handleClick}>Export to Excel</Button>
       </div>
       <div className="rounded-md border">
         <Table>
