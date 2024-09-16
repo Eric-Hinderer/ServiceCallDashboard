@@ -18,12 +18,10 @@ export default async function ServiceEditPage({
   async function editServiceCall(formData: FormData) {
     "use server";
     const docRef = doc(db, "ServiceCalls", key);
-    const dateString = formData.get("date") as string;
-    const tempDate = dateString ? new Date(dateString) : new Date();
-    const date = Timestamp.fromDate(tempDate);
+    const dateString = formData.get("date") as string | null;
+    const date = dateString ? new Date(dateString) : null;
 
-    await updateDoc(docRef, {
-      date: date,
+    const updateData: any = {
       location: formData.get("location"),
       whoCalled: formData.get("whoCalled"),
       machine: formData.get("machine"),
@@ -32,7 +30,13 @@ export default async function ServiceEditPage({
       status: formData.get("status"),
       notes: formData.get("notes"),
       updatedAt: Timestamp.now(),
-    });
+    };
+
+    if (date) {
+      updateData.date = date;
+    }
+
+    await updateDoc(docRef, updateData);
 
     redirect("/dashboard");
   }
