@@ -45,6 +45,12 @@ export default function TakenBy({ id, currentTakenBy }: { id: string; currentTak
             {name}
           </SelectItem>
         ))}
+        {/* Add the current 'takenBy' value if it's not part of the predefinedNames */}
+        {!predefinedNames.includes(takenBy) && (
+          <SelectItem key={takenBy} value={takenBy}>
+            {takenBy}
+          </SelectItem>
+        )}
       </SelectContent>
     </Select>
   );
