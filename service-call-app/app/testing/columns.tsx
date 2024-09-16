@@ -107,7 +107,9 @@ export const columns: ColumnDef<ServiceCall>[] = [
     cell: ({ row }) => {
       const serviceCall = row.original;
       const { user } = useAuth();
-      const canDelete = user?.displayName === "Joe Hinderer";
+      const allowedUsers = ["Joe Hinderer", "Eric Hinderer"];
+      const canDelete = allowedUsers.includes(user?.displayName ?? "");
+      
     
       const handleDelete = async () => {
         try {
