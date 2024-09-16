@@ -2,22 +2,33 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   onAuthStateChanged as _onAuthStateChanged,
+  User,
 } from "firebase/auth";
 import { auth } from "./firebaseConfig";
 
-export function onAuthStateChanged(cb: any) {
-  return _onAuthStateChanged(auth, cb);
+export function onAuthStateChanged(callback: (authUser: User | null) => void) {
+  return _onAuthStateChanged(auth, callback);
 }
+
+
 
 export async function signInWithGoogle() {
   const provider = new GoogleAuthProvider();
 
   try {
-    await signInWithPopup(auth, provider);
+    const result = await signInWithPopup(auth, provider);
+
+    
+
+    if (!result || !result.user) {
+      throw new Error('Google sign in failed');
+    }
+    return result.user.uid;
   } catch (error) {
-    console.error("Error signing in with Google", error);
+    console.error('Error signing in with Google', error);
   }
 }
+
 
 export async function signOut() {
   try {
