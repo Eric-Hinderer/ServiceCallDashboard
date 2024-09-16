@@ -1,6 +1,5 @@
 // app/dashboard/page.tsx
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
+
 import { DataTable } from "../testing/data-table";
 import { columns } from "../testing/columns";
 import ServiceCallModalButton from "@/components/ServiceCallModalButton";
@@ -12,7 +11,7 @@ export default async function DashboardPage() {
   const machines = await getMachines();
 
   return (
-    <div className="container mx-auto py-10">
+    <div className="container mx-auto">
       <ServiceCallModalButton locations={locations} machines={machines} />
       <DataTable columns={columns} />
     </div>

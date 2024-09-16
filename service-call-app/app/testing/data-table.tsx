@@ -12,7 +12,14 @@ import {
   getFilteredRowModel,
 } from "@tanstack/react-table";
 import { AiOutlineClose } from "react-icons/ai";
-import { Typography, Container, Box, useMediaQuery, IconButton, TextField } from "@mui/material";
+import {
+  Typography,
+  Container,
+  Box,
+  useMediaQuery,
+  IconButton,
+  TextField,
+} from "@mui/material";
 
 import Grid from "@mui/material/Grid2";
 import {
@@ -121,37 +128,62 @@ export function DataTable({ columns }: DataTableProps) {
   return (
     <div>
       <Box sx={{ padding: 2 }}>
-        {/* Search Fields */}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "flex-end",
+            alignItems: "center",
+            pb: 4, // Padding-bottom to give space between the buttons and the grid below
+          }}
+        >
+          <Button
+
+            color="primary"
+            onClick={handleClickCurrent}
+            className="mr-4"
+          >
+            Export Current Table to Excel
+          </Button>
+
+          <Button
+            color="secondary"
+            onClick={handleClickAll}
+          >
+            Export All to Excel
+          </Button>
+        </Box>
         <Grid container spacing={2}>
-          <Grid size={{ xs: 12, sm: 6, md:3 }}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <TextField
               label="Search Location"
               value={
                 (table.getColumn("location")?.getFilterValue() as string) ?? ""
               }
-              onChange={(event : any) =>
+              onChange={(event: any) =>
                 table.getColumn("location")?.setFilterValue(event.target.value)
               }
               variant="outlined"
               size="small"
               sx={{ width: "100%" }}
-              InputProps={{
-                endAdornment: (
-                  <IconButton
-                    onClick={() =>
-                      table.getColumn("location")?.setFilterValue("")
-                    }
-                    edge="end"
-                    size="small"
-                  >
-                    <AiOutlineClose />
-                  </IconButton>
-                ),
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <IconButton
+                      onClick={() =>
+                        table.getColumn("location")?.setFilterValue("")
+                      }
+                      edge="end"
+                      size="small"
+                    >
+                      <AiOutlineClose />
+                    </IconButton>
+                  ),
+                },
               }}
             />
           </Grid>
 
-          <Grid size={{ xs: 12, sm: 6, md:3 }}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <TextField
               label="Search Machine"
               value={
@@ -163,23 +195,25 @@ export function DataTable({ columns }: DataTableProps) {
               variant="outlined"
               size="small"
               sx={{ width: "100%" }}
-              InputProps={{
-                endAdornment: (
-                  <IconButton
-                    onClick={() =>
-                      table.getColumn("machine")?.setFilterValue("")
-                    }
-                    edge="end"
-                    size="small"
-                  >
-                    <AiOutlineClose />
-                  </IconButton>
-                ),
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <IconButton
+                      onClick={() =>
+                        table.getColumn("machine")?.setFilterValue("")
+                      }
+                      edge="end"
+                      size="small"
+                    >
+                      <AiOutlineClose />
+                    </IconButton>
+                  ),
+                },
               }}
             />
           </Grid>
 
-          <Grid size={{ xs: 12, sm: 6, md:3 }}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <TextField
               label="Search Problem"
               value={
@@ -195,23 +229,25 @@ export function DataTable({ columns }: DataTableProps) {
               variant="outlined"
               size="small"
               sx={{ width: "100%" }}
-              InputProps={{
-                endAdornment: (
-                  <IconButton
-                    onClick={() =>
-                      table.getColumn("reportedProblem")?.setFilterValue("")
-                    }
-                    edge="end"
-                    size="small"
-                  >
-                    <AiOutlineClose />
-                  </IconButton>
-                ),
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <IconButton
+                      onClick={() =>
+                        table.getColumn("reportedProblem")?.setFilterValue("")
+                      }
+                      edge="end"
+                      size="small"
+                    >
+                      <AiOutlineClose />
+                    </IconButton>
+                  ),
+                },
               }}
             />
           </Grid>
 
-          <Grid size={{ xs: 12, sm: 6, md:3 }}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <TextField
               label="Search Notes"
               value={
@@ -223,40 +259,22 @@ export function DataTable({ columns }: DataTableProps) {
               variant="outlined"
               size="small"
               sx={{ width: "100%" }}
-              InputProps={{
-                endAdornment: (
-                  <IconButton
-                    onClick={() => table.getColumn("notes")?.setFilterValue("")}
-                    edge="end"
-                    size="small"
-                  >
-                    <AiOutlineClose />
-                  </IconButton>
-                ),
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <IconButton
+                      onClick={() =>
+                        table.getColumn("notes")?.setFilterValue("")
+                      }
+                      edge="end"
+                      size="small"
+                    >
+                      <AiOutlineClose />
+                    </IconButton>
+                  ),
+                },
               }}
             />
-          </Grid>
-
-          <Grid size={{ xs: 12, sm: 6}}>
-            <Button
-  
-              color="primary"
-              onClick={handleClickCurrent}
-
-            >
-              Export Current Table to Excel
-            </Button>
-          </Grid>
-
-          <Grid size={{ xs: 12, sm: 6}}>
-            <Button
-
-              color="secondary"
-              onClick={handleClickAll}
-
-            >
-              Export All to Excel
-            </Button>
           </Grid>
         </Grid>
       </Box>
