@@ -8,7 +8,7 @@ import { Typography, Container, Box } from "@mui/material";
 
 export default function Home() {
   return (
-    <Container maxWidth="xl" style={{ paddingTop: "5.5rem" }}>
+    <Container maxWidth="xl" style={{ paddingTop: "1rem" }}>
     {/* Welcome Section */}
     <Box textAlign="center" marginBottom="2rem">
       <Typography variant="h4" component="h1" gutterBottom>

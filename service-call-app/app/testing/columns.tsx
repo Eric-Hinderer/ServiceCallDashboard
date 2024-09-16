@@ -19,19 +19,19 @@ import Link from "next/link";
 import Status from "../../components/Status";
 import { ServiceCall } from "../(definitions)/definitions";
 import TakenBy from "@/components/TakenBy";
+import { useAuth } from "@/components/AuthContext";
+import { deleteServiceCall } from "../dashboard/action";
 
 export const columns: ColumnDef<ServiceCall>[] = [
   {
-  
     accessorKey: "date",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Date" />
     ),
     cell: ({ row }) => {
-      const date = row.original.date.toLocaleString()
-      return date; 
-    }
-    
+      const date = row.original.date.toLocaleString();
+      return date;
+    },
   },
   {
     accessorKey: "location",
@@ -64,7 +64,12 @@ export const columns: ColumnDef<ServiceCall>[] = [
     ),
     cell: ({ row }) => {
       const serviceCall = row.original;
-      return <TakenBy id={serviceCall.id.toString()} currentTakenBy={serviceCall.takenBy!} />;
+      return (
+        <TakenBy
+          id={serviceCall.id.toString()}
+          currentTakenBy={serviceCall.takenBy!}
+        />
+      );
     },
   },
   {
@@ -74,12 +79,17 @@ export const columns: ColumnDef<ServiceCall>[] = [
     ),
     cell: ({ row }) => {
       const serviceCall = row.original;
-      return <Status id={serviceCall.id.toString()} currentStatus={serviceCall.status} />;
+      return (
+        <Status
+          id={serviceCall.id.toString()}
+          currentStatus={serviceCall.status}
+        />
+      );
     },
   },
   {
     accessorKey: "notes",
-    filterFn: 'includesString',
+    filterFn: "includesString",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Notes" />
     ),
@@ -88,14 +98,29 @@ export const columns: ColumnDef<ServiceCall>[] = [
     accessorKey: "updatedAt",
     header: "Updated At",
     cell: ({ row }) => {
-      const date = row.original.updatedAt.toLocaleString()
-      return date;  // Format the date to locale string
-    }
+      const date = row.original.updatedAt.toLocaleString();
+      return date; // Format the date to locale string
+    },
   },
   {
     id: "actions",
     cell: ({ row }) => {
       const serviceCall = row.original;
+      const { user } = useAuth();
+      const canDelete = user?.displayName === "Joe Hinderer";
+    
+      const handleDelete = async () => {
+        try {
+          const response = await deleteServiceCall(serviceCall.id);
+          if (response.success) {
+            console.log("Service call deleted successfully");
+          } else {
+            console.error("Failed to delete service call:", response.message);
+          }
+        } catch (error) {
+          console.error("Error during deletion:", error);
+        }
+      };
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -105,9 +130,16 @@ export const columns: ColumnDef<ServiceCall>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <Link href={`/dashboard/${serviceCall.id}/edit`}>
-            <DropdownMenuItem>Edit</DropdownMenuItem>
+              <DropdownMenuItem>Edit</DropdownMenuItem>
             </Link>
             <DropdownMenuSeparator />
+            {canDelete && (
+              <>
+                <DropdownMenuItem onClick={handleDelete}>
+                  Delete
+                </DropdownMenuItem>
+              </>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       );

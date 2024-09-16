@@ -21,7 +21,7 @@ export default function DayAnalyticsPage() {
   }, []);
 
   return (
-    <div className="pt-20 px-6 pb-20">
+    <div className="px-6 pb-20">
       <h1 className="text-2xl font-semibold text-center mb-10">
         Service Calls for {dayNames[+dayOfWeek]}
       </h1>

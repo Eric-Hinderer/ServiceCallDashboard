@@ -1,7 +1,7 @@
 // app/loading.tsx
 export default function Loading() {
     return (
-      <div className="pt-20 px-8 max-w-7xl mx-auto space-y-16">
+      <div className="px-8 max-w-7xl mx-auto space-y-16">
         {/* Skeleton for the heading */}
         <div className="space-y-4">
           <div className="h-8 bg-gray-300 rounded w-3/4"></div>

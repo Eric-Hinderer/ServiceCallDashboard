@@ -188,7 +188,7 @@ export default function AnalyticsPage() {
   };
 
   return (
-    <div className="pt-20 px-6 pb-20">
+    <div className="px-6 pb-20">
       <h1 className="text-2xl font-semibold text-center text-gray-800 mb-10">
         Dashboard Charts
       </h1>

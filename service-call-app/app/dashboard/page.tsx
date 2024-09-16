@@ -12,13 +12,9 @@ export default async function DashboardPage() {
   const machines = await getMachines();
 
   return (
-    <div className=" px-4 md:px-8">
-      <div className="flex justify-between items-center mb-4"></div>
-
-      <div className="container mx-auto py-10 pt-20">
-        <ServiceCallModalButton locations={locations} machines={machines}/>
-        <DataTable columns={columns} />
-      </div>
+    <div className="container mx-auto py-10">
+      <ServiceCallModalButton locations={locations} machines={machines} />
+      <DataTable columns={columns} />
     </div>
   );
 }

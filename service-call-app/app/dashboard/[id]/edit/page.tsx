@@ -34,7 +34,7 @@ export default async function ServiceEditPage({
   }
 
   return (
-    <div className="pt-20 max-w-xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="max-w-xl mx-auto px-4 sm:px-6 lg:px-8">
       <h1 className="text-2xl font-bold text-center mb-6 text-gray-800">
         Edit Service Call
       </h1>
