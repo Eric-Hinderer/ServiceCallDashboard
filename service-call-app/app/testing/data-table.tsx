@@ -12,7 +12,16 @@ import {
   getFilteredRowModel,
 } from "@tanstack/react-table";
 import { AiOutlineClose } from "react-icons/ai";
+import {
+  Typography,
+  Container,
+  Box,
+  useMediaQuery,
+  IconButton,
+  TextField,
+} from "@mui/material";
 
+import Grid from "@mui/material/Grid2";
 import {
   Table,
   TableBody,
@@ -39,6 +48,7 @@ export function DataTable({ columns }: DataTableProps) {
   const [serviceCalls, setServiceCalls] = useState<ServiceCall[]>([]);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const isMobile = useMediaQuery("(max-width:600px)");
 
   useEffect(() => {
     const q = query(collection(db, "ServiceCalls"), orderBy("date", "desc"));
@@ -117,80 +127,157 @@ export function DataTable({ columns }: DataTableProps) {
 
   return (
     <div>
-      <div className="flex py-4 items-center justify-center ">
-        <div className="relative max-w-sm mr-4">
-          <Input
-            placeholder="Search Location"
-            value={
-              (table.getColumn("location")?.getFilterValue() as string) ?? ""
-            }
-            onChange={(event) =>
-              table.getColumn("location")?.setFilterValue(event.target.value)
-            }
-            className="w-full pr-10"
-          />
-          <AiOutlineClose
-            onClick={() => table.getColumn("location")?.setFilterValue("")}
-            className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-400"
-          />
-        </div>
-        <div className="relative max-w-sm mr-4">
-          <Input
-            placeholder="Search Machine"
-            value={
-              (table.getColumn("machine")?.getFilterValue() as string) ?? ""
-            }
-            onChange={(event) =>
-              table.getColumn("machine")?.setFilterValue(event.target.value)
-            }
-            className="w-full pr-10"
-          />
-          <AiOutlineClose
-            onClick={() => table.getColumn("machine")?.setFilterValue("")}
-            className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-400"
-          />
-        </div>
-        <div className="relative max-w-sm mr-4">
-          <Input
-            placeholder="Search Problem"
-            value={
-              (table
-                .getColumn("reportedProblem")
-                ?.getFilterValue() as string) ?? ""
-            }
-            onChange={(event) =>
-              table
-                .getColumn("reportedProblem")
-                ?.setFilterValue(event.target.value)
-            }
-            className="w-full pr-10"
-          />
-          <AiOutlineClose
-            onClick={() =>
-              table.getColumn("reportedProblem")?.setFilterValue("")
-            }
-            className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-400"
-          />
-        </div>
-        <div className="relative max-w-sm mr-4">
-          <Input
-            placeholder="Search Notes"
-            value={(table.getColumn("notes")?.getFilterValue() as string) ?? ""}
-            onChange={(event) =>
-              table.getColumn("notes")?.setFilterValue(event.target.value)
-            }
-            className="w-full pr-10"
-          />
-          <AiOutlineClose
-            onClick={() => table.getColumn("notes")?.setFilterValue("")}
-            className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-400"
-          />
-        </div>
-        <Button onClick={handleClickCurrent} className="mr-4">
-          Export Current Table to Excel
-        </Button>
-        <Button onClick={handleClickAll}>Export All to Excel</Button>
-      </div>
+      <Box sx={{ padding: 2 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "flex-end",
+            alignItems: "center",
+            pb: 4,
+          }}
+        >
+          <Button
+
+            color="primary"
+            onClick={handleClickCurrent}
+            className="mr-4"
+          >
+            Export Current Table to Excel
+          </Button>
+
+          <Button
+            color="secondary"
+            onClick={handleClickAll}
+          >
+            Export All to Excel
+          </Button>
+        </Box>
+        <Grid container spacing={2}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <TextField
+              label="Search Location"
+              value={
+                (table.getColumn("location")?.getFilterValue() as string) ?? ""
+              }
+              onChange={(event: any) =>
+                table.getColumn("location")?.setFilterValue(event.target.value)
+              }
+              variant="outlined"
+              size="small"
+              sx={{ width: "100%" }}
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <IconButton
+                      onClick={() =>
+                        table.getColumn("location")?.setFilterValue("")
+                      }
+                      edge="end"
+                      size="small"
+                    >
+                      <AiOutlineClose />
+                    </IconButton>
+                  ),
+                },
+              }}
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <TextField
+              label="Search Machine"
+              value={
+                (table.getColumn("machine")?.getFilterValue() as string) ?? ""
+              }
+              onChange={(event) =>
+                table.getColumn("machine")?.setFilterValue(event.target.value)
+              }
+              variant="outlined"
+              size="small"
+              sx={{ width: "100%" }}
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <IconButton
+                      onClick={() =>
+                        table.getColumn("machine")?.setFilterValue("")
+                      }
+                      edge="end"
+                      size="small"
+                    >
+                      <AiOutlineClose />
+                    </IconButton>
+                  ),
+                },
+              }}
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <TextField
+              label="Search Problem"
+              value={
+                (table
+                  .getColumn("reportedProblem")
+                  ?.getFilterValue() as string) ?? ""
+              }
+              onChange={(event) =>
+                table
+                  .getColumn("reportedProblem")
+                  ?.setFilterValue(event.target.value)
+              }
+              variant="outlined"
+              size="small"
+              sx={{ width: "100%" }}
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <IconButton
+                      onClick={() =>
+                        table.getColumn("reportedProblem")?.setFilterValue("")
+                      }
+                      edge="end"
+                      size="small"
+                    >
+                      <AiOutlineClose />
+                    </IconButton>
+                  ),
+                },
+              }}
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <TextField
+              label="Search Notes"
+              value={
+                (table.getColumn("notes")?.getFilterValue() as string) ?? ""
+              }
+              onChange={(event) =>
+                table.getColumn("notes")?.setFilterValue(event.target.value)
+              }
+              variant="outlined"
+              size="small"
+              sx={{ width: "100%" }}
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <IconButton
+                      onClick={() =>
+                        table.getColumn("notes")?.setFilterValue("")
+                      }
+                      edge="end"
+                      size="small"
+                    >
+                      <AiOutlineClose />
+                    </IconButton>
+                  ),
+                },
+              }}
+            />
+          </Grid>
+        </Grid>
+      </Box>
       <div className="rounded-md border">
         <Table>
           <TableHeader>

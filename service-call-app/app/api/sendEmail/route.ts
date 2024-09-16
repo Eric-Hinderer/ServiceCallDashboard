@@ -38,7 +38,7 @@ export async function POST(req: any) {
   try {
     await transporter.sendMail({
       from: '"Service Call Manager" <your@gmail.com>', // sender address
-      to: "route@gamesales.com", // receiver
+      to: "ericjh@iorb.com", // receiver
       subject: "New Service Call", // Subject line
       html: emailBody, // HTML body
     });

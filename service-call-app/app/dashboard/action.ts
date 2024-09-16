@@ -1,6 +1,6 @@
 "use server";
 
-import { collection, query, orderBy, getDocs } from "firebase/firestore";
+import { collection, query, orderBy, getDocs, doc, deleteDoc } from "firebase/firestore";
 import db from "@/lib/firebase";
 
 export async function getLocations() {
@@ -23,4 +23,15 @@ export async function getMachines() {
   );
 
   return Array.from(new Set(machines));
+}
+
+export async function deleteServiceCall(id: string) {
+  try {
+    const docRef = doc(db, "ServiceCalls", id);
+    await deleteDoc(docRef);
+    return { success: true, message: "Service call deleted successfully." };
+  } catch (error) {
+    console.error("Error deleting service call: ", error);
+    return { success: false, message: "Error deleting service call." };
+  }
 }
