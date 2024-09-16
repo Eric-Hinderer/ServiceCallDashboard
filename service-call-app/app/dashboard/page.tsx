@@ -5,7 +5,7 @@ import { columns } from "../testing/columns";
 import ServiceCallModalButton from "@/components/ServiceCallModalButton";
 import { getLocations, getMachines } from "./action";
 
-// Server Component for data fetching
+
 export default async function DashboardPage() {
   const locations = await getLocations();
   const machines = await getMachines();

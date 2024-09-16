@@ -69,7 +69,7 @@ const RealTimeOpenInProgress = () => {
       }
     );
 
-    return () => unsubscribe(); // Clean up Firestore subscription on unmount
+    return () => unsubscribe(); 
   }, []);
 
   useEffect(() => {

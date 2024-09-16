@@ -133,7 +133,7 @@ export function DataTable({ columns }: DataTableProps) {
             display: "flex",
             justifyContent: "flex-end",
             alignItems: "center",
-            pb: 4, // Padding-bottom to give space between the buttons and the grid below
+            pb: 4,
           }}
         >
           <Button
