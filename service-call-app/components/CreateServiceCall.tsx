@@ -1,15 +1,29 @@
+'use client';
 import { SubmitFormButton, SubmitFormButtonEmail } from "./SubmitFormButton";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
 
-export default function CreateServiceCall() {
+export default function CreateServiceCall({
+  locations,
+  machines,
+  closeModal
+}: {
+  locations: string[];
+  machines: string[];
+  closeModal: () => void;
+}) {
+
+
   return (
     <div className="space-y-4 bg-white p-6 shadow rounded-lg">
       <form className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="date" className="block text-sm font-medium text-gray-700">
+            <Label
+              htmlFor="date"
+              className="block text-sm font-medium text-gray-700"
+            >
               Date:
             </Label>
             <Input
@@ -20,21 +34,33 @@ export default function CreateServiceCall() {
             />
           </div>
           <div>
-            <Label htmlFor="location" className="block text-sm font-medium text-gray-700">
+            <Label
+              htmlFor="location"
+              className="block text-sm font-medium text-gray-700"
+            >
               Location:
             </Label>
             <Input
               id="location"
               type="text"
               name="location"
+              list="locations"
               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             />
+            <datalist id="locations">
+              {locations.map((location, index) => (
+                <option key={index} value={location} />
+              ))}
+            </datalist>
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="whoCalled" className="block text-sm font-medium text-gray-700">
+            <Label
+              htmlFor="whoCalled"
+              className="block text-sm font-medium text-gray-700"
+            >
               Who Called:
             </Label>
             <Input
@@ -45,21 +71,33 @@ export default function CreateServiceCall() {
             />
           </div>
           <div>
-            <Label htmlFor="machine" className="block text-sm font-medium text-gray-700">
+            <Label
+              htmlFor="machine"
+              className="block text-sm font-medium text-gray-700"
+            >
               Machine:
             </Label>
             <Input
               id="machine"
+              list="machines"
               type="text"
               name="machine"
               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             />
+            <datalist id="machines">
+              {machines.map((machine, index) => (
+                <option key={index} value={machine} />
+              ))}
+            </datalist>
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="reportedProblem" className="block text-sm font-medium text-gray-700">
+            <Label
+              htmlFor="reportedProblem"
+              className="block text-sm font-medium text-gray-700"
+            >
               Reported Problem:
             </Label>
             <Input
@@ -70,7 +108,10 @@ export default function CreateServiceCall() {
             />
           </div>
           <div>
-            <Label htmlFor="takenBy" className="block text-sm font-medium text-gray-700">
+            <Label
+              htmlFor="takenBy"
+              className="block text-sm font-medium text-gray-700"
+            >
               Taken By:
             </Label>
             <select
@@ -91,7 +132,10 @@ export default function CreateServiceCall() {
         </div>
 
         <div>
-          <Label htmlFor="notes" className="block text-sm font-medium text-gray-700">
+          <Label
+            htmlFor="notes"
+            className="block text-sm font-medium text-gray-700"
+          >
             Notes:
           </Label>
           <Textarea
@@ -102,7 +146,10 @@ export default function CreateServiceCall() {
         </div>
 
         <div>
-          <Label htmlFor="status" className="block text-sm font-medium text-gray-700">
+          <Label
+            htmlFor="status"
+            className="block text-sm font-medium text-gray-700"
+          >
             Status:
           </Label>
           <select
@@ -116,8 +163,8 @@ export default function CreateServiceCall() {
           </select>
         </div>
 
-        <SubmitFormButtonEmail />
-        <SubmitFormButton />
+        <SubmitFormButtonEmail closeModal={closeModal}/>
+        <SubmitFormButton closeModal={closeModal}/>
       </form>
     </div>
   );

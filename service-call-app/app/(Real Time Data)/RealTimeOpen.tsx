@@ -70,34 +70,38 @@ const RealTimeOpenInProgress = () => {
       serviceCall.status === "OPEN" || serviceCall.status === "IN_PROGRESS"
   );
 
+  const locations = Array.from(
+    new Set(serviceCalls.map((serviceCall) => serviceCall.location))
+  );
+  const machines = Array.from(
+    new Set(serviceCalls.map((serviceCall) => serviceCall.machine))
+  );
+
   const openCalls = filteredServiceCalls.length;
   const unAssignedCalls = filteredServiceCalls.filter(
     (serviceCall) => serviceCall.takenBy === "Select..."
   );
 
-
   return (
     <div className="p-4 md:p-8">
-      <ServiceCallModalButton />
+      <ServiceCallModalButton locations={locations} machines={machines} />
       <h2 className="text-xl font-semibold mb-6 text-center">
         Current Service Calls (Open/In Progress)
       </h2>
 
       <div className="hidden md:flex flex-col md:flex-row md:space-x-4 space-y-4 md:space-y-0 ">
         <div className="bg-green-100 p-4 rounded-lg shadow-md w-full md:w-1/2">
-          <h3 className="text-lg font-semibold text-green-800">Open / In Progress</h3>
+          <h3 className="text-lg font-semibold text-green-800">
+            Open / In Progress
+          </h3>
           <div className="flex items-center space-x-2">
             <span className="text-gray-600">Total:</span>
-            <span className="text-gray-800 font-semibold">
-              {openCalls}
-            </span>
+            <span className="text-gray-800 font-semibold">{openCalls}</span>
           </div>
         </div>
 
         <div className="bg-yellow-100 p-4 rounded-lg shadow-md w-full md:w-1/2">
-          <h3 className="text-lg font-semibold text-yellow-800">
-            Unassigned
-          </h3>
+          <h3 className="text-lg font-semibold text-yellow-800">Unassigned</h3>
           <div className="flex items-center space-x-2">
             <span className="text-gray-600">Total:</span>
             <span className="text-gray-800 font-semibold">
