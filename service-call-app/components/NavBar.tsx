@@ -117,7 +117,7 @@ const Header = () => {
 
   return (
     <>
-      <AppBar position="fixed" className="bg-black">
+      <AppBar position="fixed" sx={{backgroundColor:"black"}}>
         <Toolbar>
           <IconButton
             color="inherit"
