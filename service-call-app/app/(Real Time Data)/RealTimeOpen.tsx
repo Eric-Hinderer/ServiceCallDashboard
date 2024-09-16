@@ -317,9 +317,7 @@ const RealTimeOpenInProgress = () => {
         locations={locations}
         machines={machines}
       />
-      <Typography variant="h5" align="center" gutterBottom>
-        Current Service Calls (Open/In Progress)
-      </Typography>
+      
       <Grid
         container
         spacing={2}

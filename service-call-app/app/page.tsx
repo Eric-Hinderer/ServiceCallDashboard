@@ -20,7 +20,9 @@ export default function Home() {
       </Typography>
     </Box>
 
-    {/* Service Calls Table */}
+    <Typography variant="h5" align="center" gutterBottom>
+        Current Service Calls (Open/In Progress)
+      </Typography>
     <RealTimeOpenInProgress />
   </Container>
   );
