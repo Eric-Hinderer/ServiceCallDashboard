@@ -1,14 +1,12 @@
-import NavBar from "@/components/NavBar";
+import Header from "@/components/NavBar";
 import "./globals.css";
-
-
+import { AuthProvider } from "@/components/AuthContext";
 
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-
   return (
     <html lang="en">
       <head>
@@ -21,10 +19,11 @@ export default function RootLayout({
       </head>
 
       <body>
-        <NavBar />
-        <main>{children}</main>
+        <AuthProvider>
+          <Header />
+          {children}
+        </AuthProvider>
       </body>
-
     </html>
   );
 }

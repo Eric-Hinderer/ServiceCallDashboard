@@ -2,28 +2,27 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import RealTimeOpenInProgress from "./(Real Time Data)/RealTimeOpen";
+import { Typography, Container, Box } from "@mui/material";
 
 
 
-
-export default async function Home() {
+export default function Home() {
   return (
-    <main className="pt-20 px-8 max-w-7xl mx-auto">
-      {/* Welcome Section */}
-      <section className="text-center space-y-4 max-w-3xl mx-auto">
-        <h1 className="text-4xl font-bold leading-tight">
-          Welcome to the Service Call Dashboard
-        </h1>
-        <p className="text-lg text-gray-600 leading-relaxed">
-          Here you can track and manage ongoing service calls. Check below for
-          service calls that are currently in progress or open.
-        </p>
-      </section>
+    <Container maxWidth="xl" style={{ paddingTop: "5.5rem" }}>
+    {/* Welcome Section */}
+    <Box textAlign="center" marginBottom="2rem">
+      <Typography variant="h4" component="h1" gutterBottom>
+        Welcome to the Service Call Dashboard
+      </Typography>
+      <Typography variant="subtitle1" color="textSecondary">
+        Here you can track and manage ongoing service calls. Check below for
+        service calls that are currently in progress or open.
+      </Typography>
+    </Box>
 
-      {/* Service Calls Table */}
-      <RealTimeOpenInProgress  />
-
-    </main>
+    {/* Service Calls Table */}
+    <RealTimeOpenInProgress />
+  </Container>
   );
 
 }

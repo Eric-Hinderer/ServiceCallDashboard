@@ -15,9 +15,10 @@ import {
 import { DataTableColumnHeader } from "@/components/DataColumnHeader";
 
 import Link from "next/link";
-import TakenBy from "../dashboard/[id]/TakenBy";
-import Status from "../dashboard/[id]/Status";
+
+import Status from "../../components/Status";
 import { ServiceCall } from "../(definitions)/definitions";
+import TakenBy from "@/components/TakenBy";
 
 export const columns: ColumnDef<ServiceCall>[] = [
   {
