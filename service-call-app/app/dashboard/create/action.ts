@@ -2,14 +2,21 @@
 import { ServiceCall, Status } from "@/app/(definitions)/definitions";
 import db from "@/lib/firebase";
 import { addDoc, collection, setDoc, Timestamp } from "@firebase/firestore";
-import { DateTime } from "luxon";
+import moment from 'moment-timezone';
+
 
 export async function createFromForm(formData: FormData) {
-  const dateString = formData.get("date") as string;
-  const tempDate = dateString ? new Date(dateString) : new Date();
+  const dateString = formData.get("date") as string;  // Input from <input type="datetime-local">
+  console.log(dateString);  // This will log the input in the user's local time (e.g., "2024-09-17T16:05")
+
+  const temp = moment.tz(dateString, 'America/Chicago');
+  console.log(temp);
+  const date = new Date();
+  const utcDate = temp.utc().toDate();
+  console.log(utcDate);
 
 
-  const date = new Date(tempDate.toISOString());
+
 
   const location = formData.get("location") as string;
   const whoCalled = formData.get("whoCalled") as string;
@@ -19,8 +26,8 @@ export async function createFromForm(formData: FormData) {
   const notes = formData.get("notes") as string;
   const status = (formData.get("status") as Status) || Status.OPEN;
 
-  const newServiceCall: ServiceCall = {
-    date,
+  const newServiceCall: any = {
+    date : utcDate,
     location,
     whoCalled,
     machine,
