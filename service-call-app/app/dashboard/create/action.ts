@@ -6,15 +6,15 @@ import moment from 'moment-timezone';
 
 
 export async function createFromForm(formData: FormData) {
-  const dateString = formData.get("date") as string;  // Input from <input type="datetime-local">
-  console.log(dateString);  // This will log the input in the user's local time (e.g., "2024-09-17T16:05")
+  const dateString = formData.get("date") as string | null;  
+  console.log(dateString); 
+  
 
-  const temp = moment.tz(dateString, 'America/Chicago');
+  const temp = dateString ? moment.tz(dateString, 'America/Chicago') : moment();
   console.log(temp);
-  const date = new Date();
+  
   const utcDate = temp.utc().toDate();
   console.log(utcDate);
-
 
 
 
