@@ -6,11 +6,8 @@ import { DateTime } from "luxon";
 
 export async function createFromForm(formData: FormData) {
   const dateString = formData.get("date") as string;
-  const localDateTime = DateTime.fromISO(dateString);
-  console.log("localDateTime", localDateTime);
-  console.log("localDateTime.toJSDate()", localDateTime.toJSDate());
-
- const date = localDateTime.toJSDate();
+  const tempDate = dateString ? new Date(dateString) : new Date();
+  console.log("tempDate", tempDate);
 
   const location = formData.get("location") as string;
   const whoCalled = formData.get("whoCalled") as string;
@@ -21,7 +18,7 @@ export async function createFromForm(formData: FormData) {
   const status = (formData.get("status") as Status) || Status.OPEN;
 
   const newServiceCall: ServiceCall = {
-    date,
+    date: tempDate,
     location,
     whoCalled,
     machine,
