@@ -2,14 +2,15 @@
 import { ServiceCall, Status } from "@/app/(definitions)/definitions";
 import db from "@/lib/firebase";
 import { addDoc, collection, setDoc, Timestamp } from "@firebase/firestore";
-import { useRouter } from "next/router";
-
-import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
+import { DateTime } from "luxon";
 
 export async function createFromForm(formData: FormData) {
   const dateString = formData.get("date") as string;
-  const date = dateString ? new Date(`${dateString}:00`) : new Date();
+  const localDateTime = DateTime.fromISO(dateString);
+  console.log("localDateTime", localDateTime);
+  console.log("localDateTime.toJSDate()", localDateTime.toJSDate());
+
+ const date = localDateTime.toJSDate();
 
   const location = formData.get("location") as string;
   const whoCalled = formData.get("whoCalled") as string;

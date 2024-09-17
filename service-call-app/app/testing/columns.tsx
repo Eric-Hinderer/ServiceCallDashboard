@@ -21,7 +21,7 @@ import { ServiceCall } from "../(definitions)/definitions";
 import TakenBy from "@/components/TakenBy";
 import { useAuth } from "@/components/AuthContext";
 import { deleteServiceCall } from "../dashboard/action";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -120,6 +120,7 @@ export const columns: ColumnDef<ServiceCall>[] = [
       const allowedUsers = ["Joe Hinderer", "Eric Hinderer"];
       const canDelete = allowedUsers.includes(user?.displayName ?? "");
       const [isDialogOpen, setIsDialogOpen] = useState(false);
+      const dropdownTriggerRef = useRef<HTMLButtonElement>(null);
 
       const handleDelete = async () => {
         try {
@@ -136,7 +137,7 @@ export const columns: ColumnDef<ServiceCall>[] = [
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" ref={dropdownTriggerRef}>
               <MoreHorizontal />
             </Button>
           </DropdownMenuTrigger>
@@ -151,7 +152,8 @@ export const columns: ColumnDef<ServiceCall>[] = [
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    setIsDialogOpen(true);
+                    setIsDialogOpen(true); 
+                    dropdownTriggerRef.current?.blur() 
                   }}
                 >
                   Delete
@@ -166,6 +168,14 @@ export const columns: ColumnDef<ServiceCall>[] = [
                     <AlertDialogHeader>
                       Are you sure you want to delete this service call?
                     </AlertDialogHeader>
+                    <div>
+                      <p>This action cannot be undone.</p>
+                      <p>
+                        You are about to delete the service call for the
+                        machine: <strong>{serviceCall.machine}</strong> at{" "}
+                        <strong>{serviceCall.location}</strong>.
+                      </p>
+                    </div>
                     <AlertDialogFooter>
                       <AlertDialogCancel onClick={() => setIsDialogOpen(false)}>
                         Cancel
