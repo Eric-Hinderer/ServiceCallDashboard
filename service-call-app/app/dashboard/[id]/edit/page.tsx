@@ -6,6 +6,7 @@ import { doc, getDoc, Timestamp, updateDoc } from "@firebase/firestore";
 import db from "@/lib/firebase";
 import { redirect } from "next/navigation";
 import { getData } from "./action";
+import DateTimePicker from 'react-datetime-picker';
 
 export default async function ServiceEditPage({
   params,
@@ -14,12 +15,11 @@ export default async function ServiceEditPage({
 }) {
   const key = params.id;
   const data = await getData(key);
+  
 
   async function editServiceCall(formData: FormData) {
     "use server";
     const docRef = doc(db, "ServiceCalls", key);
-    const dateString = formData.get("date") as string | null;
-    const date = dateString ? new Date(dateString) : null;
 
     const updateData: any = {
       location: formData.get("location"),
@@ -31,10 +31,6 @@ export default async function ServiceEditPage({
       notes: formData.get("notes"),
       updatedAt: Timestamp.now(),
     };
-
-    if (date) {
-      updateData.date = date;
-    }
 
     await updateDoc(docRef, updateData);
 
@@ -51,7 +47,7 @@ export default async function ServiceEditPage({
         className="space-y-4 bg-white p-6 shadow rounded-lg"
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
+          {/* <div>
             <Label
               htmlFor="date"
               className="block text-sm font-medium text-gray-700"
@@ -64,7 +60,7 @@ export default async function ServiceEditPage({
               name="date"
               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             />
-          </div>
+          </div> */}
 
           <div>
             <Label
