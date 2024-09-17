@@ -1,13 +1,15 @@
-'use client';
+"use client";
+import { useState } from "react";
 import { SubmitFormButton, SubmitFormButtonEmail } from "./SubmitFormButton";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
 
+
 export default function CreateServiceCall({
   locations,
   machines,
-  closeModal
+  closeModal,
 }: {
   locations: string[];
   machines: string[];
@@ -163,8 +165,8 @@ export default function CreateServiceCall({
           </select>
         </div>
 
-        <SubmitFormButtonEmail closeModal={closeModal}/>
-        <SubmitFormButton closeModal={closeModal}/>
+        <SubmitFormButtonEmail closeModal={closeModal} />
+        <SubmitFormButton closeModal={closeModal} />
       </form>
     </div>
   );

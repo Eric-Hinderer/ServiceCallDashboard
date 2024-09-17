@@ -9,7 +9,8 @@ import { revalidatePath } from "next/cache";
 
 export async function createFromForm(formData: FormData) {
   const dateString = formData.get("date") as string;
-  const date = dateString ? new Date(dateString) : new Date();
+  const date = dateString ? new Date(`${dateString}:00`) : new Date();
+
   const location = formData.get("location") as string;
   const whoCalled = formData.get("whoCalled") as string;
   const machine = formData.get("machine") as string;

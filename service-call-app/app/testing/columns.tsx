@@ -21,6 +21,16 @@ import { ServiceCall } from "../(definitions)/definitions";
 import TakenBy from "@/components/TakenBy";
 import { useAuth } from "@/components/AuthContext";
 import { deleteServiceCall } from "../dashboard/action";
+import { useState } from "react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export const columns: ColumnDef<ServiceCall>[] = [
   {
@@ -99,7 +109,7 @@ export const columns: ColumnDef<ServiceCall>[] = [
     header: "Updated At",
     cell: ({ row }) => {
       const date = row.original.updatedAt.toLocaleString();
-      return date; // Format the date to locale string
+      return date;
     },
   },
   {
@@ -109,8 +119,8 @@ export const columns: ColumnDef<ServiceCall>[] = [
       const { user } = useAuth();
       const allowedUsers = ["Joe Hinderer", "Eric Hinderer"];
       const canDelete = allowedUsers.includes(user?.displayName ?? "");
-      
-    
+      const [isDialogOpen, setIsDialogOpen] = useState(false);
+
       const handleDelete = async () => {
         try {
           const response = await deleteServiceCall(serviceCall.id);
@@ -137,9 +147,40 @@ export const columns: ColumnDef<ServiceCall>[] = [
             <DropdownMenuSeparator />
             {canDelete && (
               <>
-                <DropdownMenuItem onClick={handleDelete}>
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsDialogOpen(true);
+                  }}
+                >
                   Delete
                 </DropdownMenuItem>
+
+                {/* Alert Dialog for Deleting Confirmation */}
+                <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                  <AlertDialogTrigger asChild>
+                    <span />
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      Are you sure you want to delete this service call?
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel onClick={() => setIsDialogOpen(false)}>
+                        Cancel
+                      </AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => {
+                          handleDelete();
+                          setIsDialogOpen(false);
+                        }}
+                      >
+                        Confirm Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </>
             )}
           </DropdownMenuContent>
