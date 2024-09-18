@@ -48,7 +48,7 @@ export default async function DashboardPage() {
         {/* Data Table */}
         <section className="px-6 pb-8">
           <div className="bg-white shadow-md p-4 rounded-lg">
-            <h2 className="text-lg font-medium mb-4">Machines Overview</h2>
+            <h2 className="text-lg font-medium mb-4">Service Call Overview</h2>
             <DataTable columns={columns} />
           </div>
         </section>

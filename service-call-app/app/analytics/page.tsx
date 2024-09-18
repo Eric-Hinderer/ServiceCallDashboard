@@ -197,6 +197,7 @@ export default function AnalyticsPage() {
           Explore key service call insights
         </p>
       </div>
+      {/* Date Pickers */}
       <div className="flex justify-center space-x-6 mb-4">
         <div className="text-center">
           <label className="block text-gray-700 font-semibold mb-2 text-lg">
@@ -318,9 +319,6 @@ export default function AnalyticsPage() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Date Pickers */}
-      
     </div>
   );
 }
