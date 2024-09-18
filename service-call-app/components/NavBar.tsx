@@ -28,7 +28,8 @@ import {
   ExitToApp as ExitToAppIcon,
   Login as LoginIcon,
 } from "@mui/icons-material";
-import Image from "next/image";
+import Image from 'next/image'
+import Central from '@/public/central.jpg'
 
 const Header = () => {
   const { user, loading, signIn, signOut } = useAuth();
@@ -131,7 +132,7 @@ const Header = () => {
 
           {/* Logo */}
           <Link href="/" passHref>
-           <Image src="/central.jpg" alt="Service Call Manager" width={200} height={40} />
+           <Image src={Central} alt="Service Call Manager" width={200} height={40} />
 
   
           </Link>
