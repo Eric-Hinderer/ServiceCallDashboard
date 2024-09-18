@@ -188,93 +188,16 @@ export default function AnalyticsPage() {
   };
 
   return (
-    <div className="px-6 pb-20">
-      <h1 className="text-2xl font-semibold text-center text-gray-800 mb-10">
-        Dashboard Charts
-      </h1>
-
-      {/* After-Hours Calls and Weekend Service Calls Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-        <Card className="w-full">
-          <CardContent>
-            <h2 className="text-3xl font-bold text-center mb-4">
-              After-Hours Calls by Day of the Week
-            </h2>
-            <div className="space-y-4">
-              {afterHoursCallsByDayOfWeek.map((dayData) => (
-                <div key={dayData.dayOfWeek} className="text-center">
-                  <Link
-                    href={{
-                      pathname: `/analytics/day/${dayData.dayOfWeek}`,
-                    }}
-                    passHref
-                    onClick={() => handleDayClick(dayData)}
-                  >
-                    {dayNames[dayData.dayOfWeek]}: {dayData.callCount} call(s)
-                  </Link>
-                </div>
-              ))}
-              <div className="text-center mt-6">
-                <p className="text-2xl font-bold">
-                  Total: {totalAfterHoursCalls} call(s)
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="w-full">
-          <CardContent className="flex items-center justify-center">
-            <div className="text-center">
-              <h2 className="text-3xl font-bold">Weekend Service Calls</h2>
-              <Link
-                href="/analytics/day/weekend"
-                onClick={() => handleWeekendClick(weekendData!)}
-                passHref
-              >
-                <p className="text-5xl font-semibold mt-4">
-                  {weekendData!.count}
-                </p>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="w-full">
-          <CardContent className="flex items-center justify-center">
-            <div className="text-center">
-              <h2 className="text-3xl font-bold">Calls per Location</h2>
-              <div className="mt-4">
-                <canvas
-                  ref={chartRef}
-                  width={800}
-                  height={400}
-                  style={{ maxWidth: "100%", maxHeight: "500px" }}
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="w-full">
-          <CardContent className="flex items-center justify-center">
-            <div className="text-center">
-              <h2 className="text-3xl font-bold">Calls per Taken By</h2>
-              <div className="mt-4">
-                <canvas
-                  ref={chartPerTakenByRef}
-                  width={800}
-                  height={400}
-                  style={{ maxWidth: "100%", maxHeight: "500px" }}
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+    <div className="px-6 pb-20 bg-gray-50 min-h-screen">
+      <div className="text-center py-6">
+        <h1 className="text-3xl font-semibold text-gray-900">
+          Dashboard Analytics
+        </h1>
+        <p className="text-lg text-gray-500">
+          Explore key service call insights
+        </p>
       </div>
-
-      {/* Date Pickers */}
-      <div className="flex justify-center space-x-6 mt-12">
+      <div className="flex justify-center space-x-6 mb-4">
         <div className="text-center">
           <label className="block text-gray-700 font-semibold mb-2 text-lg">
             Start Date
@@ -285,7 +208,7 @@ export default function AnalyticsPage() {
             selectsStart
             startDate={startDate}
             endDate={endDate}
-            className="p-3 border border-gray-300 rounded-lg shadow-md focus:ring focus:ring-indigo-500 w-full"
+            className="p-3 border border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-indigo-500 w-full"
             placeholderText="Select start date"
           />
         </div>
@@ -300,11 +223,104 @@ export default function AnalyticsPage() {
             startDate={startDate}
             endDate={endDate}
             minDate={startDate}
-            className="p-3 border border-gray-300 rounded-lg shadow-md focus:ring focus:ring-indigo-500 w-full"
+            className="p-3 border border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-indigo-500 w-full"
             placeholderText="Select end date"
           />
         </div>
       </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-12">
+        {/* After-Hours Calls */}
+        <Card className="w-full rounded-lg shadow-lg bg-white">
+          <CardContent>
+            <h2 className="text-2xl font-semibold text-center text-gray-700 mb-4">
+              After-Hours Calls by Day of the Week
+            </h2>
+            <div className="space-y-4">
+              {afterHoursCallsByDayOfWeek.map((dayData) => (
+                <div key={dayData.dayOfWeek} className="text-center">
+                  <Link
+                    href={{
+                      pathname: `/analytics/day/${dayData.dayOfWeek}`,
+                    }}
+                    passHref
+                    className="hover:text-blue-600 transition"
+                    onClick={() => handleDayClick(dayData)}
+                  >
+                    {dayNames[dayData.dayOfWeek]}: {dayData.callCount} call(s)
+                  </Link>
+                </div>
+              ))}
+              <div className="text-center mt-6">
+                <p className="text-lg font-semibold text-gray-800">
+                  Total: {totalAfterHoursCalls} call(s)
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Weekend Service Calls */}
+        <Card className="w-full rounded-lg shadow-lg bg-white">
+          <CardContent className="flex items-center justify-center">
+            <div className="text-center">
+              <h2 className="text-2xl font-semibold text-gray-700">
+                Weekend Service Calls
+              </h2>
+              <Link
+                href="/analytics/day/weekend"
+                passHref
+                className="hover:text-blue-600 transition"
+                onClick={() => handleWeekendClick(weekendData!)}
+              >
+                <p className="text-4xl font-bold text-blue-500 mt-4">
+                  {weekendData!.count}
+                </p>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Calls per Location */}
+        <Card className="w-full rounded-lg shadow-lg bg-white">
+          <CardContent className="flex items-center justify-center">
+            <div className="text-center">
+              <h2 className="text-2xl font-semibold text-gray-700">
+                Calls per Location
+              </h2>
+              <div className="mt-6">
+                <canvas
+                  ref={chartRef}
+                  width={800}
+                  height={400}
+                  style={{ maxWidth: "100%", maxHeight: "400px" }}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Calls per Taken By */}
+        <Card className="w-full rounded-lg shadow-lg bg-white">
+          <CardContent className="flex items-center justify-center">
+            <div className="text-center">
+              <h2 className="text-2xl font-semibold text-gray-700">
+                Calls per Taken By
+              </h2>
+              <div className="mt-6">
+                <canvas
+                  ref={chartPerTakenByRef}
+                  width={800}
+                  height={400}
+                  style={{ maxWidth: "100%", maxHeight: "400px" }}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Date Pickers */}
+      
     </div>
   );
 }
