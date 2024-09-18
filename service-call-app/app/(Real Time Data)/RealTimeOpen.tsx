@@ -69,7 +69,7 @@ const RealTimeOpenInProgress = () => {
       }
     );
 
-    return () => unsubscribe(); 
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -86,7 +86,7 @@ const RealTimeOpenInProgress = () => {
     };
 
     fetchData();
-  }, []); 
+  }, []);
 
   if (!currentUser) {
     return (
@@ -121,13 +121,9 @@ const RealTimeOpenInProgress = () => {
   }
 
   return (
-    
     <div style={{ padding: "1rem" }}>
-      <ServiceCallModalButton
-        locations={locations}
-        machines={machines}
-      />
-      
+      <ServiceCallModalButton locations={locations} machines={machines} />
+
       <Grid
         container
         spacing={2}
@@ -227,8 +223,8 @@ const RealTimeOpenInProgress = () => {
               <TableCell>Who Called</TableCell>
               <TableCell>Machine</TableCell>
               <TableCell>Reported Problem</TableCell>
-              <TableCell>Status</TableCell>
               <TableCell>Taken By</TableCell>
+              <TableCell>Status</TableCell>
               <TableCell>Notes</TableCell>
               <TableCell>Updated At</TableCell>
               <TableCell>Actions</TableCell>
@@ -256,18 +252,18 @@ const RealTimeOpenInProgress = () => {
                 <TableCell>{serviceCall.machine || "N/A"}</TableCell>
                 <TableCell>{serviceCall.reportedProblem || "N/A"}</TableCell>
                 <TableCell>
+                  <TakenBy
+                    id={serviceCall.id!}
+                    currentTakenBy={serviceCall.takenBy}
+                  />
+                </TableCell>
+                <TableCell>
                   {serviceCall.id && (
                     <Status
                       id={serviceCall.id}
                       currentStatus={serviceCall.status}
                     />
                   )}
-                </TableCell>
-                <TableCell>
-                  <TakenBy
-                    id={serviceCall.id!}
-                    currentTakenBy={serviceCall.takenBy}
-                  />
                 </TableCell>
                 <TableCell>{serviceCall.notes || "N/A"}</TableCell>
                 <TableCell>
