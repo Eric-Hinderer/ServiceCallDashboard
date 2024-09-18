@@ -18,7 +18,7 @@ export default async function DashboardPage() {
   ).length;
 
   return (
-    <div className="flex flex-col h-screen bg-gray-100">
+    <div className="flex flex-col min-h-screen bg-gray-100">
       {/* Main Content */}
       <main className="flex-1">
         {/* Header */}
