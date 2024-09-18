@@ -11,7 +11,7 @@ export default async function DashboardPage() {
   const machines = await getMachines();
 
   return (
-    <div className="container mx-auto">
+    <div className="container mx-auto mb-4">
       <ServiceCallModalButton locations={locations} machines={machines} />
       <DataTable columns={columns} />
     </div>

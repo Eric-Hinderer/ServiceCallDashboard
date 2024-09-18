@@ -21,7 +21,6 @@ interface CallsByDay {
 export async function getWeekendServiceCalls(startDate: Date, endDate: Date) {
   const serviceCallsRef = collection(db, "ServiceCalls");
 
-  // Convert startDate and endDate from UTC to Central Time (America/Chicago)
   const startInCentralTime = DateTime.fromJSDate(startDate, {
     zone: "UTC",
   }).setZone("America/Chicago");

@@ -16,7 +16,7 @@ export async function POST(req: any) {
   const transporter = nodemailer.createTransport({
     service: "gmail",
     host: "smtp.gmail.com",
-    secure: false, // true for 465, false for other ports
+    secure: false, 
     auth: {
       user: process.env.GMAIL_FROM,
       pass: process.env.GMAIL_APP_PASSWORD,
@@ -37,10 +37,10 @@ export async function POST(req: any) {
 
   try {
     await transporter.sendMail({
-      from: '"Service Call Manager" <your@gmail.com>', // sender address
-      to: "ericjh@iorb.com", // receiver
-      subject: "New Service Call", // Subject line
-      html: emailBody, // HTML body
+      from: '"Service Call Manager" <your@gmail.com>', 
+      to: "ericjh@iorb.com", 
+      subject: "New Service Call", 
+      html: emailBody, 
     });
 
     return NextResponse.json(

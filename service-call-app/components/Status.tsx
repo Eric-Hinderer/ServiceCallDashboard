@@ -38,7 +38,7 @@ export default function Status({
     onValueChange={handleStatusChange}
     disabled={isPending}
   >
-    <SelectTrigger className="text-left min-w-[121px] py-1 px-2 h-8"> {/* Reduced padding and height */}
+    <SelectTrigger className="text-left min-w-[121px] py-1 px-2 h-8">
       <SelectValue placeholder="Select status..." />
     </SelectTrigger>
     <SelectContent>

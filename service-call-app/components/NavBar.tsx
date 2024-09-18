@@ -162,7 +162,6 @@ const Header = () => {
             ))}
           </Box>
 
-          {/* User Section */}
           {user ? (
             <>
               <IconButton
@@ -210,7 +209,7 @@ const Header = () => {
           open={mobileOpen}
           onClose={handleDrawerToggle}
           ModalProps={{
-            keepMounted: true, // Better performance on mobile
+            keepMounted: true,
           }}
           sx={{
             display: { xs: "block", md: "none" },
@@ -220,8 +219,6 @@ const Header = () => {
           {drawer}
         </Drawer>
       </Box>
-
-      {/* Offset for Fixed AppBar */}
       <Toolbar />
     </>
   );
