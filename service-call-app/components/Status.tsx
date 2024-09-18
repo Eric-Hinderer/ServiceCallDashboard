@@ -14,14 +14,27 @@ import { Circle, Clock, CheckCircle } from "lucide-react";
 import React from "react";
 
 const statusOptions = [
-  { value: "OPEN", label: "Open", color: "text-blue-500", icon: Circle },
+  {
+    value: "OPEN",
+    label: "Open",
+    color: "text-blue-700",
+    bgColor: "bg-blue-100",
+    icon: Circle,
+  },
   {
     value: "IN_PROGRESS",
     label: "In Progress",
-    color: "text-yellow-500",
+    color: "text-yellow-700",
+    bgColor: "bg-yellow-100",
     icon: Clock,
   },
-  { value: "DONE", label: "Done", color: "text-green-500", icon: CheckCircle },
+  {
+    value: "DONE",
+    label: "Done",
+    color: "text-green-700",
+    bgColor: "bg-green-100",
+    icon: CheckCircle,
+  },
 ];
 
 export default function Status({
@@ -52,23 +65,30 @@ export default function Status({
 
   return (
     <Select onValueChange={handleStatusChange} value={status}>
-      <SelectTrigger className="w-[180px]">
-        <SelectValue placeholder="Select status">
-          {selectedOption && (
-            <div className={`flex items-center ${selectedOption.color}`}>
-              {React.createElement(selectedOption.icon, {
-                className: "mr-2 h-4 w-4",
-              })}
-              {selectedOption.label}
-            </div>
-          )}
-        </SelectValue>
+      <SelectTrigger
+        className={`w-auto rounded-full ${
+          selectedOption
+            ? `${selectedOption.color} ${selectedOption.bgColor}`
+            : ""
+        } px-2 py-1 flex items-center whitespace-nowrap`}
+      >
+        {selectedOption && (
+          <div className="flex items-center">
+            {React.createElement(selectedOption.icon, {
+              className: "mr-2 h-4 w-4",
+            })}
+            {selectedOption.label}
+          </div>
+        )}
       </SelectTrigger>
+
       <SelectContent>
         <SelectGroup>
           {statusOptions.map((option) => (
             <SelectItem key={option.value} value={option.value}>
-              <div className={`flex items-center ${option.color}`}>
+              <div
+                className={`flex items-center ${option.color} whitespace-nowrap`}
+              >
                 {React.createElement(option.icon, {
                   className: "mr-2 h-4 w-4",
                 })}
