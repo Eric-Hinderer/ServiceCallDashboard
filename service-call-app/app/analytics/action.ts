@@ -193,7 +193,10 @@ export async function getCallsPerTakenBy(startDate: Date, endDate: Date) {
   const callsPerTakenBy: { [key: string]: number } = {};
   querySnapshot.forEach((doc) => {
     const data = doc.data();
-    const takenBy = data.takenBy;
+    let takenBy = data.takenBy;
+    if(!takenBy) {
+      takenBy = "Select...";
+    }
 
     if (!callsPerTakenBy[takenBy]) {
       callsPerTakenBy[takenBy] = 0;
