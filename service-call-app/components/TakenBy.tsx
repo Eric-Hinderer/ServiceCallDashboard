@@ -36,7 +36,7 @@ export default function TakenBy({ id, currentTakenBy }: { id: string; currentTak
       onValueChange={handleSelectChange} 
       disabled={isPending}
     >
-      <SelectTrigger className="w-full">
+      <SelectTrigger className="w-full rounded-full">
         <SelectValue placeholder="Select..." />
       </SelectTrigger>
       <SelectContent>
