@@ -59,10 +59,10 @@ export async function getServiceCalls() {
         updatedAt: data.updatedAt ? data.updatedAt.toDate() : null,
       } as ServiceCall;
     });
-
     return serviceCalls;
   } catch (error) {
     console.error("Error fetching service calls:", error);
     throw error;
   }
+
 }

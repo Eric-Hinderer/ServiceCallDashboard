@@ -5,10 +5,14 @@ import { columns } from "../testing/columns";
 import ServiceCallModalButton from "@/components/ServiceCallModalButton";
 import { getLocations, getMachines, getServiceCalls } from "./action";
 
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardPage() {
-  const locations = await getLocations();
-  const machines = await getMachines();
-  const totalServiceCalls = await getServiceCalls();
+  const [locations, machines, totalServiceCalls] = await Promise.all([
+    getLocations(),
+    getMachines(),
+    getServiceCalls(),
+  ]);
 
   const resolvedToday = totalServiceCalls.filter(
     (serviceCall) =>
