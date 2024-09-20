@@ -47,21 +47,6 @@ export default async function ServiceEditPage({
         className="space-y-4 bg-white p-6 shadow rounded-lg"
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {/* <div>
-            <Label
-              htmlFor="date"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Date:
-            </Label>
-            <Input
-              id="date"
-              type="datetime-local"
-              name="date"
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            />
-          </div> */}
-
           <div>
             <Label
               htmlFor="location"

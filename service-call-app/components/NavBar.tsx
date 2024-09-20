@@ -27,9 +27,10 @@ import {
   Analytics as AnalyticsIcon,
   ExitToApp as ExitToAppIcon,
   Login as LoginIcon,
+  Chat as ChatIcon,
 } from "@mui/icons-material";
-import Image from 'next/image'
-import Central from '@/public/central.jpg'
+import Image from "next/image";
+import Central from "@/public/central.jpg";
 
 const Header = () => {
   const { user, loading, signIn, signOut } = useAuth();
@@ -118,7 +119,7 @@ const Header = () => {
 
   return (
     <>
-      <AppBar position="fixed" sx={{backgroundColor:"black"}}>
+      <AppBar position="fixed" sx={{ backgroundColor: "black" }}>
         <Toolbar>
           <IconButton
             color="inherit"
@@ -132,9 +133,12 @@ const Header = () => {
 
           {/* Logo */}
           <Link href="/" passHref>
-           <Image src={Central} alt="Service Call Manager" width={200} height={40} />
-
-  
+            <Image
+              src={Central}
+              alt="Service Call Manager"
+              width={200}
+              height={40}
+            />
           </Link>
 
           {/* Desktop Navigation Menu */}
