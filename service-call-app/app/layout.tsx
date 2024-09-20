@@ -3,7 +3,7 @@ import "./globals.css";
 import { AuthProvider } from "@/components/AuthContext";
 
 import { Inter } from "next/font/google";
-import ChatWithDatabase from "../components/ui/ChatBot";
+import ChatWithDatabase from "../components/ChatBot";
 
 const inter = Inter({
   subsets: ["latin"],

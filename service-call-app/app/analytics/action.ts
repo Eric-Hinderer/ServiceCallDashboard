@@ -194,7 +194,7 @@ export async function getCallsPerTakenBy(startDate: Date, endDate: Date) {
   querySnapshot.forEach((doc) => {
     const data = doc.data();
     let takenBy = data.takenBy;
-    if(!takenBy) {
+    if (!takenBy) {
       takenBy = "Select...";
     }
 
@@ -204,4 +204,36 @@ export async function getCallsPerTakenBy(startDate: Date, endDate: Date) {
     callsPerTakenBy[takenBy] += 1;
   });
   return callsPerTakenBy;
+}
+
+export async function getCallsPerMachine(startDate: Date, endDate: Date) {
+  const startInCentralTime = DateTime.fromJSDate(startDate, {
+    zone: "UTC",
+  }).setZone("America/Chicago");
+  const endInCentralTime = DateTime.fromJSDate(endDate, {
+    zone: "UTC",
+  }).setZone("America/Chicago");
+
+  const serviceCallsRef = collection(db, "ServiceCalls");
+  const q = query(
+    serviceCallsRef,
+    where("date", ">=", Timestamp.fromDate(startInCentralTime.toJSDate())),
+    where("date", "<=", Timestamp.fromDate(endInCentralTime.toJSDate()))
+  );
+
+  const querySnapshot = await getDocs(q);
+
+  const callsPerMachine: { [key: string]: number } = {};
+  querySnapshot.forEach((doc) => {
+    const data = doc.data();
+    const machine = data.machine;
+
+    if (!callsPerMachine[machine]) {
+      callsPerMachine[machine] = 0;
+    }
+    callsPerMachine[machine] += 1;
+  });
+
+  return callsPerMachine;
+ 
 }

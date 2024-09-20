@@ -9,6 +9,7 @@ import {
   getAfterHoursCallsByDayOfWeek,
   getCallsPerLocation,
   getCallsPerTakenBy,
+  getCallsPerMachine,
 } from "./action";
 import Link from "next/link";
 import { dayNames, ServiceCall } from "../(definitions)/definitions";
@@ -44,11 +45,19 @@ export default function AnalyticsPage() {
     [key: string]: number;
   }>({});
 
+  const [callsPerMachine, setCallPersMachine] = React.useState<{
+    [key: string]: number;
+  }>({});
+
+
   const chartRef = React.useRef<HTMLCanvasElement | null>(null);
   const chartInstance = React.useRef<Chart | null>(null);
 
   const chartPerTakenByRef = React.useRef<HTMLCanvasElement | null>(null);
   const chartPerTakenByInstance = React.useRef<Chart | null>(null);
+
+  const chartPerMachineRef = React.useRef<HTMLCanvasElement | null>(null);
+  const chartPerMachineInstance = React.useRef<Chart | null>(null);
 
   React.useEffect(() => {
     async function fetchData() {
@@ -69,6 +78,9 @@ export default function AnalyticsPage() {
 
         const tempTakenBy = await getCallsPerTakenBy(startDate, endDate);
         setCallsPerTakenBy(tempTakenBy);
+
+        const tempMachine = await getCallsPerMachine(startDate, endDate);
+        setCallPersMachine(tempMachine);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -166,6 +178,51 @@ export default function AnalyticsPage() {
       }
     };
   }, [callsPerTakenBy]);
+
+  React.useEffect(() => {
+    if (!chartPerMachineRef.current) return;
+
+    if (chartPerMachineInstance.current) {
+      chartPerMachineInstance.current.destroy();
+    }
+
+    chartPerMachineInstance.current = new Chart(chartPerMachineRef.current, {
+      type: "bar",
+      data: {
+        labels: Object.keys(callsPerMachine),
+        datasets: [
+          {
+            label: "Calls per Machine",
+            data: Object.values(callsPerMachine),
+            backgroundColor: "#3B82F6",
+          },
+        ],
+      },
+      options: {
+        scales: {
+          x: {
+            ticks: {
+              autoSkip: false,
+              maxRotation: 90,
+              minRotation: 90,
+              font: {
+                size: 10,
+              },
+            },
+          },
+          y: {
+            beginAtZero: true,
+          },
+        },
+      },
+    });
+
+    return () => {
+      if (chartPerMachineInstance.current) {
+        chartPerMachineInstance.current.destroy();
+      }
+    };
+  }, [callsPerMachine]);
 
   const totalAfterHoursCalls = afterHoursCallsByDayOfWeek.reduce(
     (total, dayData) => total + dayData.callCount,
@@ -309,6 +366,24 @@ export default function AnalyticsPage() {
               <div className="mt-6">
                 <canvas
                   ref={chartPerTakenByRef}
+                  width={800}
+                  height={400}
+                  style={{ maxWidth: "100%", maxHeight: "400px" }}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="w-full rounded-lg shadow-lg bg-white">
+          <CardContent className="flex items-center justify-center">
+            <div className="text-center">
+              <h2 className="text-2xl font-semibold text-gray-700">
+                Calls per Machine
+              </h2>
+              <div className="mt-6">
+                <canvas
+                  ref={chartPerMachineRef}
                   width={800}
                   height={400}
                   style={{ maxWidth: "100%", maxHeight: "400px" }}
