@@ -29,7 +29,7 @@ export default function RootLayout({
       <body>
         <AuthProvider>
           <Header />
-          <ChatWithDatabase>{children}</ChatWithDatabase>
+          {children}
         </AuthProvider>
       </body>
     </html>
