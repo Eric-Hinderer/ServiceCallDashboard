@@ -13,6 +13,8 @@ export async function POST(req: any) {
     notes,
   } = await req.json();
 
+  const parsedDate = new Date(date);
+
   const transporter = nodemailer.createTransport({
     service: "gmail",
     host: "smtp.gmail.com",
@@ -25,7 +27,7 @@ export async function POST(req: any) {
 
   const emailBody = `
     <h1>New Service Call</h1>
-    <p><strong>Date:</strong> ${date}</p>
+    <p><strong>Date:</strong> ${parsedDate.toLocaleString()}</p>
     <p><strong>Location:</strong> ${location}</p>
     <p><strong>Who Called:</strong> ${whoCalled}</p>
     <p><strong>Machine:</strong> ${machine}</p>
