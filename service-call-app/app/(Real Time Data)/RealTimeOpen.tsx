@@ -28,6 +28,7 @@ import {
   CircularProgress,
   Box,
 } from "@mui/material";
+import toast from "react-hot-toast";
 
 import Grid from "@mui/material/Grid2";
 import { getMachines, getLocations } from "@/app/dashboard/action";
@@ -39,6 +40,7 @@ const RealTimeOpenInProgress = () => {
   const [loading, setLoading] = useState(true);
   const [machines, setMachines] = useState<string[]>([]);
   const [locations, setLocations] = useState<string[]>([]);
+  const [lastIds, setLastIds] = useState<string[]>([]);
 
   useEffect(() => {
     const q = query(
@@ -61,6 +63,16 @@ const RealTimeOpenInProgress = () => {
             : null,
         })) as ServiceCall[];
 
+        // Toast for new service calls
+        const newIds = updatedServiceCalls.map(call => call.id);
+        if (lastIds.length > 0) {
+          const newCall = updatedServiceCalls.find(call => !lastIds.includes(call.id));
+          if (newCall) {
+            toast.success(`New service call at ${newCall.location || "Unknown Location"}`);
+          }
+        }
+        setLastIds(newIds);
+
         setServiceCalls(updatedServiceCalls);
         setLoading(false);
       },
@@ -71,7 +83,7 @@ const RealTimeOpenInProgress = () => {
     );
 
     return () => unsubscribe();
-  }, []);
+  }, [lastIds]);
 
   useEffect(() => {
     const fetchData = async () => {

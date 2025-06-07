@@ -1,6 +1,7 @@
 import Header from "@/components/NavBar";
 import "./globals.css";
 import { AuthProvider } from "@/components/AuthContext";
+import { Toaster } from "react-hot-toast";
 
 import { Inter } from "next/font/google";
 import ChatWithDatabase from "../components/ChatBot";
@@ -29,6 +30,7 @@ export default function RootLayout({
       <body>
         <AuthProvider>
           <Header />
+          <Toaster position="top-right" />
           {children}
         </AuthProvider>
       </body>
