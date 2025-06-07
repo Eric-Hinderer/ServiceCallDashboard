@@ -10,7 +10,7 @@ export async function createFromForm(formData: FormData) {
   console.log(dateString); 
   
 
-  const temp = dateString ? moment.tz(dateString, 'America/Chicago') : moment();
+  const temp = dateString ? moment.tz(dateString, 'America/Chicago') : moment.tz('America/Chicago');
   console.log(temp);
   
   const utcDate = temp.utc().toDate();
