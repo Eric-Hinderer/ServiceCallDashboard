@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { changeStatus } from "../app/dashboard/[id]/action";
+import { doc, updateDoc, Timestamp } from "firebase/firestore";
+import db from "@/lib/firebase";
 import {
   Select,
   SelectTrigger,
@@ -51,12 +52,18 @@ export default function Status({
     setStatus(currentStatus);
   }, [currentStatus]);
 
-  const handleStatusChange = (newStatus: string) => {
+  const handleStatusChange = async (newStatus: string) => {
     setStatus(newStatus);
-
-    startTransition(() => {
-      changeStatus(id, newStatus);
-    });
+    try {
+      const serviceCallRef = doc(db, "ServiceCalls", id);
+      await updateDoc(serviceCallRef, {
+        status: newStatus,
+        updatedAt: Timestamp.now(),
+      });
+    } catch (error) {
+      // Optionally handle error (e.g., show a toast)
+      console.error("Failed to update status:", error);
+    }
   };
 
   const selectedOption = statusOptions.find(

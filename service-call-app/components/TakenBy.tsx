@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { changeTakenBy } from "../app/dashboard/[id]/action";
+import { doc, updateDoc, Timestamp } from "firebase/firestore";
+import db from "@/lib/firebase";
 import {
   Select,
   SelectContent,
@@ -22,12 +23,19 @@ export default function TakenBy({ id, currentTakenBy }: { id: string; currentTak
     setTakenBy(currentTakenBy); 
   }, [currentTakenBy]);
 
-  const handleSelectChange = (newTakenBy: string) => {
+  const handleSelectChange = async (newTakenBy: string) => {
     setTakenBy(newTakenBy);
 
-    startTransition(() => {
-      changeTakenBy(id, newTakenBy);
-    });
+    try {
+      const serviceCallRef = doc(db, "ServiceCalls", id);
+      await updateDoc(serviceCallRef, {
+        takenBy: newTakenBy,
+        updatedAt: Timestamp.now(),
+      });
+    } catch (error) {
+      // Optionally handle error (e.g., show a toast)
+      console.error("Failed to update takenBy:", error);
+    }
   };
 
   return (
