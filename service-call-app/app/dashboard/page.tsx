@@ -21,6 +21,26 @@ export default async function DashboardPage() {
       serviceCall.updatedAt.toDateString() === new Date().toDateString()
   ).length;
 
+  const today = new Date();
+  const yesterday = new Date();
+  yesterday.setDate(today.getDate() - 1);
+
+  const resolvedYesterday = totalServiceCalls.filter(
+    (serviceCall) =>
+      serviceCall.status === "DONE" &&
+      serviceCall.updatedAt &&
+      serviceCall.updatedAt.toDateString() === yesterday.toDateString()
+  ).length;
+
+  let trend = null;
+  if (resolvedToday > resolvedYesterday) {
+    trend = { icon: "▲", color: "text-green-600", label: "Up" };
+  } else if (resolvedToday < resolvedYesterday) {
+    trend = { icon: "▼", color: "text-red-600", label: "Down" };
+  } else {
+    trend = { icon: "▬", color: "text-gray-400", label: "No Change" };
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
       {/* Main Content */}
@@ -37,7 +57,16 @@ export default async function DashboardPage() {
             <h2 className="text-lg font-medium">
               Service Calls Resolved Today
             </h2>
-            <p className="mt-2 text-2xl">{resolvedToday}</p>
+            <div className="mt-2 flex items-center gap-2">
+              <p className="text-2xl">{resolvedToday}</p>
+              <span
+                className={`ml-2 ${trend.color} text-lg flex items-center`}
+                title={`Compared to yesterday: ${trend.label}`}
+                aria-label={`Trend: ${trend.label}`}
+              >
+                {trend.icon}
+              </span>
+            </div>
           </div>
           <div className="bg-white shadow-md p-4 rounded-lg">
             <h2 className="text-lg font-medium">Total Locations</h2>

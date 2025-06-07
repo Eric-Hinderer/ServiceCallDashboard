@@ -31,6 +31,7 @@ import {
 
 import Grid from "@mui/material/Grid2";
 import { getMachines, getLocations } from "@/app/dashboard/action";
+import { formatDistanceToNow } from "date-fns";
 
 const RealTimeOpenInProgress = () => {
   const [serviceCalls, setServiceCalls] = useState<ServiceCall[]>([]);
@@ -171,7 +172,12 @@ const RealTimeOpenInProgress = () => {
                 {serviceCall.location || "Unknown Location"}
               </h3>
               <div className="text-sm text-gray-600">
-                {serviceCall.date ? serviceCall.date.toLocaleString() : "N/A"}
+                {serviceCall.date
+                  ? `${serviceCall.date.toLocaleString()} (${formatDistanceToNow(
+                      serviceCall.date,
+                      { addSuffix: true }
+                    )})`
+                  : "N/A"}
               </div>
             </div>
             <div>
@@ -245,7 +251,12 @@ const RealTimeOpenInProgress = () => {
                 }}
               >
                 <TableCell>
-                  {serviceCall.date ? serviceCall.date.toLocaleString() : "N/A"}
+                  {serviceCall.date
+                    ? `${serviceCall.date.toLocaleString()} (${formatDistanceToNow(
+                        serviceCall.date,
+                        { addSuffix: true }
+                      )})`
+                    : "N/A"}
                 </TableCell>
                 <TableCell>{serviceCall.location || "N/A"}</TableCell>
                 <TableCell>{serviceCall.whoCalled || "N/A"}</TableCell>
@@ -268,7 +279,10 @@ const RealTimeOpenInProgress = () => {
                 <TableCell>{serviceCall.notes || "N/A"}</TableCell>
                 <TableCell>
                   {serviceCall.updatedAt
-                    ? serviceCall.updatedAt.toLocaleString()
+                    ? `${serviceCall.updatedAt.toLocaleString()} (${formatDistanceToNow(
+                        serviceCall.updatedAt,
+                        { addSuffix: true }
+                      )})`
                     : "N/A"}
                 </TableCell>
                 <TableCell>
