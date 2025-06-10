@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 import { NextResponse } from "next/server";
+import { DateTime } from "luxon";
 
 export async function POST(req: any) {
   const {
@@ -14,11 +15,14 @@ export async function POST(req: any) {
   } = await req.json();
 
   const parsedDate = new Date(date);
+  const centralTimeString = DateTime.fromJSDate(parsedDate, { zone: "utc" })
+    .setZone("America/Chicago")
+    .toLocaleString(DateTime.DATETIME_FULL);
 
   const transporter = nodemailer.createTransport({
     service: "gmail",
     host: "smtp.gmail.com",
-    secure: false, 
+    secure: false,
     auth: {
       user: process.env.GMAIL_FROM,
       pass: process.env.GMAIL_APP_PASSWORD,
@@ -27,7 +31,7 @@ export async function POST(req: any) {
 
   const emailBody = `
     <h1>New Service Call</h1>
-    <p><strong>Date:</strong> ${parsedDate.toLocaleString()}</p>
+    <p><strong>Date:</strong> ${centralTimeString} (Central Time)</p>
     <p><strong>Location:</strong> ${location}</p>
     <p><strong>Who Called:</strong> ${whoCalled}</p>
     <p><strong>Machine:</strong> ${machine}</p>
@@ -39,10 +43,10 @@ export async function POST(req: any) {
 
   try {
     await transporter.sendMail({
-      from: '"Service Call Manager" <your@gmail.com>', 
-      to: "route@gamesales.com", 
-      subject: "New Service Call", 
-      html: emailBody, 
+      from: '"Service Call Manager" <your@gmail.com>',
+      to: "route@gamesales.com",
+      subject: "New Service Call",
+      html: emailBody,
     });
 
     return NextResponse.json(
