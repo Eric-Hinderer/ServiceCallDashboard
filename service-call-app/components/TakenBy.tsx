@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/select";
 
 const predefinedNames = [
-  "Kurt", "Chris", "Mike", "Dean", "Damon", "John", "Select..."
+  "Kurt", "Chris", "Mike", "Dean", "Damon", "John", "Aaron", "Select..."
 ];
 
 export default function TakenBy({ id, currentTakenBy }: { id: string; currentTakenBy: string }) {
