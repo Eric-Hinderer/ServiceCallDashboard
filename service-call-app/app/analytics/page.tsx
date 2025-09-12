@@ -12,7 +12,7 @@ import {
   getCallsPerMachine,
 } from "./action";
 import Link from "next/link";
-import { dayNames, ServiceCall } from "../(definitions)/definitions";
+import { DAY_NAMES, ServiceCall } from "@/lib/types";
 import Chart from "chart.js/auto";
 
 interface DayData {
@@ -303,7 +303,7 @@ export default function AnalyticsPage() {
                     className="hover:text-blue-600 transition"
                     onClick={() => handleDayClick(dayData)}
                   >
-                    {dayNames[dayData.dayOfWeek]}: {dayData.callCount} call(s)
+                    {DAY_NAMES[dayData.dayOfWeek]}: {dayData.callCount} call(s)
                   </Link>
                 </div>
               ))}

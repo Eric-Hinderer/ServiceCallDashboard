@@ -7,6 +7,7 @@ import db from "@/lib/firebase";
 import { redirect } from "next/navigation";
 import { getData } from "./action";
 import DateTimePicker from 'react-datetime-picker';
+import { ServiceCallStatus, PREDEFINED_NAMES } from "@/lib/types";
 
 export default async function ServiceEditPage({
   params,
@@ -139,9 +140,9 @@ export default async function ServiceEditPage({
               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               defaultValue={data?.status ?? ""}
             >
-              <option value={"OPEN"}>Open</option>
-              <option value={"IN_PROGRESS"}>In Progress</option>
-              <option value={"DONE"}>Done</option>
+              <option value={ServiceCallStatus.OPEN}>Open</option>
+              <option value={ServiceCallStatus.IN_PROGRESS}>In Progress</option>
+              <option value={ServiceCallStatus.DONE}>Done</option>
             </select>
           </div>
         </div>

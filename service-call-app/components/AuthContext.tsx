@@ -12,17 +12,11 @@ import {
   signOut as firebaseSignOut,
 } from "@/lib/auth";
 import { User } from "firebase/auth";
-
-interface AuthContextType {
-  user: User | null;
-  loading: boolean;
-  signIn: () => Promise<void>;
-  signOut: () => Promise<void>;
-}
+import { AuthContextType, AuthProviderProps } from "@/lib/types";
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
+export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 

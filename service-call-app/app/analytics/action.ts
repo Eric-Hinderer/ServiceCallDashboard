@@ -11,12 +11,7 @@ import {
 
 import { DateTime } from "luxon";
 
-import { ServiceCall } from "../(definitions)/definitions";
-
-interface CallsByDay {
-  callCount: number;
-  serviceCalls: any[];
-}
+import { ServiceCall, CallsByDay, DayData, WeekendData } from "@/lib/types";
 
 export async function getWeekendServiceCalls(startDate: Date, endDate: Date) {
   const serviceCallsRef = collection(db, "ServiceCalls");
@@ -67,13 +62,13 @@ export async function getWeekendServiceCalls(startDate: Date, endDate: Date) {
   return {
     count: weekendServiceCalls.length,
     serviceCalls: weekendServiceCalls,
-  };
+  } as WeekendData;
 }
 
 export async function getAfterHoursCallsByDayOfWeek(
   startDate: Date,
   endDate: Date
-): Promise<{ dayOfWeek: number; callCount: number; serviceCalls: any[] }[]> {
+): Promise<DayData[]> {
   const serviceCallsRef = collection(db, "ServiceCalls");
 
   const startInCentralTime = DateTime.fromJSDate(startDate, {
@@ -124,9 +119,9 @@ export async function getAfterHoursCallsByDayOfWeek(
       callsByDayOfWeek[dayOfWeek].serviceCalls.push({
         ...data,
         id: doc.id,
-        date: localDate.toJSDate().toISOString(),
-        createdAt: data.createdAt?.toDate().toISOString(),
-        updatedAt: data.updatedAt?.toDate().toISOString(),
+        date: localDate.toJSDate(),
+        createdAt: data.createdAt?.toDate(),
+        updatedAt: data.updatedAt?.toDate(),
       });
     }
   });

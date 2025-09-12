@@ -16,14 +16,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { DataTablePagination } from "@/components/PaginationTable";
-import { ServiceCall } from "../(definitions)/definitions"; 
+import { ServiceCall, DataTableProps } from "@/lib/types";
 
-interface DataTableProps {
-  columns: ColumnDef<any, any>[];
-  data: ServiceCall[];
-}
-
-export function DataTable({ columns, data }: DataTableProps) {
+export function DataTable({ columns, data }: DataTableProps<ServiceCall>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 

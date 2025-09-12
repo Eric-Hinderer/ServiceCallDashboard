@@ -1,5 +1,5 @@
 "use server";
-import { ServiceCall, Status } from "@/app/(definitions)/definitions";
+import { ServiceCall, ServiceCallStatus } from "@/lib/types";
 import db from "@/lib/firebase";
 import { addDoc, collection, setDoc, Timestamp } from "@firebase/firestore";
 import moment from 'moment-timezone';
@@ -24,7 +24,7 @@ export async function createFromForm(formData: FormData) {
   const reportedProblem = formData.get("reportedProblem") as string;
   const takenBy = formData.get("takenBy") as string;
   const notes = formData.get("notes") as string;
-  const status = (formData.get("status") as Status) || Status.OPEN;
+  const status = (formData.get("status") as ServiceCallStatus) || ServiceCallStatus.OPEN;
 
   const newServiceCall: any = {
     date : utcDate,
@@ -58,7 +58,7 @@ export async function emailGroup(formData: FormData) {
   const reportedProblem = formData.get("reportedProblem") as string;
   const takenBy = formData.get("takenBy") as string;
   const notes = formData.get("notes") as string;
-  const status = (formData.get("status") as Status) || Status.OPEN;
+  const status = (formData.get("status") as ServiceCallStatus) || ServiceCallStatus.OPEN;
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
   try {
     const res = await fetch(`${baseUrl}/api/sendEmail`, {

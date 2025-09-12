@@ -15,12 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-
-interface DataTableColumnHeaderProps<TData, TValue>
-  extends React.HTMLAttributes<HTMLDivElement> {
-  column: Column<TData, TValue>
-  title: string
-}
+import { DataTableColumnHeaderProps } from "@/lib/types";
 
 export function DataTableColumnHeader<TData, TValue>({
   column,

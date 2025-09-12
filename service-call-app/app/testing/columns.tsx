@@ -17,7 +17,7 @@ import { DataTableColumnHeader } from "@/components/DataColumnHeader";
 import Link from "next/link";
 
 import Status from "../../components/Status";
-import { ServiceCall } from "../(definitions)/definitions";
+import { ServiceCall } from "@/lib/types";
 import TakenBy from "@/components/TakenBy";
 import { useAuth } from "@/components/AuthContext";
 import { deleteServiceCall } from "../dashboard/action";

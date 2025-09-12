@@ -4,6 +4,7 @@ import { DataTable } from "../testing/data-table";
 import { columns } from "../testing/columns";
 import ServiceCallModalButton from "@/components/ServiceCallModalButton";
 import { getLocations, getMachines, getServiceCalls } from "./action";
+import { ServiceCallStatus } from "@/lib/types";
 
 export const dynamic = 'force-dynamic';
 
@@ -16,7 +17,7 @@ export default async function DashboardPage() {
 
   const resolvedToday = totalServiceCalls.filter(
     (serviceCall) =>
-      serviceCall.status === "DONE" &&
+      serviceCall.status === ServiceCallStatus.DONE &&
       serviceCall.updatedAt &&
       serviceCall.updatedAt.toDateString() === new Date().toDateString()
   ).length;
@@ -27,7 +28,7 @@ export default async function DashboardPage() {
 
   const resolvedYesterday = totalServiceCalls.filter(
     (serviceCall) =>
-      serviceCall.status === "DONE" &&
+      serviceCall.status === ServiceCallStatus.DONE &&
       serviceCall.updatedAt &&
       serviceCall.updatedAt.toDateString() === yesterday.toDateString()
   ).length;

@@ -10,10 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-const predefinedNames = [
-  "Kurt", "Chris", "Mike", "Dean", "Damon", "John", "Aaron", "Select..."
-];
+import { PREDEFINED_NAMES } from "@/lib/types";
 
 export default function TakenBy({ id, currentTakenBy }: { id: string; currentTakenBy: string }) {
   const [takenBy, setTakenBy] = useState<string>(currentTakenBy || "Select...");
@@ -48,12 +45,12 @@ export default function TakenBy({ id, currentTakenBy }: { id: string; currentTak
         <SelectValue placeholder="Select..." />
       </SelectTrigger>
       <SelectContent>
-        {predefinedNames.map((name) => (
+        {PREDEFINED_NAMES.map((name) => (
           <SelectItem key={name} value={name}>
             {name}
           </SelectItem>
         ))}
-        {!predefinedNames.includes(takenBy) && (
+        {!PREDEFINED_NAMES.includes(takenBy) && (
           <SelectItem key={takenBy} value={takenBy}>
             {takenBy}
           </SelectItem>

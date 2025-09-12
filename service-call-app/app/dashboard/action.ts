@@ -8,7 +8,7 @@ import {
   deleteDoc,
 } from "firebase/firestore";
 import db from "@/lib/firebase";
-import { ServiceCall } from "../(definitions)/definitions";
+import { ServiceCall } from "@/lib/types";
 
 export async function getLocations() {
   const q = query(collection(db, "ServiceCalls"), orderBy("location"));

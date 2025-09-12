@@ -35,15 +35,11 @@ import { DataTablePagination } from "@/components/PaginationTable";
 
 import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
 import db from "@/lib/firebase";
-import { ServiceCall } from "../(definitions)/definitions";
+import { ServiceCall, DataTableProps } from "@/lib/types";
 import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
 
-interface DataTableProps {
-  columns: ColumnDef<ServiceCall, any>[];
-}
-
-export function DataTable({ columns }: DataTableProps) {
+export function DataTable({ columns }: Pick<DataTableProps<ServiceCall>, 'columns'>) {
   const [serviceCalls, setServiceCalls] = useState<ServiceCall[]>([]);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);

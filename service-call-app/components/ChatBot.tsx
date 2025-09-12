@@ -13,14 +13,11 @@ import {
   IconButton,
 } from "@mui/material";
 import { Close as CloseIcon } from "@mui/icons-material";
-
-interface ChatProps {
-  children: React.ReactNode;
-}
+import { ChatProps, ChatMessage } from "@/lib/types";
 
 export default function ChatWithDatabase({ children }: ChatProps) {
-  const [messages, setMessages] = useState([
-    { role: "model", text: "Hello! How can I help you today?" },
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    { role: "model", text: "Hello! How can I help you today?" } as ChatMessage,
   ]);
   const [userInput, setUserInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -46,7 +43,7 @@ export default function ChatWithDatabase({ children }: ChatProps) {
   const handleUserInput = async () => {
     if (!userInput.trim()) return;
 
-    const userMessage = { role: "user", text: userInput };
+    const userMessage: ChatMessage = { role: "user", text: userInput };
     setMessages((prev) => [...prev, userMessage]);
     setUserInput("");
 
@@ -67,12 +64,12 @@ export default function ChatWithDatabase({ children }: ChatProps) {
 
       const { summary } = await response.json();
 
-      const modelMessage = { role: "model", text: summary };
+      const modelMessage: ChatMessage = { role: "model", text: summary };
       setMessages((prev) => [...prev, modelMessage]);
     } catch (error) {
       setMessages((prev) => [
         ...prev,
-        { role: "model", text: "Something went wrong, please try again." },
+        { role: "model", text: "Something went wrong, please try again." } as ChatMessage,
       ]);
     } finally {
       setLoading(false);
@@ -204,7 +201,7 @@ export default function ChatWithDatabase({ children }: ChatProps) {
                     }
                     sx={{
                       borderBottomRightRadius: msg.role === "user" ? 0 : 2,
-                      borderBottomLeftRadius: msg.role === "assistant" ? 0 : 2,
+                      borderBottomLeftRadius: msg.role === "model" ? 0 : 2,
                       wordWrap: "break-word",
                       boxShadow: "0px 2px 4px",
                     }}

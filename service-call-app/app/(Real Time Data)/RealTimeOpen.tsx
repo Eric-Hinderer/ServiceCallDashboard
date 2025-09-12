@@ -9,7 +9,7 @@ import {
   query,
   where,
 } from "firebase/firestore";
-import { ServiceCall } from "../(definitions)/definitions";
+import { ServiceCall, ServiceCallStatus } from "@/lib/types";
 import db from "@/lib/firebase";
 import ServiceCallModalButton from "@/components/ServiceCallModalButton";
 import Status from "../../components/Status";
@@ -45,7 +45,7 @@ const RealTimeOpenInProgress = () => {
   useEffect(() => {
     const q = query(
       collection(db, "ServiceCalls"),
-      where("status", "in", ["OPEN", "IN_PROGRESS"]),
+      where("status", "in", [ServiceCallStatus.OPEN, ServiceCallStatus.IN_PROGRESS]),
       orderBy("date", "desc")
     );
     const unsubscribe = onSnapshot(
