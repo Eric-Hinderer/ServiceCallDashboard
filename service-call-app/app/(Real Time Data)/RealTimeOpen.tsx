@@ -180,9 +180,31 @@ const RealTimeOpenInProgress = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center mt-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        <span className="ml-2 text-gray-600">Loading service calls...</span>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center">
+        <div className="max-w-md mx-auto px-6 py-8 text-center">
+          {/* Logo and Loading Animation */}
+          <div className="flex justify-center mb-6">
+            <div className="relative">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+                <Wrench className="h-8 w-8 text-blue-600" />
+              </div>
+              <div className="absolute inset-0 w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+            </div>
+          </div>
+
+          {/* Loading Text */}
+          <div className="space-y-2 mb-8">
+            <h2 className="text-xl font-semibold text-gray-900">Loading Real-Time Data</h2>
+            <p className="text-gray-600">Connecting to live service calls...</p>
+          </div>
+
+          {/* Loading Dots */}
+          <div className="flex justify-center space-x-2">
+            <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce"></div>
+            <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+            <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+          </div>
+        </div>
       </div>
     );
   }
