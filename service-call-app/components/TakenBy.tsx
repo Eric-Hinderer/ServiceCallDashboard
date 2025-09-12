@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import toast from "react-hot-toast";
 
 const predefinedNames = [
   "Kurt", "Chris", "Mike", "Dean", "Damon", "John", "Aaron", "Select..."
@@ -23,19 +24,25 @@ export default function TakenBy({ id, currentTakenBy }: { id: string; currentTak
     setTakenBy(currentTakenBy); 
   }, [currentTakenBy]);
 
-  const handleSelectChange = async (newTakenBy: string) => {
+  const handleSelectChange = (newTakenBy: string) => {
+    // Optimistic update
     setTakenBy(newTakenBy);
 
-    try {
-      const serviceCallRef = doc(db, "ServiceCalls", id);
-      await updateDoc(serviceCallRef, {
-        takenBy: newTakenBy,
-        updatedAt: Timestamp.now(),
-      });
-    } catch (error) {
-      // Optionally handle error (e.g., show a toast)
-      console.error("Failed to update takenBy:", error);
-    }
+    startTransition(async () => {
+      try {
+        const serviceCallRef = doc(db, "ServiceCalls", id);
+        await updateDoc(serviceCallRef, {
+          takenBy: newTakenBy,
+          updatedAt: Timestamp.now(),
+        });
+        toast.success(`Assigned to ${newTakenBy === "Select..." ? "unassigned" : newTakenBy}`);
+      } catch (error) {
+        // Revert on error
+        setTakenBy(currentTakenBy);
+        toast.error("Failed to update assignment");
+        console.error("Failed to update takenBy:", error);
+      }
+    });
   };
 
   return (
@@ -44,7 +51,7 @@ export default function TakenBy({ id, currentTakenBy }: { id: string; currentTak
       onValueChange={handleSelectChange} 
       disabled={isPending}
     >
-      <SelectTrigger className="w-auto rounded-full pr-3">
+      <SelectTrigger className={`w-auto rounded-full pr-3 ${isPending ? 'opacity-75' : ''}`}>
         <SelectValue placeholder="Select..." />
       </SelectTrigger>
       <SelectContent>
