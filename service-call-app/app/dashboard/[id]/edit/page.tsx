@@ -2,11 +2,17 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ArrowLeft, Save, Calendar, MapPin, User, Wrench, AlertCircle, FileText, UserCheck } from "lucide-react";
 import { doc, getDoc, Timestamp, updateDoc } from "@firebase/firestore";
 import db from "@/lib/firebase";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { getData } from "./action";
-import DateTimePicker from 'react-datetime-picker';
+import Link from "next/link";
+import { Status } from "@/app/(definitions)/definitions";
+import { EditFormSubmitButton } from "@/components/SubmitFormButton";
 
 export default async function ServiceEditPage({
   params,
@@ -16,156 +22,284 @@ export default async function ServiceEditPage({
   const key = params.id;
   const data = await getData(key);
   
+  // Redirect if no data found
+  if (!data) {
+    redirect("/dashboard");
+  }
 
   async function editServiceCall(formData: FormData) {
     "use server";
-    const docRef = doc(db, "ServiceCalls", key);
+    
+    try {
+      const docRef = doc(db, "ServiceCalls", key);
 
-    const updateData: any = {
-      location: formData.get("location"),
-      whoCalled: formData.get("whoCalled"),
-      machine: formData.get("machine"),
-      reportedProblem: formData.get("reportedProblem"),
-      takenBy: formData.get("takenBy"),
-      status: formData.get("status"),
-      notes: formData.get("notes"),
-      updatedAt: Timestamp.now(),
-    };
+      const updateData: any = {
+        location: formData.get("location")?.toString()?.trim() || "",
+        whoCalled: formData.get("whoCalled")?.toString()?.trim() || "",
+        machine: formData.get("machine")?.toString()?.trim() || "",
+        reportedProblem: formData.get("reportedProblem")?.toString()?.trim() || "",
+        takenBy: formData.get("takenBy")?.toString()?.trim() || "",
+        status: formData.get("status")?.toString() || Status.OPEN,
+        notes: formData.get("notes")?.toString()?.trim() || "",
+        updatedAt: Timestamp.now(),
+      };
 
-    await updateDoc(docRef, updateData);
+      // Validate required fields
+      if (!updateData.location || !updateData.whoCalled || !updateData.machine) {
+        throw new Error("Location, Who Called, and Machine are required fields");
+      }
+
+      await updateDoc(docRef, updateData);
+      
+      // Revalidate the dashboard page to show updated data
+      revalidatePath("/dashboard");
+      revalidatePath(`/dashboard/${key}`);
+      
+    } catch (error) {
+      console.error("Error updating service call:", error);
+      throw error;
+    }
 
     redirect("/dashboard");
   }
 
+  const formatDate = (timestamp: any) => {
+    if (!timestamp) return "";
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    return date.toLocaleString();
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case Status.OPEN:
+        return "text-red-600 bg-red-50 border-red-200";
+      case Status.IN_PROGRESS:
+        return "text-yellow-600 bg-yellow-50 border-yellow-200";
+      case Status.DONE:
+        return "text-green-600 bg-green-50 border-green-200";
+      default:
+        return "text-gray-600 bg-gray-50 border-gray-200";
+    }
+  };
+
   return (
-    <div className="max-w-xl mx-auto px-4 sm:px-6 lg:px-8">
-      <h1 className="text-2xl font-bold text-center mb-6 text-gray-800">
-        Edit Service Call
-      </h1>
-      <form
-        action={editServiceCall}
-        className="space-y-4 bg-white p-6 shadow rounded-lg"
-      >
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <Label
-              htmlFor="location"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Location:
-            </Label>
-            <Input
-              id="location"
-              type="text"
-              name="location"
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              defaultValue={data?.location ?? ""}
-            />
-          </div>
-          <div>
-            <Label
-              htmlFor="whoCalled"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Who Called:
-            </Label>
-            <Input
-              id="whoCalled"
-              type="text"
-              name="whoCalled"
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              defaultValue={data?.whoCalled ?? ""}
-            />
-          </div>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <Label
-              htmlFor="machine"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Machine:
-            </Label>
-            <Input
-              id="machine"
-              type="text"
-              name="machine"
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              defaultValue={data?.machine ?? ""}
-            />
-          </div>
-          <div>
-            <Label
-              htmlFor="reportedProblem"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Reported Problem:
-            </Label>
-            <Input
-              id="reportedProblem"
-              type="text"
-              name="reportedProblem"
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              defaultValue={data?.reportedProblem ?? ""}
-            />
-          </div>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <Label
-              htmlFor="takenBy"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Taken By:
-            </Label>
-            <Input
-              id="takenBy"
-              type="text"
-              name="takenBy"
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              defaultValue={data?.takenBy ?? ""}
-            />
-          </div>
-          <div>
-            <Label
-              htmlFor="status"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Status:
-            </Label>
-            <select
-              id="status"
-              name="status"
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              defaultValue={data?.status ?? ""}
-            >
-              <option value={"OPEN"}>Open</option>
-              <option value={"IN_PROGRESS"}>In Progress</option>
-              <option value={"DONE"}>Done</option>
-            </select>
-          </div>
-        </div>
-        <div>
-          <Label
-            htmlFor="notes"
-            className="block text-sm font-medium text-gray-700"
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header with Back Button */}
+        <div className="flex items-center gap-4 mb-8">
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
           >
-            Notes:
-          </Label>
-          <Textarea
-            id="notes"
-            name="notes"
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            defaultValue={data?.notes ?? ""}
-          />
+            <ArrowLeft className="h-5 w-5" />
+            <span className="text-sm font-medium">Back to Dashboard</span>
+          </Link>
         </div>
-        <Button
-          type="submit"
-          className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        >
-          Edit
-        </Button>
-      </form>
+
+        <div className="space-y-6">
+          {/* Page Header */}
+          <div className="text-center space-y-2">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              Edit Service Call
+            </h1>
+            <p className="text-gray-600">
+              Service Call ID: <span className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">{key}</span>
+            </p>
+            {data.createdAt && (
+              <p className="text-sm text-gray-500">
+                Created: {formatDate(data.createdAt)} • Last Updated: {formatDate(data.updatedAt)}
+              </p>
+            )}
+          </div>
+
+          {/* Status Badge */}
+          <div className="flex justify-center">
+            <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border ${getStatusColor(data.status)} font-medium text-sm`}>
+              <div className="w-2 h-2 rounded-full bg-current opacity-60"></div>
+              {data.status === Status.OPEN && "Open"}
+              {data.status === Status.IN_PROGRESS && "In Progress"}
+              {data.status === Status.DONE && "Completed"}
+            </div>
+          </div>
+
+          {/* Main Form Card */}
+          <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+            <CardHeader className="pb-6">
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <FileText className="h-5 w-5 text-blue-600" />
+                Service Call Details
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form action={editServiceCall} className="space-y-8">
+                {/* Contact Information Section */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                    <User className="h-5 w-5 text-indigo-600" />
+                    Contact Information
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="location" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-gray-500" />
+                        Location
+                      </Label>
+                      <Input
+                        id="location"
+                        name="location"
+                        placeholder="Enter location"
+                        defaultValue={data?.location ?? ""}
+                        className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        required
+                        aria-describedby="location-description"
+                      />
+                      <p id="location-description" className="text-xs text-gray-500 mt-1">
+                        Enter the physical location where service is needed
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="whoCalled" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                        <User className="h-4 w-4 text-gray-500" />
+                        Who Called
+                      </Label>
+                      <Input
+                        id="whoCalled"
+                        name="whoCalled"
+                        placeholder="Enter caller name"
+                        defaultValue={data?.whoCalled ?? ""}
+                        className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        required
+                        aria-describedby="whoCalled-description"
+                      />
+                      <p id="whoCalled-description" className="text-xs text-gray-500 mt-1">
+                        Name of the person who reported the issue
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Technical Information Section */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                    <Wrench className="h-5 w-5 text-indigo-600" />
+                    Technical Details
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="machine" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                        <Wrench className="h-4 w-4 text-gray-500" />
+                        Machine/Equipment
+                      </Label>
+                      <Input
+                        id="machine"
+                        name="machine"
+                        placeholder="Enter machine/equipment"
+                        defaultValue={data?.machine ?? ""}
+                        className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        required
+                        aria-describedby="machine-description"
+                      />
+                      <p id="machine-description" className="text-xs text-gray-500 mt-1">
+                        Equipment or machine that needs service
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="reportedProblem" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                        <AlertCircle className="h-4 w-4 text-gray-500" />
+                        Reported Problem
+                      </Label>
+                      <Input
+                        id="reportedProblem"
+                        name="reportedProblem"
+                        placeholder="Brief description of the problem"
+                        defaultValue={data?.reportedProblem ?? ""}
+                        className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Assignment & Status Section */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                    <UserCheck className="h-5 w-5 text-indigo-600" />
+                    Assignment & Status
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="takenBy" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                        <UserCheck className="h-4 w-4 text-gray-500" />
+                        Assigned To
+                      </Label>
+                      <Input
+                        id="takenBy"
+                        name="takenBy"
+                        placeholder="Enter technician name"
+                        defaultValue={data?.takenBy ?? ""}
+                        className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="status" className="text-sm font-medium text-gray-700">
+                        Status
+                      </Label>
+                      <Select name="status" defaultValue={data?.status ?? Status.OPEN}>
+                        <SelectTrigger className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value={Status.OPEN} className="flex items-center gap-2">
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                              Open
+                            </div>
+                          </SelectItem>
+                          <SelectItem value={Status.IN_PROGRESS} className="flex items-center gap-2">
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
+                              In Progress
+                            </div>
+                          </SelectItem>
+                          <SelectItem value={Status.DONE} className="flex items-center gap-2">
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                              Completed
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Notes Section */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-indigo-600" />
+                    Additional Notes
+                  </h3>
+                  <div className="space-y-2">
+                    <Label htmlFor="notes" className="text-sm font-medium text-gray-700">
+                      Notes & Comments
+                    </Label>
+                    <Textarea
+                      id="notes"
+                      name="notes"
+                      placeholder="Add any additional notes, comments, or details about the service call..."
+                      defaultValue={data?.notes ?? ""}
+                      rows={4}
+                      className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                    />
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <EditFormSubmitButton />
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }
