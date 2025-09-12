@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import Link from "next/link";
 import {
   collection,
@@ -36,7 +36,7 @@ const RealTimeOpenInProgress = () => {
   const [loading, setLoading] = useState(true);
   const [machines, setMachines] = useState<string[]>([]);
   const [locations, setLocations] = useState<string[]>([]);
-  const [lastIds, setLastIds] = useState<string[]>([]);
+  const isInitialLoad = useRef(true);
   const [error, setError] = useState<string | null>(null);
 
   // Memoized calculations for better performance
@@ -103,15 +103,27 @@ const RealTimeOpenInProgress = () => {
             : null,
         })) as ServiceCall[];
 
-        // Toast for new service calls
-        const newIds = updatedServiceCalls.map(call => call.id);
-        if (lastIds.length > 0) {
-          const newCall = updatedServiceCalls.find(call => !lastIds.includes(call.id));
-          if (newCall) {
-            showNewCallNotification(newCall);
-          }
+        // Only show toast for new service calls after initial load
+        if (isInitialLoad.current) {
+          isInitialLoad.current = false;
+        } else {
+          snapshot.docChanges().forEach((change) => {
+            if (change.type === "added") {
+              const newCall = {
+                id: change.doc.id,
+                ...change.doc.data(),
+                date: change.doc.data().date ? change.doc.data().date.toDate() : null,
+                updatedAt: change.doc.data().updatedAt
+                  ? change.doc.data().updatedAt.toDate()
+                  : null,
+                createdAt: change.doc.data().createdAt
+                  ? change.doc.data().createdAt.toDate()
+                  : null,
+              } as ServiceCall;
+              showNewCallNotification(newCall);
+            }
+          });
         }
-        setLastIds(newIds);
 
         setServiceCalls(updatedServiceCalls);
         setLoading(false);
@@ -126,7 +138,7 @@ const RealTimeOpenInProgress = () => {
     );
 
     return () => unsubscribe();
-  }, [lastIds, showNewCallNotification]);
+  }, [showNewCallNotification]);
 
   useEffect(() => {
     const fetchData = async () => {

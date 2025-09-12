@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Circle, Clock, CheckCircle } from "lucide-react";
 import React from "react";
+import toast from "react-hot-toast";
 
 const statusOptions = [
   {
@@ -52,18 +53,26 @@ export default function Status({
     setStatus(currentStatus);
   }, [currentStatus]);
 
-  const handleStatusChange = async (newStatus: string) => {
+  const handleStatusChange = (newStatus: string) => {
+    // Optimistic update
     setStatus(newStatus);
-    try {
-      const serviceCallRef = doc(db, "ServiceCalls", id);
-      await updateDoc(serviceCallRef, {
-        status: newStatus,
-        updatedAt: Timestamp.now(),
-      });
-    } catch (error) {
-      // Optionally handle error (e.g., show a toast)
-      console.error("Failed to update status:", error);
-    }
+    
+    startTransition(async () => {
+      try {
+        const serviceCallRef = doc(db, "ServiceCalls", id);
+        await updateDoc(serviceCallRef, {
+          status: newStatus,
+          updatedAt: Timestamp.now(),
+        });
+        const statusLabel = statusOptions.find(opt => opt.value === newStatus)?.label || newStatus;
+        toast.success(`Status updated to ${statusLabel}`);
+      } catch (error) {
+        // Revert on error
+        setStatus(currentStatus);
+        toast.error("Failed to update status");
+        console.error("Failed to update status:", error);
+      }
+    });
   };
 
   const selectedOption = statusOptions.find(
@@ -71,13 +80,13 @@ export default function Status({
   );
 
   return (
-    <Select onValueChange={handleStatusChange} value={status}>
+    <Select onValueChange={handleStatusChange} value={status} disabled={isPending}>
       <SelectTrigger
         className={`w-auto rounded-full ${
           selectedOption
             ? `${selectedOption.color} ${selectedOption.bgColor}`
             : ""
-        } px-2 py-1 flex items-center whitespace-nowrap`}
+        } px-2 py-1 flex items-center whitespace-nowrap ${isPending ? 'opacity-75' : ''}`}
       >
         {selectedOption && (
           <div className="flex items-center">
