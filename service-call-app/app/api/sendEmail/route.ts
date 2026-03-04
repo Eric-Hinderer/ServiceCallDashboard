@@ -43,7 +43,7 @@ export async function POST(req: any) {
 
   try {
     await transporter.sendMail({
-      from: '"Service Call Manager" <your@gmail.com>',
+      from: `"Service Call Manager" <${process.env.GMAIL_FROM}>`,
       to: "route@gamesales.com",
       subject: "New Service Call",
       html: emailBody,
@@ -54,6 +54,7 @@ export async function POST(req: any) {
       { status: 200 }
     );
   } catch (error) {
+    console.error("Email send error:", error);
     return NextResponse.json(
       { message: "Failed to send email" },
       { status: 500 }
