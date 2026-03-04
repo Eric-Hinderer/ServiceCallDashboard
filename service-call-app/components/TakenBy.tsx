@@ -11,13 +11,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import toast from "react-hot-toast";
+import { TECHNICIANS, UNASSIGNED_VALUE, FIRESTORE_COLLECTION } from "@/lib/constants";
 
-const predefinedNames = [
-  "Kurt", "Chris", "Mike", "Dean", "Damon", "John", "Aaron", "Select..."
-];
+const predefinedNames = [...TECHNICIANS, UNASSIGNED_VALUE];
 
 export default function TakenBy({ id, currentTakenBy }: { id: string; currentTakenBy: string }) {
-  const [takenBy, setTakenBy] = useState<string>(currentTakenBy || "Select...");
+  const [takenBy, setTakenBy] = useState<string>(currentTakenBy || UNASSIGNED_VALUE);
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
@@ -30,17 +29,15 @@ export default function TakenBy({ id, currentTakenBy }: { id: string; currentTak
 
     startTransition(async () => {
       try {
-        const serviceCallRef = doc(db, "ServiceCalls", id);
+        const serviceCallRef = doc(db, FIRESTORE_COLLECTION, id);
         await updateDoc(serviceCallRef, {
           takenBy: newTakenBy,
           updatedAt: Timestamp.now(),
         });
-        toast.success(`Assigned to ${newTakenBy === "Select..." ? "unassigned" : newTakenBy}`);
+        toast.success(`Assigned to ${newTakenBy === UNASSIGNED_VALUE ? "unassigned" : newTakenBy}`);
       } catch (error) {
-        // Revert on error
         setTakenBy(currentTakenBy);
         toast.error("Failed to update assignment");
-        console.error("Failed to update takenBy:", error);
       }
     });
   };

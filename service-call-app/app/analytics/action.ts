@@ -5,46 +5,41 @@ import {
   collection,
   getDocs,
   query,
-  Timestamp,
   where,
 } from "firebase/firestore";
 
-import { DateTime } from "luxon";
-
 import { ServiceCall } from "../(definitions)/definitions";
+import { toCentralTime, toFirestoreDateRange } from "@/lib/dateTimeUtils";
+import {
+  FIRESTORE_COLLECTION,
+  UNASSIGNED_VALUE,
+  AFTER_HOURS_START,
+  AFTER_HOURS_END,
+} from "@/lib/constants";
 
 interface CallsByDay {
   callCount: number;
   serviceCalls: any[];
 }
 
-export async function getWeekendServiceCalls(startDate: Date, endDate: Date) {
-  const serviceCallsRef = collection(db, "ServiceCalls");
-
-  const startInCentralTime = DateTime.fromJSDate(startDate, {
-    zone: "UTC",
-  }).setZone("America/Chicago");
-  const endInCentralTime = DateTime.fromJSDate(endDate, {
-    zone: "UTC",
-  }).setZone("America/Chicago");
-
-  const q = query(
+function buildDateRangeQuery(startDate: Date, endDate: Date) {
+  const { startTimestamp, endTimestamp } = toFirestoreDateRange(startDate, endDate);
+  const serviceCallsRef = collection(db, FIRESTORE_COLLECTION);
+  return query(
     serviceCallsRef,
-    where("date", ">=", Timestamp.fromDate(startInCentralTime.toJSDate())),
-    where("date", "<=", Timestamp.fromDate(endInCentralTime.toJSDate()))
+    where("date", ">=", startTimestamp),
+    where("date", "<=", endTimestamp)
   );
+}
 
+export async function getWeekendServiceCalls(startDate: Date, endDate: Date) {
+  const q = buildDateRangeQuery(startDate, endDate);
   const querySnapshot = await getDocs(q);
 
   const weekendServiceCalls = querySnapshot.docs
     .map((doc) => {
       const data = doc.data();
-      const serviceCallDateInUTC = data.date.toDate();
-
-      const serviceCallDateInCentralTime = DateTime.fromJSDate(
-        serviceCallDateInUTC,
-        { zone: "UTC" }
-      ).setZone("America/Chicago");
+      const serviceCallDateInCentralTime = toCentralTime(data.date.toDate());
 
       return {
         ...data,
@@ -55,12 +50,8 @@ export async function getWeekendServiceCalls(startDate: Date, endDate: Date) {
       } as ServiceCall;
     })
     .filter((serviceCall) => {
-      const serviceCallDateInCentralTime = DateTime.fromJSDate(
-        serviceCall.date,
-        { zone: "America/Chicago" }
-      );
-      const dayOfWeek = serviceCallDateInCentralTime.weekday;
-
+      const centralTime = toCentralTime(serviceCall.date);
+      const dayOfWeek = centralTime.weekday;
       return dayOfWeek === 6 || dayOfWeek === 7;
     });
 
@@ -74,46 +65,20 @@ export async function getAfterHoursCallsByDayOfWeek(
   startDate: Date,
   endDate: Date
 ): Promise<{ dayOfWeek: number; callCount: number; serviceCalls: any[] }[]> {
-  const serviceCallsRef = collection(db, "ServiceCalls");
-
-  const startInCentralTime = DateTime.fromJSDate(startDate, {
-    zone: "UTC",
-  }).setZone("America/Chicago");
-  const endInCentralTime = DateTime.fromJSDate(endDate, {
-    zone: "UTC",
-  }).setZone("America/Chicago");
-
-  const q = query(
-    serviceCallsRef,
-    where("date", ">=", Timestamp.fromDate(startInCentralTime.toJSDate())),
-    where("date", "<=", Timestamp.fromDate(endInCentralTime.toJSDate()))
-  );
-
+  const q = buildDateRangeQuery(startDate, endDate);
   const querySnapshot = await getDocs(q);
-  querySnapshot.forEach((doc) => {
-    const date: Date = doc.data().date.toDate();
-  });
 
   const callsByDayOfWeek: { [key: string]: CallsByDay } = {};
 
   querySnapshot.forEach((doc) => {
     const data = doc.data();
-
-    const utcDate = data.date.toDate();
-
-    // Convert the UTC date to Central Time
-    const localDate = DateTime.fromJSDate(utcDate, { zone: "UTC" }).setZone(
-      "America/Chicago"
-    );
+    const localDate = toCentralTime(data.date.toDate());
 
     const hourOfDay = localDate.hour;
     const dayOfWeek = localDate.weekday;
 
-    const afterHoursStart = 17;
-    const afterHoursEnd = 8;
-
     if (
-      (hourOfDay >= afterHoursStart || hourOfDay < afterHoursEnd) &&
+      (hourOfDay >= AFTER_HOURS_START || hourOfDay < AFTER_HOURS_END) &&
       dayOfWeek >= 1 &&
       dayOfWeek <= 5
     ) {
@@ -131,109 +96,38 @@ export async function getAfterHoursCallsByDayOfWeek(
     }
   });
 
-  const result = Object.keys(callsByDayOfWeek)
+  return Object.keys(callsByDayOfWeek)
     .map((day: string) => ({
       dayOfWeek: Number(day),
       callCount: callsByDayOfWeek[day].callCount,
       serviceCalls: callsByDayOfWeek[day].serviceCalls,
     }))
     .sort((a, b) => a.dayOfWeek - b.dayOfWeek);
+}
 
-  return result;
+function countByField(querySnapshot: any, fieldName: string, fallback?: string) {
+  const counts: { [key: string]: number } = {};
+  querySnapshot.forEach((doc: any) => {
+    const value = doc.data()[fieldName] || fallback || "";
+    counts[value] = (counts[value] || 0) + 1;
+  });
+  return counts;
 }
 
 export async function getCallsPerLocation(startDate: Date, endDate: Date) {
-  const startInCentralTime = DateTime.fromJSDate(startDate, {
-    zone: "UTC",
-  }).setZone("America/Chicago");
-  const endInCentralTime = DateTime.fromJSDate(endDate, {
-    zone: "UTC",
-  }).setZone("America/Chicago");
-
-  const serviceCallsRef = collection(db, "ServiceCalls");
-  const q = query(
-    serviceCallsRef,
-    where("date", ">=", Timestamp.fromDate(startInCentralTime.toJSDate())),
-    where("date", "<=", Timestamp.fromDate(endInCentralTime.toJSDate()))
-  );
-
+  const q = buildDateRangeQuery(startDate, endDate);
   const querySnapshot = await getDocs(q);
-
-  const callsPerLocation: { [key: string]: number } = {};
-  querySnapshot.forEach((doc) => {
-    const data = doc.data();
-    const location = data.location;
-
-    if (!callsPerLocation[location]) {
-      callsPerLocation[location] = 0;
-    }
-    callsPerLocation[location] += 1;
-  });
-
-  return callsPerLocation;
+  return countByField(querySnapshot, "location");
 }
 
 export async function getCallsPerTakenBy(startDate: Date, endDate: Date) {
-  const startInCentralTime = DateTime.fromJSDate(startDate, {
-    zone: "UTC",
-  }).setZone("America/Chicago");
-  const endInCentralTime = DateTime.fromJSDate(endDate, {
-    zone: "UTC",
-  }).setZone("America/Chicago");
-
-  const serviceCallsRef = collection(db, "ServiceCalls");
-  const q = query(
-    serviceCallsRef,
-    where("date", ">=", Timestamp.fromDate(startInCentralTime.toJSDate())),
-    where("date", "<=", Timestamp.fromDate(endInCentralTime.toJSDate()))
-  );
-
+  const q = buildDateRangeQuery(startDate, endDate);
   const querySnapshot = await getDocs(q);
-
-  const callsPerTakenBy: { [key: string]: number } = {};
-  querySnapshot.forEach((doc) => {
-    const data = doc.data();
-    let takenBy = data.takenBy;
-    if (!takenBy) {
-      takenBy = "Select...";
-    }
-
-    if (!callsPerTakenBy[takenBy]) {
-      callsPerTakenBy[takenBy] = 0;
-    }
-    callsPerTakenBy[takenBy] += 1;
-  });
-  return callsPerTakenBy;
+  return countByField(querySnapshot, "takenBy", UNASSIGNED_VALUE);
 }
 
 export async function getCallsPerMachine(startDate: Date, endDate: Date) {
-  const startInCentralTime = DateTime.fromJSDate(startDate, {
-    zone: "UTC",
-  }).setZone("America/Chicago");
-  const endInCentralTime = DateTime.fromJSDate(endDate, {
-    zone: "UTC",
-  }).setZone("America/Chicago");
-
-  const serviceCallsRef = collection(db, "ServiceCalls");
-  const q = query(
-    serviceCallsRef,
-    where("date", ">=", Timestamp.fromDate(startInCentralTime.toJSDate())),
-    where("date", "<=", Timestamp.fromDate(endInCentralTime.toJSDate()))
-  );
-
+  const q = buildDateRangeQuery(startDate, endDate);
   const querySnapshot = await getDocs(q);
-
-  const callsPerMachine: { [key: string]: number } = {};
-  querySnapshot.forEach((doc) => {
-    const data = doc.data();
-    const machine = data.machine;
-
-    if (!callsPerMachine[machine]) {
-      callsPerMachine[machine] = 0;
-    }
-    callsPerMachine[machine] += 1;
-  });
-
-  return callsPerMachine;
- 
+  return countByField(querySnapshot, "machine");
 }

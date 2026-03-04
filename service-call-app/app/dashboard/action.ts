@@ -8,10 +8,11 @@ import {
   deleteDoc,
 } from "firebase/firestore";
 import db from "@/lib/firebase";
-import { ServiceCall } from "../(definitions)/definitions";
+import { docsToServiceCalls } from "@/lib/firebaseTransforms";
+import { FIRESTORE_COLLECTION } from "@/lib/constants";
 
 export async function getLocations() {
-  const q = query(collection(db, "ServiceCalls"), orderBy("location"));
+  const q = query(collection(db, FIRESTORE_COLLECTION), orderBy("location"));
   const snapshot = await getDocs(q);
 
   const locations = snapshot.docs.map((doc) =>
@@ -22,7 +23,7 @@ export async function getLocations() {
 }
 
 export async function getMachines() {
-  const q = query(collection(db, "ServiceCalls"), orderBy("machine"));
+  const q = query(collection(db, FIRESTORE_COLLECTION), orderBy("machine"));
   const snapshot = await getDocs(q);
 
   const machines = snapshot.docs.map((doc) =>
@@ -34,7 +35,7 @@ export async function getMachines() {
 
 export async function deleteServiceCall(id: string) {
   try {
-    const docRef = doc(db, "ServiceCalls", id);
+    const docRef = doc(db, FIRESTORE_COLLECTION, id);
     await deleteDoc(docRef);
     return { success: true, message: "Service call deleted successfully." };
   } catch (error) {
@@ -42,26 +43,14 @@ export async function deleteServiceCall(id: string) {
     return { success: false, message: "Error deleting service call." };
   }
 }
+
 export async function getServiceCalls() {
   try {
-    const q = query(collection(db, "ServiceCalls"), orderBy("date"));
+    const q = query(collection(db, FIRESTORE_COLLECTION), orderBy("date"));
     const snapshot = await getDocs(q);
-
-    const serviceCalls = snapshot.docs.map((doc) => {
-      const data = doc.data();
-
-      return {
-        id: doc.id,
-        ...data,
-        date: data.date ? data.date.toDate() : null,
-        createdAt: data.createdAt ? data.createdAt.toDate() : null,
-        updatedAt: data.updatedAt ? data.updatedAt.toDate() : null,
-      } as ServiceCall;
-    });
-    return serviceCalls;
+    return docsToServiceCalls(snapshot.docs);
   } catch (error) {
     console.error("Error fetching service calls:", error);
     throw error;
   }
-
 }

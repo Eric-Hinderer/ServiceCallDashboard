@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { format, subDays } from "date-fns";
 import { CalendarIcon, BarChart3, TrendingUp, Users, MapPin, Wrench, Clock, RefreshCw } from "lucide-react";
-import { cn } from "@/lib/utils";
 import {
   getWeekendServiceCalls,
   getAfterHoursCallsByDayOfWeek,
@@ -16,7 +15,7 @@ import {
 } from "./action";
 import Link from "next/link";
 import { dayNames, ServiceCall } from "../(definitions)/definitions";
-import Chart from "chart.js/auto";
+import AnalyticsBarChart from "@/components/AnalyticsBarChart";
 import toast from "react-hot-toast";
 
 interface DayData {
@@ -39,34 +38,23 @@ export default function AnalyticsPage() {
   const [endDate, setEndDate] = useState<Date>(new Date());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
-  // Data states
+
   const [weekendData, setWeekendData] = useState<WeekendData>({ count: 0, serviceCalls: [] });
   const [afterHoursCallsByDayOfWeek, setAfterHoursCallsByDayOfWeek] = useState<DayData[]>([]);
   const [callsPerLocation, setCallsPerLocation] = useState<ChartData>({});
   const [callsPerTakenBy, setCallsPerTakenBy] = useState<ChartData>({});
   const [callsPerMachine, setCallsPerMachine] = useState<ChartData>({});
 
-  // Chart refs - moved to useRef hooks
-  const chartRef = useRef<HTMLCanvasElement | null>(null);
-  const chartInstance = useRef<Chart | null>(null);
-  const chartPerTakenByRef = useRef<HTMLCanvasElement | null>(null);
-  const chartPerTakenByInstance = useRef<Chart | null>(null);
-  const chartPerMachineRef = useRef<HTMLCanvasElement | null>(null);
-  const chartPerMachineInstance = useRef<Chart | null>(null);
-
-  // Memoized calculations for performance
-  const totalAfterHoursCalls = useMemo(() => 
+  const totalAfterHoursCalls = useMemo(() =>
     afterHoursCallsByDayOfWeek.reduce((total, dayData) => total + dayData.callCount, 0),
     [afterHoursCallsByDayOfWeek]
   );
 
-  const totalCalls = useMemo(() => 
-    Object.values(callsPerLocation).reduce((sum, count) => sum + count, 0),
+  const totalCalls = useMemo(() =>
+    Object.values(callsPerLocation).reduce((sum: number, count: number) => sum + count, 0),
     [callsPerLocation]
   );
 
-  // Optimized data fetching
   const fetchAnalyticsData = useCallback(async () => {
     if (!startDate || !endDate) return;
 
@@ -74,7 +62,7 @@ export default function AnalyticsPage() {
     setError(null);
 
     try {
-      const [weekendResult, afterHoursCalls, locationData, takenByData, machineData] = 
+      const [weekendResult, afterHoursCalls, locationData, takenByData, machineData] =
         await Promise.all([
           getWeekendServiceCalls(startDate, endDate),
           getAfterHoursCallsByDayOfWeek(startDate, endDate),
@@ -88,10 +76,9 @@ export default function AnalyticsPage() {
       setCallsPerLocation(locationData);
       setCallsPerTakenBy(takenByData);
       setCallsPerMachine(machineData);
-      
+
       toast.success("Analytics data updated successfully");
     } catch (error) {
-      console.error("Error fetching analytics data:", error);
       setError("Failed to fetch analytics data");
       toast.error("Failed to fetch analytics data");
     } finally {
@@ -103,179 +90,6 @@ export default function AnalyticsPage() {
     fetchAnalyticsData();
   }, [fetchAnalyticsData]);
 
-  // Chart creation effects
-  useEffect(() => {
-    if (!chartRef.current || Object.keys(callsPerLocation).length === 0) return;
-
-    if (chartInstance.current) {
-      chartInstance.current.destroy();
-    }
-
-    chartInstance.current = new Chart(chartRef.current, {
-      type: "bar",
-      data: {
-        labels: Object.keys(callsPerLocation),
-        datasets: [
-          {
-            label: "Calls per Location",
-            data: Object.values(callsPerLocation),
-            backgroundColor: "#3B82F6",
-            borderColor: "#1D4ED8",
-            borderWidth: 1,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          x: {
-            ticks: {
-              autoSkip: true,
-              maxTicksLimit: 8,
-              maxRotation: 45,
-              minRotation: 0,
-              font: { size: 11 },
-            },
-          },
-          y: {
-            beginAtZero: true,
-            ticks: { stepSize: 1 },
-          },
-        },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            titleColor: 'white',
-            bodyColor: 'white',
-          },
-        },
-      },
-    });
-
-    return () => {
-      if (chartInstance.current) {
-        chartInstance.current.destroy();
-      }
-    };
-  }, [callsPerLocation]);
-
-  useEffect(() => {
-    if (!chartPerTakenByRef.current || Object.keys(callsPerTakenBy).length === 0) return;
-
-    if (chartPerTakenByInstance.current) {
-      chartPerTakenByInstance.current.destroy();
-    }
-
-    chartPerTakenByInstance.current = new Chart(chartPerTakenByRef.current, {
-      type: "bar",
-      data: {
-        labels: Object.keys(callsPerTakenBy),
-        datasets: [
-          {
-            label: "Calls per Person",
-            data: Object.values(callsPerTakenBy),
-            backgroundColor: "#10B981",
-            borderColor: "#059669",
-            borderWidth: 1,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          x: {
-            ticks: {
-              autoSkip: true,
-              maxTicksLimit: 8,
-              maxRotation: 45,
-              minRotation: 0,
-              font: { size: 11 },
-            },
-          },
-          y: {
-            beginAtZero: true,
-            ticks: { stepSize: 1 },
-          },
-        },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            titleColor: 'white',
-            bodyColor: 'white',
-          },
-        },
-      },
-    });
-
-    return () => {
-      if (chartPerTakenByInstance.current) {
-        chartPerTakenByInstance.current.destroy();
-      }
-    };
-  }, [callsPerTakenBy]);
-
-  useEffect(() => {
-    if (!chartPerMachineRef.current || Object.keys(callsPerMachine).length === 0) return;
-
-    if (chartPerMachineInstance.current) {
-      chartPerMachineInstance.current.destroy();
-    }
-
-    chartPerMachineInstance.current = new Chart(chartPerMachineRef.current, {
-      type: "bar",
-      data: {
-        labels: Object.keys(callsPerMachine),
-        datasets: [
-          {
-            label: "Calls per Machine",
-            data: Object.values(callsPerMachine),
-            backgroundColor: "#F59E0B",
-            borderColor: "#D97706",
-            borderWidth: 1,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          x: {
-            ticks: {
-              autoSkip: true,
-              maxTicksLimit: 8,
-              maxRotation: 45,
-              minRotation: 0,
-              font: { size: 11 },
-            },
-          },
-          y: {
-            beginAtZero: true,
-            ticks: { stepSize: 1 },
-          },
-        },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            titleColor: 'white',
-            bodyColor: 'white',
-          },
-        },
-      },
-    });
-
-    return () => {
-      if (chartPerMachineInstance.current) {
-        chartPerMachineInstance.current.destroy();
-      }
-    };
-  }, [callsPerMachine]);
-
-  // Helper functions
   const handleDayClick = useCallback((dayData: DayData) => {
     sessionStorage.setItem("serviceCalls", JSON.stringify(dayData.serviceCalls));
   }, []);
@@ -414,6 +228,7 @@ export default function AnalyticsPage() {
             </CardContent>
           </Card>
         </div>
+
         {/* Main Analytics Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* After-Hours Calls by Day */}
@@ -439,11 +254,11 @@ export default function AnalyticsPage() {
                       </span>
                       <div className="flex items-center gap-2">
                         <span className="text-sm text-gray-600">{dayData.callCount} call(s)</span>
-                        <div 
+                        <div
                           className="w-8 h-2 bg-blue-200 rounded-full overflow-hidden"
                           title={`${dayData.callCount} calls`}
                         >
-                          <div 
+                          <div
                             className="h-full bg-blue-500 transition-all"
                             style={{
                               width: `${totalAfterHoursCalls > 0 ? (dayData.callCount / totalAfterHoursCalls) * 100 : 0}%`
@@ -493,7 +308,6 @@ export default function AnalyticsPage() {
 
         {/* Charts Grid */}
         <div className="grid grid-cols-1 xl:grid-cols-3 lg:grid-cols-2 gap-6">
-          {/* Calls per Location Chart */}
           <Card className="bg-white/80 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -503,12 +317,16 @@ export default function AnalyticsPage() {
             </CardHeader>
             <CardContent>
               <div className="h-80">
-                <canvas ref={chartRef} className="w-full h-full" />
+                <AnalyticsBarChart
+                  data={callsPerLocation}
+                  label="Calls per Location"
+                  backgroundColor="#3B82F6"
+                  borderColor="#1D4ED8"
+                />
               </div>
             </CardContent>
           </Card>
 
-          {/* Calls per Taken By Chart */}
           <Card className="bg-white/80 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -518,12 +336,16 @@ export default function AnalyticsPage() {
             </CardHeader>
             <CardContent>
               <div className="h-80">
-                <canvas ref={chartPerTakenByRef} className="w-full h-full" />
+                <AnalyticsBarChart
+                  data={callsPerTakenBy}
+                  label="Calls per Person"
+                  backgroundColor="#10B981"
+                  borderColor="#059669"
+                />
               </div>
             </CardContent>
           </Card>
 
-          {/* Calls per Machine Chart */}
           <Card className="bg-white/80 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -533,7 +355,12 @@ export default function AnalyticsPage() {
             </CardHeader>
             <CardContent>
               <div className="h-80">
-                <canvas ref={chartPerMachineRef} className="w-full h-full" />
+                <AnalyticsBarChart
+                  data={callsPerMachine}
+                  label="Calls per Machine"
+                  backgroundColor="#F59E0B"
+                  borderColor="#D97706"
+                />
               </div>
             </CardContent>
           </Card>

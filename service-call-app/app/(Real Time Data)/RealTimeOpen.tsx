@@ -11,6 +11,8 @@ import {
 } from "firebase/firestore";
 import { ServiceCall } from "../(definitions)/definitions";
 import db from "@/lib/firebase";
+import { docToServiceCall } from "@/lib/firebaseTransforms";
+import { FIRESTORE_COLLECTION, UNASSIGNED_VALUE } from "@/lib/constants";
 import ServiceCallModalButton from "@/components/ServiceCallModalButton";
 import Status from "../../components/Status";
 import TakenBy from "@/components/TakenBy";
@@ -42,7 +44,7 @@ const RealTimeOpenInProgress = () => {
   // Memoized calculations for better performance
   const statistics = useMemo(() => ({
     total: serviceCalls.length,
-    unassigned: serviceCalls.filter((call) => call.takenBy === "Select...").length,
+    unassigned: serviceCalls.filter((call) => call.takenBy === UNASSIGNED_VALUE).length,
     overdue: serviceCalls.filter((call) => call.overDue).length,
     inProgress: serviceCalls.filter(call => call.status === "IN_PROGRESS").length,
   }), [serviceCalls]);
@@ -83,44 +85,22 @@ const RealTimeOpenInProgress = () => {
 
   useEffect(() => {
     const q = query(
-      collection(db, "ServiceCalls"),
+      collection(db, FIRESTORE_COLLECTION),
       where("status", "in", ["OPEN", "IN_PROGRESS"]),
       orderBy("date", "desc")
     );
-    
+
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
-        const updatedServiceCalls = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-          date: doc.data().date ? doc.data().date.toDate() : null,
-          updatedAt: doc.data().updatedAt
-            ? doc.data().updatedAt.toDate()
-            : null,
-          createdAt: doc.data().createdAt
-            ? doc.data().createdAt.toDate()
-            : null,
-        })) as ServiceCall[];
+        const updatedServiceCalls = snapshot.docs.map(docToServiceCall);
 
-        // Only show toast for new service calls after initial load
         if (isInitialLoad.current) {
           isInitialLoad.current = false;
         } else {
           snapshot.docChanges().forEach((change) => {
             if (change.type === "added") {
-              const newCall = {
-                id: change.doc.id,
-                ...change.doc.data(),
-                date: change.doc.data().date ? change.doc.data().date.toDate() : null,
-                updatedAt: change.doc.data().updatedAt
-                  ? change.doc.data().updatedAt.toDate()
-                  : null,
-                createdAt: change.doc.data().createdAt
-                  ? change.doc.data().createdAt.toDate()
-                  : null,
-              } as ServiceCall;
-              showNewCallNotification(newCall);
+              showNewCallNotification(docToServiceCall(change.doc));
             }
           });
         }

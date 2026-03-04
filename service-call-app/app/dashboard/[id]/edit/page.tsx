@@ -13,6 +13,7 @@ import { getData } from "./action";
 import Link from "next/link";
 import { Status } from "@/app/(definitions)/definitions";
 import { EditFormSubmitButton } from "@/components/SubmitFormButton";
+import { STATUS_OPTIONS, FIRESTORE_COLLECTION } from "@/lib/constants";
 
 export default async function ServiceEditPage({
   params,
@@ -31,7 +32,7 @@ export default async function ServiceEditPage({
     "use server";
     
     try {
-      const docRef = doc(db, "ServiceCalls", key);
+      const docRef = doc(db, FIRESTORE_COLLECTION, key);
 
       const updateData: any = {
         location: formData.get("location")?.toString()?.trim() || "",
@@ -248,24 +249,14 @@ export default async function ServiceEditPage({
                           <SelectValue placeholder="Select status" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value={Status.OPEN} className="flex items-center gap-2">
-                            <div className="flex items-center gap-2">
-                              <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                              Open
-                            </div>
-                          </SelectItem>
-                          <SelectItem value={Status.IN_PROGRESS} className="flex items-center gap-2">
-                            <div className="flex items-center gap-2">
-                              <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
-                              In Progress
-                            </div>
-                          </SelectItem>
-                          <SelectItem value={Status.DONE} className="flex items-center gap-2">
-                            <div className="flex items-center gap-2">
-                              <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                              Completed
-                            </div>
-                          </SelectItem>
+                          {STATUS_OPTIONS.map((option) => (
+                            <SelectItem key={option.value} value={option.value} className="flex items-center gap-2">
+                              <div className="flex items-center gap-2">
+                                <div className={`w-2 h-2 rounded-full ${option.dotColor}`}></div>
+                                {option.label}
+                              </div>
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>

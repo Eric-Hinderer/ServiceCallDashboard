@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Calendar, MapPin, User, Wrench, AlertCircle, FileText, UserCheck, Clock } from "lucide-react";
 import { Status } from "@/app/(definitions)/definitions";
+import { TECHNICIANS, UNASSIGNED_VALUE, STATUS_OPTIONS } from "@/lib/constants";
 
 
 export default function CreateServiceCall({
@@ -19,10 +20,8 @@ export default function CreateServiceCall({
   machines: string[];
   closeModalAction: () => void;
 }) {
-  const [selectedTechnician, setSelectedTechnician] = useState("Select...");
+  const [selectedTechnician, setSelectedTechnician] = useState(UNASSIGNED_VALUE);
   const [selectedStatus, setSelectedStatus] = useState<string>(Status.OPEN);
-
-  const technicians = ["Kurt", "Chris", "Mike", "Dean", "Damon", "John", "Aaron"];
 
   // Set current datetime as default
   const getCurrentDateTime = () => {
@@ -176,8 +175,8 @@ export default function CreateServiceCall({
                       <SelectValue placeholder="Select technician" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Select...">Select technician...</SelectItem>
-                      {technicians.map((tech) => (
+                      <SelectItem value={UNASSIGNED_VALUE}>Select technician...</SelectItem>
+                      {TECHNICIANS.map((tech) => (
                         <SelectItem key={tech} value={tech}>
                           <div className="flex items-center gap-2">
                             <UserCheck className="h-4 w-4 text-gray-500" />
@@ -202,24 +201,14 @@ export default function CreateServiceCall({
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value={Status.OPEN}>
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                          Open
-                        </div>
-                      </SelectItem>
-                      <SelectItem value={Status.IN_PROGRESS}>
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
-                          In Progress
-                        </div>
-                      </SelectItem>
-                      <SelectItem value={Status.DONE}>
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                          Completed
-                        </div>
-                      </SelectItem>
+                      {STATUS_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          <div className="flex items-center gap-2">
+                            <div className={`w-2 h-2 rounded-full ${option.dotColor}`}></div>
+                            {option.label}
+                          </div>
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <p className="text-xs text-gray-500 mt-1">Current status of the service call</p>

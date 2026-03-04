@@ -36,7 +36,9 @@ import { DataTablePagination } from "@/components/PaginationTable";
 import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
 import db from "@/lib/firebase";
 import { ServiceCall } from "../(definitions)/definitions";
-import * as XLSX from "xlsx";
+import { docsToServiceCalls } from "@/lib/firebaseTransforms";
+import { exportToExcel } from "@/lib/excelExport";
+import { FIRESTORE_COLLECTION } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 
 interface DataTableProps {
@@ -50,63 +52,21 @@ export function DataTable({ columns }: DataTableProps) {
   const isMobile = useMediaQuery("(max-width:600px)");
 
   useEffect(() => {
-    const q = query(collection(db, "ServiceCalls"), orderBy("date", "desc"));
+    const q = query(collection(db, FIRESTORE_COLLECTION), orderBy("date", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const updatedServiceCalls = snapshot.docs.map((doc) => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          ...data,
-          date: data.date ? data.date.toDate() : null,
-          updatedAt: data.updatedAt ? data.updatedAt.toDate() : null,
-          createdAt: data.createdAt ? data.createdAt.toDate() : null,
-        } as ServiceCall;
-      });
-      setServiceCalls(updatedServiceCalls);
+      setServiceCalls(docsToServiceCalls(snapshot.docs));
     });
 
     return () => unsubscribe();
   }, []);
 
-  const handleClickCurrent = async () => {
+  const handleClickCurrent = () => {
     const renderedData = table.getRowModel().rows.map((row) => row.original);
-
-    const data = renderedData.map((serviceCall) => ({
-      Date: serviceCall.date?.toLocaleDateString(),
-      Location: serviceCall.location,
-      "Who Called": serviceCall.whoCalled,
-      Machine: serviceCall.machine,
-      "Reported Problem": serviceCall.reportedProblem,
-      "Taken By": serviceCall.takenBy,
-      Notes: serviceCall.notes,
-      Status: serviceCall.status,
-    }));
-    const ws = XLSX.utils.json_to_sheet(data);
-
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Rendered Data");
-
-    XLSX.writeFile(wb, "service-calls.xlsx");
+    exportToExcel(renderedData, "service-calls.xlsx", "Rendered Data");
   };
 
-  const handleClickAll = async () => {
-    const data = serviceCalls.map((serviceCall) => ({
-      Date: serviceCall.date?.toLocaleDateString(),
-      Location: serviceCall.location,
-      "Who Called": serviceCall.whoCalled,
-      Machine: serviceCall.machine,
-      "Reported Problem": serviceCall.reportedProblem,
-      "Taken By": serviceCall.takenBy,
-      Notes: serviceCall.notes,
-      Status: serviceCall.status,
-    }));
-    const ws = XLSX.utils.json_to_sheet(data);
-
-    const wb = XLSX.utils.book_new();
-
-    XLSX.utils.book_append_sheet(wb, ws, "All Data");
-
-    XLSX.writeFile(wb, "service-calls-all.xlsx");
+  const handleClickAll = () => {
+    exportToExcel(serviceCalls, "service-calls-all.xlsx", "All Data");
   };
 
   const table = useReactTable({

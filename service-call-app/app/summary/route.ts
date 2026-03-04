@@ -2,11 +2,10 @@ import { NextResponse } from 'next/server';
 import db from "@/lib/firebase";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { collection, getDocs } from "firebase/firestore";
-
-
+import { FIRESTORE_COLLECTION } from "@/lib/constants";
 
 async function getServiceCalls() {
-  const serviceCallCollection = collection(db, "ServiceCalls");
+  const serviceCallCollection = collection(db, FIRESTORE_COLLECTION);
   const serviceCallSnapshot = await getDocs(serviceCallCollection);
 
   const serviceCalls = serviceCallSnapshot.docs.map((doc) => {

@@ -8,36 +8,11 @@ import {
   SelectTrigger,
   SelectContent,
   SelectItem,
-  SelectValue,
   SelectGroup,
 } from "@/components/ui/select";
-import { Circle, Clock, CheckCircle } from "lucide-react";
 import React from "react";
 import toast from "react-hot-toast";
-
-const statusOptions = [
-  {
-    value: "OPEN",
-    label: "Open",
-    color: "text-blue-700",
-    bgColor: "bg-blue-100",
-    icon: Circle,
-  },
-  {
-    value: "IN_PROGRESS",
-    label: "In Progress",
-    color: "text-yellow-700",
-    bgColor: "bg-yellow-100",
-    icon: Clock,
-  },
-  {
-    value: "DONE",
-    label: "Done",
-    color: "text-green-700",
-    bgColor: "bg-green-100",
-    icon: CheckCircle,
-  },
-];
+import { STATUS_OPTIONS, FIRESTORE_COLLECTION } from "@/lib/constants";
 
 export default function Status({
   id,
@@ -54,28 +29,25 @@ export default function Status({
   }, [currentStatus]);
 
   const handleStatusChange = (newStatus: string) => {
-    // Optimistic update
     setStatus(newStatus);
-    
+
     startTransition(async () => {
       try {
-        const serviceCallRef = doc(db, "ServiceCalls", id);
+        const serviceCallRef = doc(db, FIRESTORE_COLLECTION, id);
         await updateDoc(serviceCallRef, {
           status: newStatus,
           updatedAt: Timestamp.now(),
         });
-        const statusLabel = statusOptions.find(opt => opt.value === newStatus)?.label || newStatus;
+        const statusLabel = STATUS_OPTIONS.find(opt => opt.value === newStatus)?.label || newStatus;
         toast.success(`Status updated to ${statusLabel}`);
       } catch (error) {
-        // Revert on error
         setStatus(currentStatus);
         toast.error("Failed to update status");
-        console.error("Failed to update status:", error);
       }
     });
   };
 
-  const selectedOption = statusOptions.find(
+  const selectedOption = STATUS_OPTIONS.find(
     (option) => option.value === status
   );
 
@@ -100,7 +72,7 @@ export default function Status({
 
       <SelectContent>
         <SelectGroup>
-          {statusOptions.map((option) => (
+          {STATUS_OPTIONS.map((option) => (
             <SelectItem key={option.value} value={option.value}>
               <div
                 className={`flex items-center ${option.color} whitespace-nowrap`}

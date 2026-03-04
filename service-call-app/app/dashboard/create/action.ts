@@ -3,20 +3,14 @@ import { ServiceCall, Status } from "@/app/(definitions)/definitions";
 import db from "@/lib/firebase";
 import { addDoc, collection, setDoc, Timestamp } from "@firebase/firestore";
 import moment from 'moment-timezone';
+import { FIRESTORE_COLLECTION } from "@/lib/constants";
 
 
 export async function createFromForm(formData: FormData) {
-  const dateString = formData.get("date") as string | null;  
-  console.log(dateString); 
-  
+  const dateString = formData.get("date") as string | null;
 
   const temp = dateString ? moment.tz(dateString, 'America/Chicago') : moment.tz('America/Chicago');
-  console.log(temp);
-  
   const utcDate = temp.utc().toDate();
-  console.log(utcDate);
-
-
 
   const location = formData.get("location") as string;
   const whoCalled = formData.get("whoCalled") as string;
@@ -40,7 +34,7 @@ export async function createFromForm(formData: FormData) {
   };
 
   try {
-    const docRef = await addDoc(collection(db, "ServiceCalls"), newServiceCall);
+    const docRef = await addDoc(collection(db, FIRESTORE_COLLECTION), newServiceCall);
 
     await setDoc(docRef, { id: docRef.id }, { merge: true });
   } catch (err) {
