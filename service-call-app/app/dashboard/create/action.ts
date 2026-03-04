@@ -50,8 +50,8 @@ export async function createFromForm(formData: FormData) {
 
 export async function emailGroup(formData: FormData) {
   const dateString = formData.get("date") as string;
-  const tempDate = dateString ? new Date(dateString) : new Date();
-  const date = Timestamp.fromDate(tempDate);
+  const temp = dateString ? moment.tz(dateString, 'America/Chicago') : moment.tz('America/Chicago');
+  const date = Timestamp.fromDate(temp.utc().toDate());
   const location = formData.get("location") as string;
   const whoCalled = formData.get("whoCalled") as string;
   const machine = formData.get("machine") as string;
@@ -67,7 +67,7 @@ export async function emailGroup(formData: FormData) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        date: date.toDate().toLocaleString(),
+        date: date.toDate().toISOString(),
         location,
         whoCalled,
         machine,
