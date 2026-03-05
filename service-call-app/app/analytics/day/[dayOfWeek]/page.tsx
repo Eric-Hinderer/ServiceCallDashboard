@@ -24,7 +24,8 @@ export default function DayAnalyticsPage() {
     setLoading(false);
   }, []);
 
-  const dayName = dayNames[+dayOfWeek];
+  const dayKey = Array.isArray(dayOfWeek) ? dayOfWeek[0] : dayOfWeek;
+  const dayName = dayKey !== undefined ? dayNames[+dayKey] : "";
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 lg:p-6">
