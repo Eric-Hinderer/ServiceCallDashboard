@@ -87,8 +87,8 @@ export function DataTable({ columns }: DataTableProps) {
     const wb = new ExcelJS.Workbook();
     const ws = wb.addWorksheet(sheetName);
 
-    const columns = Object.keys(data[0] || {});
-    ws.columns = columns.map((key) => ({ header: key, key }));
+    const headerKeys = Object.keys(data[0] || {});
+    ws.columns = headerKeys.map((key) => ({ header: key, key }));
     data.forEach((row) => ws.addRow(row));
 
     const buffer = await wb.xlsx.writeBuffer();
