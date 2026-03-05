@@ -9,29 +9,25 @@ import {
   where,
 } from "firebase/firestore";
 
-import { DateTime } from "luxon";
+import { toZonedTime, fromZonedTime } from "date-fns-tz";
+import { getDay, getHours } from "date-fns";
 
 import { ServiceCall } from "../(definitions)/definitions";
 
+const CENTRAL_TZ = "America/Chicago";
+
 interface CallsByDay {
   callCount: number;
-  serviceCalls: any[];
+  serviceCalls: ServiceCall[];
 }
 
 export async function getWeekendServiceCalls(startDate: Date, endDate: Date) {
   const serviceCallsRef = collection(db, "ServiceCalls");
 
-  const startInCentralTime = DateTime.fromJSDate(startDate, {
-    zone: "UTC",
-  }).setZone("America/Chicago");
-  const endInCentralTime = DateTime.fromJSDate(endDate, {
-    zone: "UTC",
-  }).setZone("America/Chicago");
-
   const q = query(
     serviceCallsRef,
-    where("date", ">=", Timestamp.fromDate(startInCentralTime.toJSDate())),
-    where("date", "<=", Timestamp.fromDate(endInCentralTime.toJSDate()))
+    where("date", ">=", Timestamp.fromDate(fromZonedTime(startDate, CENTRAL_TZ))),
+    where("date", "<=", Timestamp.fromDate(fromZonedTime(endDate, CENTRAL_TZ)))
   );
 
   const querySnapshot = await getDocs(q);
@@ -39,29 +35,19 @@ export async function getWeekendServiceCalls(startDate: Date, endDate: Date) {
   const weekendServiceCalls = querySnapshot.docs
     .map((doc) => {
       const data = doc.data();
-      const serviceCallDateInUTC = data.date.toDate();
-
-      const serviceCallDateInCentralTime = DateTime.fromJSDate(
-        serviceCallDateInUTC,
-        { zone: "UTC" }
-      ).setZone("America/Chicago");
+      const utcDate = data.date.toDate();
 
       return {
         ...data,
-        date: serviceCallDateInCentralTime.toJSDate(),
+        date: toZonedTime(utcDate, CENTRAL_TZ),
         createdAt: data.createdAt ? data.createdAt.toDate() : null,
         updatedAt: data.updatedAt ? data.updatedAt.toDate() : null,
         id: doc.id,
       } as ServiceCall;
     })
     .filter((serviceCall) => {
-      const serviceCallDateInCentralTime = DateTime.fromJSDate(
-        serviceCall.date,
-        { zone: "America/Chicago" }
-      );
-      const dayOfWeek = serviceCallDateInCentralTime.weekday;
-
-      return dayOfWeek === 6 || dayOfWeek === 7;
+      const day = getDay(serviceCall.date); // 0=Sunday, 6=Saturday
+      return day === 0 || day === 6;
     });
 
   return {
@@ -73,45 +59,30 @@ export async function getWeekendServiceCalls(startDate: Date, endDate: Date) {
 export async function getAfterHoursCallsByDayOfWeek(
   startDate: Date,
   endDate: Date
-): Promise<{ dayOfWeek: number; callCount: number; serviceCalls: any[] }[]> {
+): Promise<{ dayOfWeek: number; callCount: number; serviceCalls: ServiceCall[] }[]> {
   const serviceCallsRef = collection(db, "ServiceCalls");
-
-  const startInCentralTime = DateTime.fromJSDate(startDate, {
-    zone: "UTC",
-  }).setZone("America/Chicago");
-  const endInCentralTime = DateTime.fromJSDate(endDate, {
-    zone: "UTC",
-  }).setZone("America/Chicago");
 
   const q = query(
     serviceCallsRef,
-    where("date", ">=", Timestamp.fromDate(startInCentralTime.toJSDate())),
-    where("date", "<=", Timestamp.fromDate(endInCentralTime.toJSDate()))
+    where("date", ">=", Timestamp.fromDate(fromZonedTime(startDate, CENTRAL_TZ))),
+    where("date", "<=", Timestamp.fromDate(fromZonedTime(endDate, CENTRAL_TZ)))
   );
 
   const querySnapshot = await getDocs(q);
-  querySnapshot.forEach((doc) => {
-    const date: Date = doc.data().date.toDate();
-  });
 
   const callsByDayOfWeek: { [key: string]: CallsByDay } = {};
 
   querySnapshot.forEach((doc) => {
     const data = doc.data();
+    const localDate = toZonedTime(data.date.toDate(), CENTRAL_TZ);
 
-    const utcDate = data.date.toDate();
-
-    // Convert the UTC date to Central Time
-    const localDate = DateTime.fromJSDate(utcDate, { zone: "UTC" }).setZone(
-      "America/Chicago"
-    );
-
-    const hourOfDay = localDate.hour;
-    const dayOfWeek = localDate.weekday;
+    const hourOfDay = getHours(localDate);
+    const dayOfWeek = getDay(localDate); // 0=Sunday, 6=Saturday
 
     const afterHoursStart = 17;
     const afterHoursEnd = 8;
 
+    // Weekdays only (Mon=1 through Fri=5)
     if (
       (hourOfDay >= afterHoursStart || hourOfDay < afterHoursEnd) &&
       dayOfWeek >= 1 &&
@@ -124,10 +95,10 @@ export async function getAfterHoursCallsByDayOfWeek(
       callsByDayOfWeek[dayOfWeek].serviceCalls.push({
         ...data,
         id: doc.id,
-        date: localDate.toJSDate().toISOString(),
-        createdAt: data.createdAt?.toDate().toISOString(),
-        updatedAt: data.updatedAt?.toDate().toISOString(),
-      });
+        date: localDate,
+        createdAt: data.createdAt?.toDate() ?? null,
+        updatedAt: data.updatedAt?.toDate() ?? null,
+      } as ServiceCall);
     }
   });
 
@@ -143,18 +114,11 @@ export async function getAfterHoursCallsByDayOfWeek(
 }
 
 export async function getCallsPerLocation(startDate: Date, endDate: Date) {
-  const startInCentralTime = DateTime.fromJSDate(startDate, {
-    zone: "UTC",
-  }).setZone("America/Chicago");
-  const endInCentralTime = DateTime.fromJSDate(endDate, {
-    zone: "UTC",
-  }).setZone("America/Chicago");
-
   const serviceCallsRef = collection(db, "ServiceCalls");
   const q = query(
     serviceCallsRef,
-    where("date", ">=", Timestamp.fromDate(startInCentralTime.toJSDate())),
-    where("date", "<=", Timestamp.fromDate(endInCentralTime.toJSDate()))
+    where("date", ">=", Timestamp.fromDate(fromZonedTime(startDate, CENTRAL_TZ))),
+    where("date", "<=", Timestamp.fromDate(fromZonedTime(endDate, CENTRAL_TZ)))
   );
 
   const querySnapshot = await getDocs(q);
@@ -174,18 +138,11 @@ export async function getCallsPerLocation(startDate: Date, endDate: Date) {
 }
 
 export async function getCallsPerTakenBy(startDate: Date, endDate: Date) {
-  const startInCentralTime = DateTime.fromJSDate(startDate, {
-    zone: "UTC",
-  }).setZone("America/Chicago");
-  const endInCentralTime = DateTime.fromJSDate(endDate, {
-    zone: "UTC",
-  }).setZone("America/Chicago");
-
   const serviceCallsRef = collection(db, "ServiceCalls");
   const q = query(
     serviceCallsRef,
-    where("date", ">=", Timestamp.fromDate(startInCentralTime.toJSDate())),
-    where("date", "<=", Timestamp.fromDate(endInCentralTime.toJSDate()))
+    where("date", ">=", Timestamp.fromDate(fromZonedTime(startDate, CENTRAL_TZ))),
+    where("date", "<=", Timestamp.fromDate(fromZonedTime(endDate, CENTRAL_TZ)))
   );
 
   const querySnapshot = await getDocs(q);
@@ -207,18 +164,11 @@ export async function getCallsPerTakenBy(startDate: Date, endDate: Date) {
 }
 
 export async function getCallsPerMachine(startDate: Date, endDate: Date) {
-  const startInCentralTime = DateTime.fromJSDate(startDate, {
-    zone: "UTC",
-  }).setZone("America/Chicago");
-  const endInCentralTime = DateTime.fromJSDate(endDate, {
-    zone: "UTC",
-  }).setZone("America/Chicago");
-
   const serviceCallsRef = collection(db, "ServiceCalls");
   const q = query(
     serviceCallsRef,
-    where("date", ">=", Timestamp.fromDate(startInCentralTime.toJSDate())),
-    where("date", "<=", Timestamp.fromDate(endInCentralTime.toJSDate()))
+    where("date", ">=", Timestamp.fromDate(fromZonedTime(startDate, CENTRAL_TZ))),
+    where("date", "<=", Timestamp.fromDate(fromZonedTime(endDate, CENTRAL_TZ)))
   );
 
   const querySnapshot = await getDocs(q);

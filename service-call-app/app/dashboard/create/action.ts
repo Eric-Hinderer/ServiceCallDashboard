@@ -1,22 +1,17 @@
 "use server";
-import { ServiceCall, Status } from "@/app/(definitions)/definitions";
+import { Status } from "@/app/(definitions)/definitions";
 import db from "@/lib/firebase";
 import { addDoc, collection, setDoc, Timestamp } from "@firebase/firestore";
-import moment from 'moment-timezone';
+import { fromZonedTime } from "date-fns-tz";
 
+const CENTRAL_TZ = "America/Chicago";
 
 export async function createFromForm(formData: FormData) {
-  const dateString = formData.get("date") as string | null;  
-  console.log(dateString); 
-  
+  const dateString = formData.get("date") as string | null;
 
-  const temp = dateString ? moment.tz(dateString, 'America/Chicago') : moment.tz('America/Chicago');
-  console.log(temp);
-  
-  const utcDate = temp.utc().toDate();
-  console.log(utcDate);
-
-
+  const utcDate = dateString
+    ? fromZonedTime(new Date(dateString), CENTRAL_TZ)
+    : fromZonedTime(new Date(), CENTRAL_TZ);
 
   const location = formData.get("location") as string;
   const whoCalled = formData.get("whoCalled") as string;
@@ -26,8 +21,8 @@ export async function createFromForm(formData: FormData) {
   const notes = formData.get("notes") as string;
   const status = (formData.get("status") as Status) || Status.OPEN;
 
-  const newServiceCall: any = {
-    date : utcDate,
+  const newServiceCall = {
+    date: utcDate,
     location,
     whoCalled,
     machine,
@@ -41,7 +36,6 @@ export async function createFromForm(formData: FormData) {
 
   try {
     const docRef = await addDoc(collection(db, "ServiceCalls"), newServiceCall);
-
     await setDoc(docRef, { id: docRef.id }, { merge: true });
   } catch (err) {
     console.error("Error creating service call:", err);
@@ -50,8 +44,11 @@ export async function createFromForm(formData: FormData) {
 
 export async function emailGroup(formData: FormData) {
   const dateString = formData.get("date") as string;
-  const temp = dateString ? moment.tz(dateString, 'America/Chicago') : moment.tz('America/Chicago');
-  const date = Timestamp.fromDate(temp.utc().toDate());
+  const utcDate = dateString
+    ? fromZonedTime(new Date(dateString), CENTRAL_TZ)
+    : fromZonedTime(new Date(), CENTRAL_TZ);
+  const date = Timestamp.fromDate(utcDate);
+
   const location = formData.get("location") as string;
   const whoCalled = formData.get("whoCalled") as string;
   const machine = formData.get("machine") as string;
@@ -60,6 +57,7 @@ export async function emailGroup(formData: FormData) {
   const notes = formData.get("notes") as string;
   const status = (formData.get("status") as Status) || Status.OPEN;
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+
   try {
     const res = await fetch(`${baseUrl}/api/sendEmail`, {
       method: "POST",
@@ -78,8 +76,7 @@ export async function emailGroup(formData: FormData) {
       }),
     });
 
-    if (res.ok) {
-    } else {
+    if (!res.ok) {
       console.error("Failed to send email");
     }
   } catch (err) {

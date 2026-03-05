@@ -1,8 +1,9 @@
 import nodemailer from "nodemailer";
 import { NextResponse } from "next/server";
-import { DateTime } from "luxon";
+import { toZonedTime } from "date-fns-tz";
+import { format } from "date-fns";
 
-export async function POST(req: any) {
+export async function POST(req: Request) {
   const {
     date,
     location,
@@ -15,9 +16,8 @@ export async function POST(req: any) {
   } = await req.json();
 
   const parsedDate = new Date(date);
-  const centralTimeString = DateTime.fromJSDate(parsedDate, { zone: "utc" })
-    .setZone("America/Chicago")
-    .toLocaleString(DateTime.DATETIME_FULL);
+  const centralDate = toZonedTime(parsedDate, "America/Chicago");
+  const centralTimeString = format(centralDate, "EEEE, MMMM d, yyyy 'at' h:mm a");
 
   const transporter = nodemailer.createTransport({
     service: "gmail",
