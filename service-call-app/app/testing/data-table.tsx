@@ -36,7 +36,7 @@ import { DataTablePagination } from "@/components/PaginationTable";
 import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
 import db from "@/lib/firebase";
 import { ServiceCall } from "../(definitions)/definitions";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import { Button } from "@/components/ui/button";
 
 interface DataTableProps {
@@ -68,10 +68,12 @@ export function DataTable({ columns }: DataTableProps) {
     return () => unsubscribe();
   }, []);
 
-  const handleClickCurrent = async () => {
-    const renderedData = table.getRowModel().rows.map((row) => row.original);
-
-    const data = renderedData.map((serviceCall) => ({
+  const exportToExcel = async (
+    rows: ServiceCall[],
+    sheetName: string,
+    fileName: string
+  ) => {
+    const data = rows.map((serviceCall) => ({
       Date: serviceCall.date?.toLocaleDateString(),
       Location: serviceCall.location,
       "Who Called": serviceCall.whoCalled,
@@ -81,32 +83,33 @@ export function DataTable({ columns }: DataTableProps) {
       Notes: serviceCall.notes,
       Status: serviceCall.status,
     }));
-    const ws = XLSX.utils.json_to_sheet(data);
 
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Rendered Data");
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet(sheetName);
 
-    XLSX.writeFile(wb, "service-calls.xlsx");
+    const headerKeys = Object.keys(data[0] || {});
+    ws.columns = headerKeys.map((key) => ({ header: key, key }));
+    data.forEach((row) => ws.addRow(row));
+
+    const buffer = await wb.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleClickCurrent = async () => {
+    const renderedData = table.getRowModel().rows.map((row) => row.original);
+    await exportToExcel(renderedData, "Rendered Data", "service-calls.xlsx");
   };
 
   const handleClickAll = async () => {
-    const data = serviceCalls.map((serviceCall) => ({
-      Date: serviceCall.date?.toLocaleDateString(),
-      Location: serviceCall.location,
-      "Who Called": serviceCall.whoCalled,
-      Machine: serviceCall.machine,
-      "Reported Problem": serviceCall.reportedProblem,
-      "Taken By": serviceCall.takenBy,
-      Notes: serviceCall.notes,
-      Status: serviceCall.status,
-    }));
-    const ws = XLSX.utils.json_to_sheet(data);
-
-    const wb = XLSX.utils.book_new();
-
-    XLSX.utils.book_append_sheet(wb, ws, "All Data");
-
-    XLSX.writeFile(wb, "service-calls-all.xlsx");
+    await exportToExcel(serviceCalls, "All Data", "service-calls-all.xlsx");
   };
 
   const table = useReactTable({

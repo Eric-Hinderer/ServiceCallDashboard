@@ -17,9 +17,9 @@ import { EditFormSubmitButton } from "@/components/SubmitFormButton";
 export default async function ServiceEditPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const key = params.id;
+  const { id: key } = await params;
   const data = await getData(key);
   
   // Redirect if no data found
