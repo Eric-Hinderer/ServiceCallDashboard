@@ -1,3 +1,6 @@
+runConfig:
+  rootDirectory: service-call-app
+
 env:
   - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
     value: service-call-manager-e7ca2
