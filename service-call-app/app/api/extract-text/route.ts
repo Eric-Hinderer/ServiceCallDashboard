@@ -12,7 +12,12 @@ const IMAGE_EXTRACT_PROMPT =
   "Extract ALL text content from this image. Include every product name, price, model number, and any other text visible. Return only the raw text, no formatting or commentary.";
 
 function cleanText(text: string) {
-  return text.replace(/\u0000/g, "").trim().slice(0, MAX_TEXT_LENGTH);
+  return text
+    .replace(/\u0000/g, "")
+    .replace(/--\s*\d+\s+of\s+\d+\s*--/g, "") // strip pdf-parse page separators
+    .replace(/\n{3,}/g, "\n\n") // collapse excessive newlines
+    .trim()
+    .slice(0, MAX_TEXT_LENGTH);
 }
 
 async function extractWithGemini(
