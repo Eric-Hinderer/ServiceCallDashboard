@@ -31,7 +31,7 @@ async function extractWithGemini(
 
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.5-flash-preview-04-17",
+    model: "gemini-2.5-flash",
   });
 
   const result = await model.generateContent([
@@ -91,7 +91,7 @@ export async function POST(req: Request) {
     if (isPdf) {
       try {
         const { extractText } = await import("unpdf");
-        const parsed = await extractText(buffer, { mergePages: true });
+        const parsed = await extractText(new Uint8Array(buffer), { mergePages: true });
         const pdfText = cleanText(parsed.text || "");
 
         if (pdfText) {
