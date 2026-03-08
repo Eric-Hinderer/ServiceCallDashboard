@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { PDFParse } from "pdf-parse";
 
 const GEMINI_PDF_SIZE_LIMIT = 15 * 1024 * 1024;
 const MAX_TEXT_LENGTH = 50000;
@@ -90,26 +89,25 @@ export async function POST(req: Request) {
     }
 
     if (isPdf) {
-      let parser: PDFParse | null = null;
-
       try {
-        parser = new PDFParse({ data: buffer });
-        const parsed = await parser.getText();
-        const pdfText = cleanText(parsed.text || "");
+        const { PDFParse } = await import("pdf-parse");
+        const parser = new PDFParse({ data: buffer });
+        try {
+          const parsed = await parser.getText();
+          const pdfText = cleanText(parsed.text || "");
 
-        if (pdfText) {
-          return NextResponse.json({ textContent: pdfText });
-        }
-      } catch (err) {
-        console.error("pdf-parse failed:", err);
-      } finally {
-        if (parser) {
+          if (pdfText) {
+            return NextResponse.json({ textContent: pdfText });
+          }
+        } finally {
           try {
             await parser.destroy();
           } catch (destroyErr) {
             console.warn("pdf-parse destroy failed:", destroyErr);
           }
         }
+      } catch (err) {
+        console.error("pdf-parse failed, falling back to Gemini:", err);
       }
 
       if (buffer.length <= GEMINI_PDF_SIZE_LIMIT) {
