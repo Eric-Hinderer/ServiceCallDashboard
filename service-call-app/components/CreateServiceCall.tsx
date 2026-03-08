@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Calendar, MapPin, User, Wrench, AlertCircle, FileText, UserCheck, Clock } from "lucide-react";
 import { Status } from "@/app/(definitions)/definitions";
-import LocationCombobox from "./LocationCombobox";
+import ComboboxInput from "./ComboboxInput";
 
 
 export default function CreateServiceCall({
@@ -68,9 +68,10 @@ export default function CreateServiceCall({
                     <MapPin className="h-4 w-4 text-gray-500" />
                     Location
                   </Label>
-                  <LocationCombobox
-                    locations={locations}
+                  <ComboboxInput
+                    options={locations}
                     name="location"
+                    placeholder="Enter or select location"
                     required
                   />
                   <p className="text-xs text-gray-500 mt-1">Physical location where service is needed</p>
@@ -105,20 +106,12 @@ export default function CreateServiceCall({
                     <Wrench className="h-4 w-4 text-gray-500" />
                     Machine/Equipment
                   </Label>
-                  <Input
-                    id="machine"
-                    list="machines"
-                    type="text"
+                  <ComboboxInput
+                    options={machines}
                     name="machine"
                     placeholder="Enter or select machine"
-                    className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     required
                   />
-                  <datalist id="machines">
-                    {machines.map((machine, index) => (
-                      <option key={index} value={machine} />
-                    ))}
-                  </datalist>
                   <p className="text-xs text-gray-500 mt-1">Equipment that needs service</p>
                 </div>
               </div>

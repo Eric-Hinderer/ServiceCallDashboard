@@ -10,11 +10,11 @@ import db from "@/lib/firebase";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getData } from "./action";
-import { getLocations } from "@/app/dashboard/action";
+import { getLocations, getMachines } from "@/app/dashboard/action";
 import Link from "next/link";
 import { Status } from "@/app/(definitions)/definitions";
 import { EditFormSubmitButton } from "@/components/SubmitFormButton";
-import LocationCombobox from "@/components/LocationCombobox";
+import ComboboxInput from "@/components/ComboboxInput";
 
 export default async function ServiceEditPage({
   params,
@@ -22,7 +22,7 @@ export default async function ServiceEditPage({
   params: Promise<{ id: string }>;
 }) {
   const { id: key } = await params;
-  const [data, locations] = await Promise.all([getData(key), getLocations()]);
+  const [data, locations, machines] = await Promise.all([getData(key), getLocations(), getMachines()]);
   
   // Redirect if no data found
   if (!data) {
@@ -146,10 +146,11 @@ export default async function ServiceEditPage({
                         <MapPin className="h-4 w-4 text-gray-500" />
                         Location
                       </Label>
-                      <LocationCombobox
-                        locations={locations}
+                      <ComboboxInput
+                        options={locations}
                         defaultValue={data?.location ?? ""}
                         name="location"
+                        placeholder="Enter or select location"
                         required
                       />
                       <p className="text-xs text-gray-500 mt-1">
@@ -189,16 +190,14 @@ export default async function ServiceEditPage({
                         <Wrench className="h-4 w-4 text-gray-500" />
                         Machine/Equipment
                       </Label>
-                      <Input
-                        id="machine"
-                        name="machine"
-                        placeholder="Enter machine/equipment"
+                      <ComboboxInput
+                        options={machines}
                         defaultValue={data?.machine ?? ""}
-                        className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        name="machine"
+                        placeholder="Enter or select machine"
                         required
-                        aria-describedby="machine-description"
                       />
-                      <p id="machine-description" className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-gray-500 mt-1">
                         Equipment or machine that needs service
                       </p>
                     </div>

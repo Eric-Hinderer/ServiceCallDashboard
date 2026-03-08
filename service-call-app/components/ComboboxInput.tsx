@@ -4,31 +4,31 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Plus, Check } from "lucide-react";
 
-interface LocationComboboxProps {
-  locations: string[];
+interface ComboboxInputProps {
+  options: string[];
   defaultValue?: string;
   name?: string;
   required?: boolean;
   placeholder?: string;
 }
 
-export default function LocationCombobox({
-  locations,
+export default function ComboboxInput({
+  options,
   defaultValue = "",
-  name = "location",
+  name,
   required = false,
-  placeholder = "Enter or select location",
-}: LocationComboboxProps) {
+  placeholder = "Enter or select...",
+}: ComboboxInputProps) {
   const [value, setValue] = useState(defaultValue);
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const filtered = value.trim()
-    ? locations.filter((loc) => loc.toLowerCase().includes(value.toLowerCase()))
-    : locations;
+    ? options.filter((opt) => opt.toLowerCase().includes(value.toLowerCase()))
+    : options;
 
-  const exactMatch = locations.some(
-    (loc) => loc.toLowerCase() === value.toLowerCase().trim()
+  const exactMatch = options.some(
+    (opt) => opt.toLowerCase() === value.toLowerCase().trim()
   );
 
   const showAddButton = value.trim().length > 0 && !exactMatch;
@@ -78,23 +78,23 @@ export default function LocationCombobox({
       </div>
       {open && filtered.length > 0 && (
         <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto">
-          {filtered.map((loc) => (
+          {filtered.map((opt) => (
             <button
-              key={loc}
+              key={opt}
               type="button"
               className="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 flex items-center gap-2"
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => {
-                setValue(loc);
+                setValue(opt);
                 setOpen(false);
               }}
             >
-              {value.toLowerCase() === loc.toLowerCase() ? (
+              {value.toLowerCase() === opt.toLowerCase() ? (
                 <Check className="h-4 w-4 text-blue-600 shrink-0" />
               ) : (
                 <span className="w-4 h-4 shrink-0" />
               )}
-              {loc}
+              {opt}
             </button>
           ))}
         </div>
