@@ -15,6 +15,7 @@ import {
   addDoc,
   getDocs,
   deleteDoc,
+  updateDoc,
   doc,
   query,
   orderBy,
@@ -46,6 +47,8 @@ import {
   Description as DocIcon,
   TableChart as ExcelIcon,
   Visibility as PreviewIcon,
+  Edit as EditIcon,
+  AutoAwesome as AutoAwesomeIcon,
 } from "@mui/icons-material";
 import toast from "react-hot-toast";
 
@@ -113,6 +116,11 @@ export default function PriceSheetsPage() {
   const [showUploadDialog, setShowUploadDialog] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(true);
+  const [editFile, setEditFile] = useState<PriceSheet | null>(null);
+  const [editFileName, setEditFileName] = useState("");
+  const [editTags, setEditTags] = useState<string[]>([]);
+  const [editTagInput, setEditTagInput] = useState("");
+  const [autoTagging, setAutoTagging] = useState(false);
 
   const fetchFiles = useCallback(async () => {
     try {
@@ -251,6 +259,90 @@ export default function PriceSheetsPage() {
     } finally {
       setUploading(false);
       setUploadProgress(0);
+    }
+  };
+
+  const openEditDialog = (file: PriceSheet) => {
+    setEditFile(file);
+    setEditFileName(file.fileName);
+    setEditTags([...file.tags]);
+    setEditTagInput("");
+  };
+
+  const handleEditAddTag = () => {
+    const tag = editTagInput.trim().toLowerCase();
+    if (tag && !editTags.includes(tag)) {
+      setEditTags([...editTags, tag]);
+    }
+    setEditTagInput("");
+  };
+
+  const handleEditSave = async () => {
+    if (!editFile) return;
+    try {
+      await updateDoc(doc(db, "priceSheets", editFile.id), {
+        fileName: editFileName.trim() || editFile.fileName,
+        tags: editTags,
+      });
+      toast.success("File updated");
+      setEditFile(null);
+      await fetchFiles();
+    } catch (err) {
+      console.error("Update error:", err);
+      toast.error("Failed to update file");
+    }
+  };
+
+  const handleAutoTag = async (fileNames: string[], textContent?: string) => {
+    setAutoTagging(true);
+    try {
+      const res = await fetch("/api/auto-tag", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fileName: fileNames.join(", "),
+          textContent: textContent || "",
+        }),
+      });
+      const data = await res.json();
+      return data.tags as string[];
+    } catch (err) {
+      console.error("Auto-tag error:", err);
+      toast.error("Auto-tag failed");
+      return [];
+    } finally {
+      setAutoTagging(false);
+    }
+  };
+
+  const handleAutoTagUpload = async () => {
+    const fileNames = pendingFiles.map((f) => f.name);
+    // Try to read text content from CSV files
+    let textContent = "";
+    for (const file of pendingFiles) {
+      if (file.type === "text/csv" || file.name.endsWith(".csv")) {
+        textContent += await file.text();
+      }
+    }
+    const suggestedTags = await handleAutoTag(fileNames, textContent);
+    const merged = [...new Set([...pendingTags, ...suggestedTags])];
+    setPendingTags(merged);
+    if (suggestedTags.length > 0) {
+      toast.success(`Added ${suggestedTags.length} suggested tag(s)`);
+    } else {
+      toast("No tags suggested", { icon: "🤷" });
+    }
+  };
+
+  const handleAutoTagEdit = async () => {
+    if (!editFile) return;
+    const suggestedTags = await handleAutoTag([editFile.fileName]);
+    const merged = [...new Set([...editTags, ...suggestedTags])];
+    setEditTags(merged);
+    if (suggestedTags.length > 0) {
+      toast.success(`Added ${suggestedTags.length} suggested tag(s)`);
+    } else {
+      toast("No tags suggested", { icon: "🤷" });
     }
   };
 
@@ -445,6 +537,13 @@ export default function PriceSheetsPage() {
                       )}
                       <IconButton
                         size="small"
+                        onClick={() => openEditDialog(file)}
+                        title="Edit"
+                      >
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                      <IconButton
+                        size="small"
                         onClick={() => handleDownload(file)}
                         title="Download"
                       >
@@ -498,6 +597,15 @@ export default function PriceSheetsPage() {
             <Button variant="outlined" onClick={handleAddTag} disabled={!tagInput.trim()}>
               Add
             </Button>
+            <Button
+              variant="outlined"
+              onClick={handleAutoTagUpload}
+              disabled={autoTagging}
+              startIcon={<AutoAwesomeIcon />}
+              sx={{ whiteSpace: "nowrap" }}
+            >
+              {autoTagging ? "..." : "Auto"}
+            </Button>
           </Box>
           <div className="flex flex-wrap gap-1 mt-2">
             {pendingTags.map((tag) => (
@@ -530,6 +638,76 @@ export default function PriceSheetsPage() {
             sx={{ backgroundColor: "black", "&:hover": { backgroundColor: "#333" } }}
           >
             Upload
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Edit Dialog */}
+      <Dialog
+        open={!!editFile}
+        onClose={() => setEditFile(null)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Edit Price Sheet</DialogTitle>
+        <DialogContent>
+          <TextField
+            fullWidth
+            label="File Name"
+            value={editFileName}
+            onChange={(e) => setEditFileName(e.target.value)}
+            size="small"
+            sx={{ mt: 1, mb: 2 }}
+          />
+          <Typography variant="body2" color="textSecondary" sx={{ mb: 1 }}>
+            Tags
+          </Typography>
+          <Box sx={{ display: "flex", gap: 1, mb: 1 }}>
+            <TextField
+              size="small"
+              fullWidth
+              placeholder="Add a tag"
+              value={editTagInput}
+              onChange={(e) => setEditTagInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleEditAddTag();
+                }
+              }}
+            />
+            <Button variant="outlined" onClick={handleEditAddTag} disabled={!editTagInput.trim()}>
+              Add
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={handleAutoTagEdit}
+              disabled={autoTagging}
+              startIcon={<AutoAwesomeIcon />}
+              sx={{ whiteSpace: "nowrap" }}
+            >
+              {autoTagging ? "..." : "Auto"}
+            </Button>
+          </Box>
+          <div className="flex flex-wrap gap-1 mt-2">
+            {editTags.map((tag) => (
+              <Chip
+                key={tag}
+                label={tag}
+                onDelete={() => setEditTags(editTags.filter((t) => t !== tag))}
+                size="small"
+              />
+            ))}
+          </div>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditFile(null)}>Cancel</Button>
+          <Button
+            variant="contained"
+            onClick={handleEditSave}
+            sx={{ backgroundColor: "black", "&:hover": { backgroundColor: "#333" } }}
+          >
+            Save
           </Button>
         </DialogActions>
       </Dialog>
