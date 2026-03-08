@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { PDFParse } from "pdf-parse";
+import pdfParse from "pdf-parse";
 
-const GEMINI_PDF_SIZE_LIMIT = 15 * 1024 * 1024; // 15 MB — safe threshold for inline base64
+const GEMINI_PDF_SIZE_LIMIT = 15 * 1024 * 1024; // 15 MB
+const MAX_TEXT_LENGTH = 50000;
 
 const PDF_EXTRACT_PROMPT =
   "Extract ALL text content from this PDF. Include every product name, price, model number, description, and any other text visible across all pages. Return only the raw text, no formatting or commentary.";
@@ -10,97 +11,149 @@ const PDF_EXTRACT_PROMPT =
 const IMAGE_EXTRACT_PROMPT =
   "Extract ALL text content from this image. Include every product name, price, model number, and any other text visible. Return only the raw text, no formatting or commentary.";
 
+function cleanText(text: string) {
+  return text.replace(/\u0000/g, "").trim().slice(0, MAX_TEXT_LENGTH);
+}
+
+async function extractWithGemini(
+  mimeType: string,
+  buffer: Buffer,
+  prompt: string
+): Promise<string> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error("Missing GEMINI_API_KEY");
+  }
+
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({
+    model: "gemini-2.5-flash-preview-04-17",
+  });
+
+  const result = await model.generateContent([
+    {
+      inlineData: {
+        mimeType,
+        data: buffer.toString("base64"),
+      },
+    },
+    prompt,
+  ]);
+
+  return cleanText(result.response.text() || "");
+}
+
 export async function POST(req: Request) {
   try {
     const formData = await req.formData();
-    const file = formData.get("file") as File | null;
+    const fileEntry = formData.get("file");
 
-    if (!file) {
-      return NextResponse.json({ textContent: "" });
+    if (!(fileEntry instanceof File)) {
+      return NextResponse.json(
+        { textContent: "", error: "No valid file received" },
+        { status: 400 }
+      );
     }
 
-    const fileType = file.type;
+    const file = fileEntry;
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    // CSV / plain text — read directly
-    if (fileType === "text/csv" || fileType.startsWith("text/")) {
-      return NextResponse.json({ textContent: buffer.toString("utf-8") });
+    // Some browsers/files can have an empty MIME type, so fall back to extension.
+    const fileName = file.name || "";
+    const fileType = file.type || "";
+    const lowerName = fileName.toLowerCase();
+
+    const isText =
+      fileType === "text/csv" ||
+      fileType.startsWith("text/") ||
+      lowerName.endsWith(".csv") ||
+      lowerName.endsWith(".txt");
+
+    const isPdf =
+      fileType === "application/pdf" || lowerName.endsWith(".pdf");
+
+    const isImage =
+      fileType.startsWith("image/") ||
+      lowerName.endsWith(".png") ||
+      lowerName.endsWith(".jpg") ||
+      lowerName.endsWith(".jpeg") ||
+      lowerName.endsWith(".webp");
+
+    if (isText) {
+      return NextResponse.json({
+        textContent: cleanText(buffer.toString("utf-8")),
+      });
     }
 
-    // PDF — use pdf-parse for text-based PDFs; fall back to Gemini for scanned PDFs
-    if (fileType === "application/pdf") {
-      let pdfText = "";
-      const parser = new PDFParse({ data: buffer });
+    if (isPdf) {
       try {
-        const data = await parser.getText();
-        pdfText = data.text.trim();
-      } catch (parseErr) {
-        console.warn("pdf-parse failed, will try Gemini fallback:", parseErr);
-      } finally {
-        await parser.destroy();
+        const parsed = await pdfParse(buffer);
+        const pdfText = cleanText(parsed.text || "");
+
+        if (pdfText) {
+          return NextResponse.json({ textContent: pdfText });
+        }
+      } catch (err) {
+        console.error("pdf-parse failed:", err);
       }
 
-      if (pdfText) {
-        return NextResponse.json({ textContent: pdfText });
-      }
-
-      // pdf-parse returned no text — likely a scanned PDF; try Gemini as fallback
+      // Fallback for scanned/image PDFs
       if (buffer.length <= GEMINI_PDF_SIZE_LIMIT) {
-        const apiKey = process.env.GEMINI_API_KEY;
-        if (apiKey) {
-          const genAI = new GoogleGenerativeAI(apiKey);
-          const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-preview-04-17" });
+        try {
+          const text = await extractWithGemini(
+            "application/pdf",
+            buffer,
+            PDF_EXTRACT_PROMPT
+          );
 
-          const base64 = buffer.toString("base64");
-          const result = await model.generateContent([
-            {
-              inlineData: {
-                mimeType: "application/pdf",
-                data: base64,
-              },
-            },
-            PDF_EXTRACT_PROMPT,
-          ]);
-
-          const text = result.response.text().trim();
           return NextResponse.json({ textContent: text });
+        } catch (err) {
+          console.error("Gemini PDF extraction failed:", err);
+          return NextResponse.json(
+            { textContent: "", error: "Gemini PDF extraction failed" },
+            { status: 500 }
+          );
         }
       }
 
-      return NextResponse.json({ textContent: "" });
-    }
-
-    // Images — use Gemini vision to OCR
-    if (fileType.startsWith("image/")) {
-      const apiKey = process.env.GEMINI_API_KEY;
-      if (!apiKey) {
-        console.error("GEMINI_API_KEY is not configured");
-        return NextResponse.json({ textContent: "" });
-      }
-
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-preview-04-17" });
-
-      const base64 = buffer.toString("base64");
-      const result = await model.generateContent([
+      return NextResponse.json(
         {
-          inlineData: {
-            mimeType: fileType,
-            data: base64,
-          },
+          textContent: "",
+          error: "PDF has no extractable text and is too large for Gemini inline fallback",
         },
-        IMAGE_EXTRACT_PROMPT,
-      ]);
-
-      const text = result.response.text().trim();
-      return NextResponse.json({ textContent: text });
+        { status: 200 }
+      );
     }
 
-    // Word/Excel — we can't easily parse these server-side without heavy deps
-    // Return empty and rely on filename + tags for these
-    return NextResponse.json({ textContent: "" });
+    if (isImage) {
+      try {
+        const mimeType = fileType || "image/jpeg";
+        const text = await extractWithGemini(
+          mimeType,
+          buffer,
+          IMAGE_EXTRACT_PROMPT
+        );
+
+        return NextResponse.json({ textContent: text });
+      } catch (err) {
+        console.error("Gemini image OCR failed:", err);
+        return NextResponse.json(
+          { textContent: "", error: "Gemini image OCR failed" },
+          { status: 500 }
+        );
+      }
+    }
+
+    // DOC/DOCX/XLS/XLSX not parsed here
+    return NextResponse.json({
+      textContent: "",
+      error: `Unsupported extraction type: ${fileType || lowerName || "unknown"}`,
+    });
   } catch (error) {
     console.error("Extract text error:", error);
-    return NextResponse.json({ textContent: "" });
+    return NextResponse.json(
+      { textContent: "", error: "Unhandled server error" },
+      { status: 500 }
+    );
   }
 }
