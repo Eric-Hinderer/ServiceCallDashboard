@@ -22,5 +22,8 @@ env:
 
   - variable: NEXT_PUBLIC_BASE_URL
     value: https://service.gamesales.com
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    value: service-call-manager-e7ca2.firebasestorage.app
+
   - variable: GEMINI_API_KEY
     secret: gemini-api-key

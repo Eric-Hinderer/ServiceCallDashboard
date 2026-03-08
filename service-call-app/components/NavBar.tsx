@@ -28,6 +28,7 @@ import {
   ExitToApp as ExitToAppIcon,
   Login as LoginIcon,
   Chat as ChatIcon,
+  Description as DescriptionIcon,
 } from "@mui/icons-material";
 import Image from "next/image";
 import Central from "@/public/central.jpg";
@@ -52,6 +53,7 @@ const Header = () => {
         ? [
             { name: "Dashboard", href: "/dashboard", icon: <DashboardIcon /> },
             { name: "Analytics", href: "/analytics", icon: <AnalyticsIcon /> },
+            { name: "Price Sheets", href: "/price-sheets", icon: <DescriptionIcon /> },
           ]
         : []),
     ],
