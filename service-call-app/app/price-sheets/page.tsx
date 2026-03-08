@@ -198,14 +198,19 @@ export default function PriceSheetsPage() {
   };
 
   const extractTextContent = async (file: File): Promise<string> => {
-    if (file.type === "text/csv" || file.name.endsWith(".csv")) {
-      return await file.text();
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/extract-text", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      return data.textContent || "";
+    } catch (err) {
+      console.error("Text extraction failed for", file.name, err);
+      return "";
     }
-    // For other readable text types, try to extract
-    if (file.type.startsWith("text/")) {
-      return await file.text();
-    }
-    return "";
   };
 
   const handleUpload = async () => {
@@ -351,7 +356,7 @@ export default function PriceSheetsPage() {
 
   const handleAutoTagEdit = async () => {
     if (!editFile) return;
-    const suggestedTags = await handleAutoTag([editFile.fileName]);
+    const suggestedTags = await handleAutoTag([editFile.fileName], editFile.textContent);
     const merged = [...new Set([...editTags, ...suggestedTags])];
     setEditTags(merged);
     if (suggestedTags.length > 0) {
