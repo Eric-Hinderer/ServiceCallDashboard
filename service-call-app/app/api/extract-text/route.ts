@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { PDFParse } from "pdf-parse";
 
 export async function POST(req: Request) {
   try {
@@ -18,19 +19,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ textContent: buffer.toString("utf-8") });
     }
 
-    // PDF — use pdf-parse
+    // PDF — use pdf-parse v2
     if (fileType === "application/pdf") {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const pdfParse = require("pdf-parse") as (buffer: Buffer) => Promise<{
-        numpages: number;
-        numrender: number;
-        info: Record<string, unknown>;
-        metadata: Record<string, unknown>;
-        text: string;
-        version: string;
-      }>;
-      const data = await pdfParse(buffer);
-      return NextResponse.json({ textContent: data.text });
+      const parser = new PDFParse({ data: buffer });
+      try {
+        const data = await parser.getText();
+        return NextResponse.json({ textContent: data.text });
+      } finally {
+        await parser.destroy();
+      }
     }
 
     // Images — use Gemini vision to OCR
