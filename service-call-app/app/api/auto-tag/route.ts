@@ -8,19 +8,21 @@ export async function POST(req: Request) {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
 
-    const prompt = `You are an expert in arcade and amusement games, including redemption games, video games, pinball machines, cranes/claws, merchandisers, kiddie rides, and coin-op equipment.
+    const prompt = `You are an expert in arcade and amusement games. You are tagging price sheet documents for an arcade service company so they can search for them later.
 
-Given the following price sheet file information, suggest relevant tags. Include:
-- Specific game/machine names and models (e.g. "big bass wheel", "crossy road", "space invaders frenzy")
-- Manufacturers/brands (e.g. "bay tek", "sega", "raw thrills", "stern pinball", "ice", "elaut")
-- Categories (e.g. "redemption", "video", "pinball", "crane", "merchandiser", "kiddie ride", "sport", "videmption")
-- Themes if identifiable
+The MOST important tags are the specific full product/machine names found in the document. These are things like "pac-man air hockey", "pac-man pixel bash neon", "pac-man pixel bash bistro", "ms. pacman galaga", "big bass wheel pro", "crossy road", "space invaders frenzy", etc. Extract every specific product name you can find.
+
+Also include:
+- The manufacturer/brand (e.g. "bandai namco", "bay tek", "sega", "raw thrills", "stern pinball", "ice", "elaut", "benchmark games")
+- A few broad categories if applicable (e.g. "redemption", "video", "pinball", "crane", "air hockey", "merchandiser")
+
+Prioritize specific product names over generic categories. If a document lists 10 machines, all 10 should be tags.
 
 File name: "${fileName}"
 ${textContent ? `File content (first portion):\n${textContent.slice(0, 3000)}` : ""}
 
 Return ONLY a JSON array of lowercase tag strings. No explanation, just the array.
-Example: ["big bass wheel", "bay tek", "redemption", "wheel game"]`;
+Example: ["pac-man air hockey", "pac-man pixel bash neon", "pac-man pixel bash cabaret", "ms. pacman galaga", "bandai namco", "video", "air hockey"]`;
 
     const result = await model.generateContent(prompt);
     const responseText = result.response.text().trim();
