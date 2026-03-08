@@ -62,6 +62,7 @@ interface PriceSheet {
   uploadedBy: string;
   uploadedByName: string;
   tags: string[];
+  textContent: string;
   createdAt: Date;
 }
 
@@ -138,6 +139,7 @@ export default function PriceSheetsPage() {
           uploadedBy: data.uploadedBy,
           uploadedByName: data.uploadedByName,
           tags: data.tags || [],
+          textContent: data.textContent || "",
           createdAt: data.createdAt?.toDate() || new Date(),
         };
       });
@@ -195,6 +197,17 @@ export default function PriceSheetsPage() {
     setPendingTags(pendingTags.filter((t) => t !== tagToRemove));
   };
 
+  const extractTextContent = async (file: File): Promise<string> => {
+    if (file.type === "text/csv" || file.name.endsWith(".csv")) {
+      return await file.text();
+    }
+    // For other readable text types, try to extract
+    if (file.type.startsWith("text/")) {
+      return await file.text();
+    }
+    return "";
+  };
+
   const handleUpload = async () => {
     if (!user || pendingFiles.length === 0) return;
 
@@ -208,6 +221,9 @@ export default function PriceSheetsPage() {
         const timestamp = Date.now();
         const storagePath = `priceSheets/${user.uid}/${timestamp}_${file.name}`;
         const storageRef = ref(storage, storagePath);
+
+        // Extract searchable text content from the file
+        const textContent = await extractTextContent(file);
 
         await new Promise<void>((resolve, reject) => {
           const uploadTask = uploadBytesResumable(storageRef, file);
@@ -236,6 +252,7 @@ export default function PriceSheetsPage() {
                 uploadedBy: user.uid,
                 uploadedByName: user.displayName || "Unknown",
                 tags: pendingTags,
+                textContent: textContent.slice(0, 50000),
                 createdAt: Timestamp.now(),
               });
 
@@ -317,12 +334,10 @@ export default function PriceSheetsPage() {
 
   const handleAutoTagUpload = async () => {
     const fileNames = pendingFiles.map((f) => f.name);
-    // Try to read text content from CSV files
     let textContent = "";
     for (const file of pendingFiles) {
-      if (file.type === "text/csv" || file.name.endsWith(".csv")) {
-        textContent += await file.text();
-      }
+      const extracted = await extractTextContent(file);
+      if (extracted) textContent += extracted + "\n";
     }
     const suggestedTags = await handleAutoTag(fileNames, textContent);
     const merged = [...new Set([...pendingTags, ...suggestedTags])];
@@ -376,7 +391,8 @@ export default function PriceSheetsPage() {
     return (
       file.fileName.toLowerCase().includes(q) ||
       file.tags.some((tag) => tag.toLowerCase().includes(q)) ||
-      file.uploadedByName.toLowerCase().includes(q)
+      file.uploadedByName.toLowerCase().includes(q) ||
+      file.textContent.toLowerCase().includes(q)
     );
   });
 
@@ -429,7 +445,7 @@ export default function PriceSheetsPage() {
         <div className="px-4 sm:px-6 py-4">
           <TextField
             fullWidth
-            placeholder="Search by file name, tag, or uploader..."
+            placeholder="Search by name, content, tag, or uploader..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             size="small"
