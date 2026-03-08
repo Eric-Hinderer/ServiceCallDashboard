@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import pdfParse from "pdf-parse";
+import { PDFParse } from "pdf-parse";
 
-const GEMINI_PDF_SIZE_LIMIT = 15 * 1024 * 1024; // 15 MB
+const GEMINI_PDF_SIZE_LIMIT = 15 * 1024 * 1024;
 const MAX_TEXT_LENGTH = 50000;
 
 const PDF_EXTRACT_PROMPT =
@@ -58,7 +58,6 @@ export async function POST(req: Request) {
     const file = fileEntry;
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    // Some browsers/files can have an empty MIME type, so fall back to extension.
     const fileName = file.name || "";
     const fileType = file.type || "";
     const lowerName = fileName.toLowerCase();
@@ -86,8 +85,11 @@ export async function POST(req: Request) {
     }
 
     if (isPdf) {
+      let parser: PDFParse | null = null;
+
       try {
-        const parsed = await pdfParse(buffer);
+        parser = new PDFParse({ data: buffer });
+        const parsed = await parser.getText();
         const pdfText = cleanText(parsed.text || "");
 
         if (pdfText) {
@@ -95,9 +97,16 @@ export async function POST(req: Request) {
         }
       } catch (err) {
         console.error("pdf-parse failed:", err);
+      } finally {
+        if (parser) {
+          try {
+            await parser.destroy();
+          } catch (destroyErr) {
+            console.warn("pdf-parse destroy failed:", destroyErr);
+          }
+        }
       }
 
-      // Fallback for scanned/image PDFs
       if (buffer.length <= GEMINI_PDF_SIZE_LIMIT) {
         try {
           const text = await extractWithGemini(
@@ -116,13 +125,10 @@ export async function POST(req: Request) {
         }
       }
 
-      return NextResponse.json(
-        {
-          textContent: "",
-          error: "PDF has no extractable text and is too large for Gemini inline fallback",
-        },
-        { status: 200 }
-      );
+      return NextResponse.json({
+        textContent: "",
+        error: "PDF has no extractable text and is too large for Gemini inline fallback",
+      });
     }
 
     if (isImage) {
@@ -144,7 +150,6 @@ export async function POST(req: Request) {
       }
     }
 
-    // DOC/DOCX/XLS/XLSX not parsed here
     return NextResponse.json({
       textContent: "",
       error: `Unsupported extraction type: ${fileType || lowerName || "unknown"}`,
