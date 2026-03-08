@@ -20,7 +20,15 @@ export async function POST(req: Request) {
 
     // PDF — use pdf-parse
     if (fileType === "application/pdf") {
-      const pdfParse = (await import("pdf-parse")).default;
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const pdfParse = require("pdf-parse") as (buffer: Buffer) => Promise<{
+        numpages: number;
+        numrender: number;
+        info: Record<string, unknown>;
+        metadata: Record<string, unknown>;
+        text: string;
+        version: string;
+      }>;
       const data = await pdfParse(buffer);
       return NextResponse.json({ textContent: data.text });
     }
