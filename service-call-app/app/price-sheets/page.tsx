@@ -81,6 +81,29 @@ const ACCEPTED_TYPES = [
 
 const ACCEPTED_EXTENSIONS = ".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.webp,.csv";
 
+const ACCEPTED_EXT_SET = new Set([
+  ".pdf",
+  ".doc",
+  ".docx",
+  ".xls",
+  ".xlsx",
+  ".png",
+  ".jpg",
+  ".jpeg",
+  ".webp",
+  ".csv",
+]);
+
+function getExtension(fileName: string) {
+  const idx = fileName.lastIndexOf(".");
+  return idx >= 0 ? fileName.slice(idx).toLowerCase() : "";
+}
+
+function isSupportedFile(file: File) {
+  const ext = getExtension(file.name);
+  return ACCEPTED_TYPES.includes(file.type) || ACCEPTED_EXT_SET.has(ext);
+}
+
 function getFileIcon(fileType: string) {
   if (fileType.includes("pdf")) return <PdfIcon sx={{ fontSize: 40, color: "#e53935" }} />;
   if (fileType.includes("image")) return <ImageIcon sx={{ fontSize: 40, color: "#43a047" }} />;
@@ -98,10 +121,7 @@ function formatFileSize(bytes: number): string {
 }
 
 function canPreviewInBrowser(fileType: string): boolean {
-  return (
-    fileType.includes("pdf") ||
-    fileType.includes("image")
-  );
+  return fileType.includes("pdf") || fileType.includes("image");
 }
 
 export default function PriceSheetsPage() {
@@ -131,16 +151,16 @@ export default function PriceSheetsPage() {
         const data = d.data();
         return {
           id: d.id,
-          fileName: data.fileName,
-          fileType: data.fileType,
-          fileSize: data.fileSize,
-          storageUrl: data.storageUrl,
-          downloadUrl: data.downloadUrl,
-          uploadedBy: data.uploadedBy,
-          uploadedByName: data.uploadedByName,
+          fileName: data.fileName || "",
+          fileType: data.fileType || "",
+          fileSize: data.fileSize || 0,
+          storageUrl: data.storageUrl || "",
+          downloadUrl: data.downloadUrl || "",
+          uploadedBy: data.uploadedBy || "",
+          uploadedByName: data.uploadedByName || "Unknown",
           tags: data.tags || [],
           textContent: data.textContent || "",
-          createdAt: data.createdAt?.toDate() || new Date(),
+          createdAt: data.createdAt?.toDate?.() || new Date(),
         };
       });
       setFiles(docs);
@@ -161,16 +181,20 @@ export default function PriceSheetsPage() {
     if (!selected || selected.length === 0) return;
 
     const validFiles: File[] = [];
+
     for (let i = 0; i < selected.length; i++) {
       const file = selected[i];
-      if (!ACCEPTED_TYPES.includes(file.type)) {
+
+      if (!isSupportedFile(file)) {
         toast.error(`"${file.name}" is not a supported file type`);
         continue;
       }
+
       if (file.size > 25 * 1024 * 1024) {
         toast.error(`"${file.name}" exceeds 25MB limit`);
         continue;
       }
+
       validFiles.push(file);
     }
 
@@ -181,7 +205,6 @@ export default function PriceSheetsPage() {
       setShowUploadDialog(true);
     }
 
-    // Reset input so same file can be selected again
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -201,12 +224,24 @@ export default function PriceSheetsPage() {
     try {
       const formData = new FormData();
       formData.append("file", file);
+
       const res = await fetch("/api/extract-text", {
         method: "POST",
         body: formData,
       });
+
       const data = await res.json();
-      return data.textContent || "";
+
+      if (!res.ok) {
+        console.error("Text extraction API failed:", data?.error || res.statusText);
+        return "";
+      }
+
+      if (data?.error) {
+        console.warn(`Extraction warning for ${file.name}:`, data.error);
+      }
+
+      return typeof data?.textContent === "string" ? data.textContent : "";
     } catch (err) {
       console.error("Text extraction failed for", file.name, err);
       return "";
@@ -227,8 +262,11 @@ export default function PriceSheetsPage() {
         const storagePath = `priceSheets/${user.uid}/${timestamp}_${file.name}`;
         const storageRef = ref(storage, storagePath);
 
-        // Extract searchable text content from the file
         const textContent = await extractTextContent(file);
+
+        if (!textContent) {
+          console.warn(`No extracted text for ${file.name}`);
+        }
 
         await new Promise<void>((resolve, reject) => {
           const uploadTask = uploadBytesResumable(storageRef, file);
@@ -246,22 +284,26 @@ export default function PriceSheetsPage() {
               reject(error);
             },
             async () => {
-              const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
+              try {
+                const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
 
-              await addDoc(collection(db, "priceSheets"), {
-                fileName: file.name,
-                fileType: file.type,
-                fileSize: file.size,
-                storageUrl: storagePath,
-                downloadUrl,
-                uploadedBy: user.uid,
-                uploadedByName: user.displayName || "Unknown",
-                tags: pendingTags,
-                textContent: textContent.slice(0, 50000),
-                createdAt: Timestamp.now(),
-              });
+                await addDoc(collection(db, "priceSheets"), {
+                  fileName: file.name,
+                  fileType: file.type || getExtension(file.name),
+                  fileSize: file.size,
+                  storageUrl: storagePath,
+                  downloadUrl,
+                  uploadedBy: user.uid,
+                  uploadedByName: user.displayName || "Unknown",
+                  tags: pendingTags,
+                  textContent: textContent.slice(0, 50000),
+                  createdAt: Timestamp.now(),
+                });
 
-              resolve();
+                resolve();
+              } catch (err) {
+                reject(err);
+              }
             }
           );
         });
@@ -272,6 +314,7 @@ export default function PriceSheetsPage() {
           ? "File uploaded successfully"
           : `${pendingFiles.length} files uploaded successfully`
       );
+
       setPendingFiles([]);
       setPendingTags([]);
       await fetchFiles();
@@ -340,13 +383,16 @@ export default function PriceSheetsPage() {
   const handleAutoTagUpload = async () => {
     const fileNames = pendingFiles.map((f) => f.name);
     let textContent = "";
+
     for (const file of pendingFiles) {
       const extracted = await extractTextContent(file);
       if (extracted) textContent += extracted + "\n";
     }
+
     const suggestedTags = await handleAutoTag(fileNames, textContent);
     const merged = [...new Set([...pendingTags, ...suggestedTags])];
     setPendingTags(merged);
+
     if (suggestedTags.length > 0) {
       toast.success(`Added ${suggestedTags.length} suggested tag(s)`);
     } else {
@@ -359,6 +405,7 @@ export default function PriceSheetsPage() {
     const suggestedTags = await handleAutoTag([editFile.fileName], editFile.textContent);
     const merged = [...new Set([...editTags, ...suggestedTags])];
     setEditTags(merged);
+
     if (suggestedTags.length > 0) {
       toast.success(`Added ${suggestedTags.length} suggested tag(s)`);
     } else {
@@ -393,11 +440,12 @@ export default function PriceSheetsPage() {
   const filteredFiles = files.filter((file) => {
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase();
+
     return (
-      file.fileName.toLowerCase().includes(q) ||
-      file.tags.some((tag) => tag.toLowerCase().includes(q)) ||
-      file.uploadedByName.toLowerCase().includes(q) ||
-      file.textContent.toLowerCase().includes(q)
+      (file.fileName || "").toLowerCase().includes(q) ||
+      (file.uploadedByName || "").toLowerCase().includes(q) ||
+      (file.textContent || "").toLowerCase().includes(q) ||
+      (file.tags || []).some((tag) => tag.toLowerCase().includes(q))
     );
   });
 
@@ -412,7 +460,6 @@ export default function PriceSheetsPage() {
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
       <main className="flex-1">
-        {/* Header */}
         <header className="bg-white shadow-md py-4 px-4 sm:px-6 flex items-center justify-between">
           <h1 className="text-xl font-semibold">Price Sheets</h1>
           <div>
@@ -436,7 +483,6 @@ export default function PriceSheetsPage() {
           </div>
         </header>
 
-        {/* Upload Progress */}
         {uploading && (
           <Box sx={{ px: 3, py: 1 }}>
             <LinearProgress variant="determinate" value={uploadProgress} />
@@ -446,7 +492,6 @@ export default function PriceSheetsPage() {
           </Box>
         )}
 
-        {/* Search */}
         <div className="px-4 sm:px-6 py-4">
           <TextField
             fullWidth
@@ -465,7 +510,6 @@ export default function PriceSheetsPage() {
           />
         </div>
 
-        {/* File Grid */}
         <div className="px-4 sm:px-6 pb-8">
           {loading ? (
             <div className="flex justify-center py-12">
@@ -475,9 +519,7 @@ export default function PriceSheetsPage() {
             <div className="flex flex-col items-center justify-center py-12 bg-white rounded-lg shadow-md">
               <FileIcon sx={{ fontSize: 64, color: "#ccc", mb: 2 }} />
               <Typography color="textSecondary">
-                {searchQuery
-                  ? "No files match your search"
-                  : "No price sheets uploaded yet"}
+                {searchQuery ? "No files match your search" : "No price sheets uploaded yet"}
               </Typography>
               {!searchQuery && (
                 <Button
@@ -496,7 +538,6 @@ export default function PriceSheetsPage() {
                   key={file.id}
                   className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
                 >
-                  {/* File Preview Thumbnail */}
                   <div
                     className="h-36 bg-gray-50 flex items-center justify-center cursor-pointer border-b"
                     onClick={() =>
@@ -516,7 +557,6 @@ export default function PriceSheetsPage() {
                     )}
                   </div>
 
-                  {/* File Info */}
                   <div className="p-3">
                     <Typography
                       variant="subtitle2"
@@ -531,7 +571,6 @@ export default function PriceSheetsPage() {
                       {file.createdAt.toLocaleDateString()}
                     </Typography>
 
-                    {/* Tags */}
                     {file.tags.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-1">
                         {file.tags.map((tag) => (
@@ -545,7 +584,6 @@ export default function PriceSheetsPage() {
                       </div>
                     )}
 
-                    {/* Actions */}
                     <div className="flex justify-end gap-1 mt-2">
                       {canPreviewInBrowser(file.fileType) && (
                         <IconButton
@@ -587,7 +625,6 @@ export default function PriceSheetsPage() {
         </div>
       </main>
 
-      {/* Upload Dialog (for tags) */}
       <Dialog
         open={showUploadDialog}
         onClose={() => setShowUploadDialog(false)}
@@ -605,7 +642,7 @@ export default function PriceSheetsPage() {
             <TextField
               size="small"
               fullWidth
-              placeholder="Add a tag (e.g. &quot;skee-ball&quot;, &quot;redemption&quot;)"
+              placeholder='Add a tag (e.g. "skee-ball", "redemption")'
               value={tagInput}
               onChange={(e) => setTagInput(e.target.value)}
               onKeyDown={(e) => {
@@ -663,7 +700,6 @@ export default function PriceSheetsPage() {
         </DialogActions>
       </Dialog>
 
-      {/* Edit Dialog */}
       <Dialog
         open={!!editFile}
         onClose={() => setEditFile(null)}
@@ -733,7 +769,6 @@ export default function PriceSheetsPage() {
         </DialogActions>
       </Dialog>
 
-      {/* Preview Dialog */}
       <Dialog
         open={!!previewFile}
         onClose={() => setPreviewFile(null)}
