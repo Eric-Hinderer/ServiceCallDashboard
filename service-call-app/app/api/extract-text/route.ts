@@ -13,7 +13,7 @@ const IMAGE_EXTRACT_PROMPT =
 function cleanText(text: string) {
   return text
     .replace(/\u0000/g, "")
-    .replace(/--\s*\d+\s+of\s+\d+\s*--/g, "") // strip pdf-parse page separators
+    .replace(/--\s*\d+\s+of\s+\d+\s*--/g, "") // strip page separators
     .replace(/\n{3,}/g, "\n\n") // collapse excessive newlines
     .trim()
     .slice(0, MAX_TEXT_LENGTH);
@@ -90,24 +90,15 @@ export async function POST(req: Request) {
 
     if (isPdf) {
       try {
-        const { PDFParse } = await import("pdf-parse");
-        const parser = new PDFParse({ data: buffer });
-        try {
-          const parsed = await parser.getText();
-          const pdfText = cleanText(parsed.text || "");
+        const { extractText } = await import("unpdf");
+        const parsed = await extractText(buffer, { mergePages: true });
+        const pdfText = cleanText(parsed.text || "");
 
-          if (pdfText) {
-            return NextResponse.json({ textContent: pdfText });
-          }
-        } finally {
-          try {
-            await parser.destroy();
-          } catch (destroyErr) {
-            console.warn("pdf-parse destroy failed:", destroyErr);
-          }
+        if (pdfText) {
+          return NextResponse.json({ textContent: pdfText });
         }
       } catch (err) {
-        console.error("pdf-parse failed, falling back to Gemini:", err);
+        console.error("unpdf extraction failed, falling back to Gemini:", err);
       }
 
       if (buffer.length <= GEMINI_PDF_SIZE_LIMIT) {
