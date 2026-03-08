@@ -10,9 +10,11 @@ import db from "@/lib/firebase";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getData } from "./action";
+import { getLocations } from "@/app/dashboard/action";
 import Link from "next/link";
 import { Status } from "@/app/(definitions)/definitions";
 import { EditFormSubmitButton } from "@/components/SubmitFormButton";
+import LocationCombobox from "@/components/LocationCombobox";
 
 export default async function ServiceEditPage({
   params,
@@ -20,7 +22,7 @@ export default async function ServiceEditPage({
   params: Promise<{ id: string }>;
 }) {
   const { id: key } = await params;
-  const data = await getData(key);
+  const [data, locations] = await Promise.all([getData(key), getLocations()]);
   
   // Redirect if no data found
   if (!data) {
@@ -144,16 +146,13 @@ export default async function ServiceEditPage({
                         <MapPin className="h-4 w-4 text-gray-500" />
                         Location
                       </Label>
-                      <Input
-                        id="location"
-                        name="location"
-                        placeholder="Enter location"
+                      <LocationCombobox
+                        locations={locations}
                         defaultValue={data?.location ?? ""}
-                        className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        name="location"
                         required
-                        aria-describedby="location-description"
                       />
-                      <p id="location-description" className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-gray-500 mt-1">
                         Enter the physical location where service is needed
                       </p>
                     </div>

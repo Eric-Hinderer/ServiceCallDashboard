@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Calendar, MapPin, User, Wrench, AlertCircle, FileText, UserCheck, Clock } from "lucide-react";
 import { Status } from "@/app/(definitions)/definitions";
+import LocationCombobox from "./LocationCombobox";
 
 
 export default function CreateServiceCall({
@@ -67,20 +68,11 @@ export default function CreateServiceCall({
                     <MapPin className="h-4 w-4 text-gray-500" />
                     Location
                   </Label>
-                  <Input
-                    id="location"
-                    type="text"
+                  <LocationCombobox
+                    locations={locations}
                     name="location"
-                    list="locations"
-                    placeholder="Enter or select location"
-                    className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     required
                   />
-                  <datalist id="locations">
-                    {locations.map((location, index) => (
-                      <option key={index} value={location} />
-                    ))}
-                  </datalist>
                   <p className="text-xs text-gray-500 mt-1">Physical location where service is needed</p>
                 </div>
               </div>
