@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { PDFParse } from "pdf-parse";
 
 export async function POST(req: Request) {
   try {
@@ -20,13 +21,6 @@ export async function POST(req: Request) {
 
     // PDF — use pdf-parse v2
     if (fileType === "application/pdf") {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { PDFParse } = require("pdf-parse") as {
-        PDFParse: new (options: { data: Buffer }) => {
-          getText: () => Promise<{ text: string }>;
-          destroy: () => Promise<void>;
-        };
-      };
       const parser = new PDFParse({ data: buffer });
       try {
         const data = await parser.getText();
