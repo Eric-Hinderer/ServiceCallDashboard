@@ -230,6 +230,12 @@ export default function PriceSheetsPage() {
         body: formData,
       });
 
+      const contentType = res.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        console.error("Text extraction API returned non-JSON response:", res.status, contentType);
+        return "";
+      }
+
       const data = await res.json();
 
       if (!res.ok) {
