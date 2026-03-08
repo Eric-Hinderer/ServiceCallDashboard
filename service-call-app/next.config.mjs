@@ -7,7 +7,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const nextConfig = {
   output: "standalone",
   outputFileTracingRoot: __dirname,
-  serverExternalPackages: ["pdf-parse"],
+  serverExternalPackages: [],
 };
 
 export default nextConfig;

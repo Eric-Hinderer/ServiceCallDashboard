@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { PDFParse } from "pdf-parse";
 
 const GEMINI_PDF_SIZE_LIMIT = 15 * 1024 * 1024;
 const MAX_TEXT_LENGTH = 50000;
@@ -14,7 +13,7 @@ const IMAGE_EXTRACT_PROMPT =
 function cleanText(text: string) {
   return text
     .replace(/\u0000/g, "")
-    .replace(/--\s*\d+\s+of\s+\d+\s*--/g, "") // strip pdf-parse page separators
+    .replace(/--\s*\d+\s+of\s+\d+\s*--/g, "") // strip page separators
     .replace(/\n{3,}/g, "\n\n") // collapse excessive newlines
     .trim()
     .slice(0, MAX_TEXT_LENGTH);
@@ -90,26 +89,16 @@ export async function POST(req: Request) {
     }
 
     if (isPdf) {
-      let parser: PDFParse | null = null;
-
       try {
-        parser = new PDFParse({ data: buffer });
-        const parsed = await parser.getText();
+        const { extractText } = await import("unpdf");
+        const parsed = await extractText(buffer, { mergePages: true });
         const pdfText = cleanText(parsed.text || "");
 
         if (pdfText) {
           return NextResponse.json({ textContent: pdfText });
         }
       } catch (err) {
-        console.error("pdf-parse failed:", err);
-      } finally {
-        if (parser) {
-          try {
-            await parser.destroy();
-          } catch (destroyErr) {
-            console.warn("pdf-parse destroy failed:", destroyErr);
-          }
-        }
+        console.error("unpdf extraction failed, falling back to Gemini:", err);
       }
 
       if (buffer.length <= GEMINI_PDF_SIZE_LIMIT) {
