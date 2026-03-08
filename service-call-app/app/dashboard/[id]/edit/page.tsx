@@ -10,9 +10,11 @@ import db from "@/lib/firebase";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getData } from "./action";
+import { getLocations, getMachines } from "@/app/dashboard/action";
 import Link from "next/link";
 import { Status } from "@/app/(definitions)/definitions";
 import { EditFormSubmitButton } from "@/components/SubmitFormButton";
+import ComboboxInput from "@/components/ComboboxInput";
 
 export default async function ServiceEditPage({
   params,
@@ -20,7 +22,7 @@ export default async function ServiceEditPage({
   params: Promise<{ id: string }>;
 }) {
   const { id: key } = await params;
-  const data = await getData(key);
+  const [data, locations, machines] = await Promise.all([getData(key), getLocations(), getMachines()]);
   
   // Redirect if no data found
   if (!data) {
@@ -144,16 +146,14 @@ export default async function ServiceEditPage({
                         <MapPin className="h-4 w-4 text-gray-500" />
                         Location
                       </Label>
-                      <Input
-                        id="location"
-                        name="location"
-                        placeholder="Enter location"
+                      <ComboboxInput
+                        options={locations}
                         defaultValue={data?.location ?? ""}
-                        className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        name="location"
+                        placeholder="Enter or select location"
                         required
-                        aria-describedby="location-description"
                       />
-                      <p id="location-description" className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-gray-500 mt-1">
                         Enter the physical location where service is needed
                       </p>
                     </div>
@@ -190,16 +190,14 @@ export default async function ServiceEditPage({
                         <Wrench className="h-4 w-4 text-gray-500" />
                         Machine/Equipment
                       </Label>
-                      <Input
-                        id="machine"
-                        name="machine"
-                        placeholder="Enter machine/equipment"
+                      <ComboboxInput
+                        options={machines}
                         defaultValue={data?.machine ?? ""}
-                        className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        name="machine"
+                        placeholder="Enter or select machine"
                         required
-                        aria-describedby="machine-description"
                       />
-                      <p id="machine-description" className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-gray-500 mt-1">
                         Equipment or machine that needs service
                       </p>
                     </div>
