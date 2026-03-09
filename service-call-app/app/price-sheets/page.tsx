@@ -119,6 +119,66 @@ function getFileIcon(fileType: string) {
   return <FileIcon sx={{ fontSize: 40, color: "#757575" }} />;
 }
 
+function PdfThumbnail({ url }: { url: string }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [rendered, setRendered] = useState(false);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function render() {
+      try {
+        const pdfjsLib = await import("pdfjs-dist");
+        pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+
+        const pdf = await pdfjsLib.getDocument({ url }).promise;
+        if (cancelled) return;
+
+        const page = await pdf.getPage(1);
+        if (cancelled) return;
+
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+
+        const viewport = page.getViewport({ scale: 1 });
+        const scale = 136 / viewport.height;
+        const scaledViewport = page.getViewport({ scale });
+
+        canvas.height = scaledViewport.height;
+        canvas.width = scaledViewport.width;
+
+        const ctx = canvas.getContext("2d");
+        if (!ctx) { setError(true); return; }
+
+        await page.render({ canvasContext: ctx, viewport: scaledViewport }).promise;
+        if (!cancelled) setRendered(true);
+      } catch {
+        if (!cancelled) setError(true);
+      }
+    }
+
+    render();
+    return () => { cancelled = true; };
+  }, [url]);
+
+  if (error) return <PdfIcon sx={{ fontSize: 40, color: "#e53935" }} />;
+
+  return (
+    <>
+      {!rendered && <PdfIcon sx={{ fontSize: 40, color: "#e53935" }} />}
+      <canvas
+        ref={canvasRef}
+        style={{
+          display: rendered ? "block" : "none",
+          maxHeight: "100%",
+          maxWidth: "100%",
+        }}
+      />
+    </>
+  );
+}
+
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return bytes + " B";
   if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
@@ -642,7 +702,7 @@ export default function PriceSheetsPage() {
                   className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
                 >
                   <div
-                    className="h-36 bg-gray-50 flex items-center justify-center cursor-pointer border-b"
+                    className="h-36 bg-gray-50 flex items-center justify-center cursor-pointer border-b overflow-hidden"
                     onClick={() =>
                       canPreviewInBrowser(file.fileType, file.fileName)
                         ? loadDocPreview(file)
@@ -655,6 +715,8 @@ export default function PriceSheetsPage() {
                         alt={file.fileName}
                         className="h-full w-full object-contain"
                       />
+                    ) : file.fileType.includes("pdf") ? (
+                      <PdfThumbnail url={file.downloadUrl} />
                     ) : (
                       getFileIcon(file.fileType)
                     )}
