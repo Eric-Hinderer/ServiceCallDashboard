@@ -8,6 +8,10 @@ const nextConfig = {
   output: "standalone",
   outputFileTracingRoot: __dirname,
   serverExternalPackages: [],
+  webpack: (config) => {
+    config.resolve.alias.canvas = false;
+    return config;
+  },
 };
 
 export default nextConfig;
