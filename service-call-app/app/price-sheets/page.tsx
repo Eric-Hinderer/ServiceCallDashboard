@@ -151,7 +151,7 @@ function PdfThumbnail({ url }: { url: string }) {
         const ctx = canvas.getContext("2d");
         if (!ctx) { setError(true); return; }
 
-        await page.render({ canvasContext: ctx, viewport: scaledViewport }).promise;
+        await page.render({ canvasContext: ctx, viewport: scaledViewport, canvas }).promise;
         if (!cancelled) setRendered(true);
       } catch {
         if (!cancelled) setError(true);
