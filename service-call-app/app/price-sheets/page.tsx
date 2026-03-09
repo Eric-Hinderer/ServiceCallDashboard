@@ -132,7 +132,11 @@ function PdfThumbnail({ url }: { url: string }) {
         const pdfjsLib = await import("pdfjs-dist");
         pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
 
-        const pdf = await pdfjsLib.getDocument({ url }).promise;
+        const response = await fetch(`/api/storage-proxy?path=${encodeURIComponent(url)}`);
+        if (!response.ok) throw new Error("proxy failed");
+        const data = await response.arrayBuffer();
+
+        const pdf = await pdfjsLib.getDocument({ data }).promise;
         if (cancelled) return;
 
         const page = await pdf.getPage(1);
@@ -716,7 +720,7 @@ export default function PriceSheetsPage() {
                         className="h-full w-full object-contain"
                       />
                     ) : file.fileType.includes("pdf") ? (
-                      <PdfThumbnail url={file.downloadUrl} />
+                      <PdfThumbnail url={file.storageUrl} />
                     ) : (
                       getFileIcon(file.fileType)
                     )}
