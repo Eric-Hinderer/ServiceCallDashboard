@@ -129,10 +129,8 @@ function canPreviewInBrowser(fileType: string): boolean {
     fileType.includes("image") ||
     fileType.includes("sheet") ||
     fileType.includes("excel") ||
-    fileType.includes("word") ||
-    fileType.includes("document") ||
-    fileType.includes("csv") ||
-    fileType.includes("msword")
+    fileType.includes("wordprocessingml") ||
+    fileType.includes("csv")
   );
 }
 
@@ -501,8 +499,8 @@ export default function PriceSheetsPage() {
     const isWord =
       file.fileType.includes("word") ||
       file.fileType.includes("document") ||
-      file.fileType.includes("msword") ||
-      ext === ".docx" || ext === ".doc";
+      file.fileType.includes("wordprocessingml") ||
+      ext === ".docx";
 
     if (!isExcel && !isWord) return;
 

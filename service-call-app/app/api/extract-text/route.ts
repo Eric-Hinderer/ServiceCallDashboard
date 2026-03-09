@@ -89,9 +89,7 @@ export async function POST(req: Request) {
       lowerName.endsWith(".xlsx");
 
     const isWord =
-      fileType === "application/msword" ||
       fileType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
-      lowerName.endsWith(".doc") ||
       lowerName.endsWith(".docx");
 
     if (isText) {
