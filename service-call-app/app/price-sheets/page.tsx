@@ -123,14 +123,14 @@ function formatFileSize(bytes: number): string {
   return (bytes / (1024 * 1024)).toFixed(1) + " MB";
 }
 
-function canPreviewInBrowser(fileType: string): boolean {
+function canPreviewInBrowser(fileType: string, fileName: string): boolean {
+  const ext = getExtension(fileName);
   return (
-    fileType.includes("pdf") ||
-    fileType.includes("image") ||
-    fileType.includes("sheet") ||
-    fileType.includes("excel") ||
-    fileType.includes("wordprocessingml") ||
-    fileType.includes("csv")
+    fileType.includes("pdf") || ext === ".pdf" ||
+    fileType.includes("image") || [".png", ".jpg", ".jpeg", ".webp"].includes(ext) ||
+    fileType.includes("sheet") || fileType.includes("excel") || [".xls", ".xlsx"].includes(ext) ||
+    fileType.includes("wordprocessingml") || ext === ".docx" ||
+    fileType.includes("csv") || ext === ".csv"
   );
 }
 
@@ -497,8 +497,6 @@ export default function PriceSheetsPage() {
       file.fileType.includes("csv") ||
       ext === ".xlsx" || ext === ".xls" || ext === ".csv";
     const isWord =
-      file.fileType.includes("word") ||
-      file.fileType.includes("document") ||
       file.fileType.includes("wordprocessingml") ||
       ext === ".docx";
 
@@ -642,7 +640,7 @@ export default function PriceSheetsPage() {
                   <div
                     className="h-36 bg-gray-50 flex items-center justify-center cursor-pointer border-b"
                     onClick={() =>
-                      canPreviewInBrowser(file.fileType)
+                      canPreviewInBrowser(file.fileType, file.fileName)
                         ? loadDocPreview(file)
                         : handleDownload(file)
                     }
@@ -686,7 +684,7 @@ export default function PriceSheetsPage() {
                     )}
 
                     <div className="flex justify-end gap-1 mt-2">
-                      {canPreviewInBrowser(file.fileType) && (
+                      {canPreviewInBrowser(file.fileType, file.fileName) && (
                         <IconButton
                           size="small"
                           onClick={() => loadDocPreview(file)}
