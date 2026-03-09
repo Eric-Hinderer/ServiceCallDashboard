@@ -49,8 +49,11 @@ import {
   Visibility as PreviewIcon,
   Edit as EditIcon,
   AutoAwesome as AutoAwesomeIcon,
+  SortByAlpha as SortByAlphaIcon,
 } from "@mui/icons-material";
 import toast from "react-hot-toast";
+import * as XLSX from "xlsx";
+import mammoth from "mammoth";
 
 interface PriceSheet {
   id: string;
@@ -120,9 +123,18 @@ function formatFileSize(bytes: number): string {
   return (bytes / (1024 * 1024)).toFixed(1) + " MB";
 }
 
-function canPreviewInBrowser(fileType: string): boolean {
-  return fileType.includes("pdf") || fileType.includes("image");
+function canPreviewInBrowser(fileType: string, fileName: string): boolean {
+  const ext = getExtension(fileName);
+  return (
+    fileType.includes("pdf") || ext === ".pdf" ||
+    fileType.includes("image") || [".png", ".jpg", ".jpeg", ".webp"].includes(ext) ||
+    fileType.includes("sheet") || fileType.includes("excel") || [".xls", ".xlsx"].includes(ext) ||
+    fileType.includes("wordprocessingml") || ext === ".docx" ||
+    fileType.includes("csv") || ext === ".csv"
+  );
 }
+
+type SortOption = "newest" | "oldest" | "a-z" | "z-a";
 
 export default function PriceSheetsPage() {
   const { user } = useAuth();
@@ -142,6 +154,10 @@ export default function PriceSheetsPage() {
   const [editTags, setEditTags] = useState<string[]>([]);
   const [editTagInput, setEditTagInput] = useState("");
   const [autoTagging, setAutoTagging] = useState(false);
+  const [sortOption, setSortOption] = useState<SortOption>("newest");
+  const [docPreviewHtml, setDocPreviewHtml] = useState<string>("");
+  const [docPreviewLoading, setDocPreviewLoading] = useState(false);
+  const [docPreviewSearch, setDocPreviewSearch] = useState("");
 
   const fetchFiles = useCallback(async () => {
     try {
@@ -443,17 +459,74 @@ export default function PriceSheetsPage() {
     link.click();
   };
 
-  const filteredFiles = files.filter((file) => {
-    if (!searchQuery.trim()) return true;
-    const q = searchQuery.toLowerCase();
+  const filteredFiles = files
+    .filter((file) => {
+      if (!searchQuery.trim()) return true;
+      const q = searchQuery.toLowerCase();
 
-    return (
-      (file.fileName || "").toLowerCase().includes(q) ||
-      (file.uploadedByName || "").toLowerCase().includes(q) ||
-      (file.textContent || "").toLowerCase().includes(q) ||
-      (file.tags || []).some((tag) => tag.toLowerCase().includes(q))
-    );
-  });
+      return (
+        (file.fileName || "").toLowerCase().includes(q) ||
+        (file.uploadedByName || "").toLowerCase().includes(q) ||
+        (file.textContent || "").toLowerCase().includes(q) ||
+        (file.tags || []).some((tag) => tag.toLowerCase().includes(q))
+      );
+    })
+    .sort((a, b) => {
+      switch (sortOption) {
+        case "a-z":
+          return a.fileName.localeCompare(b.fileName, undefined, { sensitivity: "base" });
+        case "z-a":
+          return b.fileName.localeCompare(a.fileName, undefined, { sensitivity: "base" });
+        case "oldest":
+          return a.createdAt.getTime() - b.createdAt.getTime();
+        case "newest":
+        default:
+          return b.createdAt.getTime() - a.createdAt.getTime();
+      }
+    });
+
+  const loadDocPreview = async (file: PriceSheet) => {
+    setPreviewFile(file);
+    setDocPreviewHtml("");
+    setDocPreviewSearch("");
+
+    const ext = getExtension(file.fileName);
+    const isExcel =
+      file.fileType.includes("sheet") ||
+      file.fileType.includes("excel") ||
+      file.fileType.includes("csv") ||
+      ext === ".xlsx" || ext === ".xls" || ext === ".csv";
+    const isWord =
+      file.fileType.includes("wordprocessingml") ||
+      ext === ".docx";
+
+    if (!isExcel && !isWord) return;
+
+    setDocPreviewLoading(true);
+    try {
+      const response = await fetch(file.downloadUrl);
+      const arrayBuffer = await response.arrayBuffer();
+
+      if (isExcel) {
+        const workbook = XLSX.read(arrayBuffer, { type: "array" });
+        let html = "";
+        for (const sheetName of workbook.SheetNames) {
+          const sheet = workbook.Sheets[sheetName];
+          html += `<h3 style="margin:16px 0 8px;font-size:16px;font-weight:600;">${sheetName}</h3>`;
+          html += XLSX.utils.sheet_to_html(sheet, { editable: false });
+        }
+        setDocPreviewHtml(html);
+      } else if (isWord) {
+        const result = await mammoth.convertToHtml({ arrayBuffer });
+        setDocPreviewHtml(result.value);
+      }
+    } catch (err) {
+      console.error("Document preview failed:", err);
+      setDocPreviewHtml("<p style='color:#999;text-align:center;padding:32px;'>Failed to load preview.</p>");
+    } finally {
+      setDocPreviewLoading(false);
+    }
+  };
 
   if (!user) {
     return (
@@ -498,7 +571,7 @@ export default function PriceSheetsPage() {
           </Box>
         )}
 
-        <div className="px-4 sm:px-6 py-4">
+        <div className="px-4 sm:px-6 py-4 flex gap-2 items-center">
           <TextField
             fullWidth
             placeholder="Search by name, content, tag, or uploader..."
@@ -514,6 +587,26 @@ export default function PriceSheetsPage() {
               ),
             }}
           />
+          <TextField
+            select
+            size="small"
+            value={sortOption}
+            onChange={(e) => setSortOption(e.target.value as SortOption)}
+            sx={{ minWidth: 160, backgroundColor: "white", borderRadius: 1 }}
+            SelectProps={{ native: true }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SortByAlphaIcon fontSize="small" />
+                </InputAdornment>
+              ),
+            }}
+          >
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="a-z">Name A–Z</option>
+            <option value="z-a">Name Z–A</option>
+          </TextField>
         </div>
 
         <div className="px-4 sm:px-6 pb-8">
@@ -547,8 +640,8 @@ export default function PriceSheetsPage() {
                   <div
                     className="h-36 bg-gray-50 flex items-center justify-center cursor-pointer border-b"
                     onClick={() =>
-                      canPreviewInBrowser(file.fileType)
-                        ? setPreviewFile(file)
+                      canPreviewInBrowser(file.fileType, file.fileName)
+                        ? loadDocPreview(file)
                         : handleDownload(file)
                     }
                   >
@@ -591,10 +684,10 @@ export default function PriceSheetsPage() {
                     )}
 
                     <div className="flex justify-end gap-1 mt-2">
-                      {canPreviewInBrowser(file.fileType) && (
+                      {canPreviewInBrowser(file.fileType, file.fileName) && (
                         <IconButton
                           size="small"
-                          onClick={() => setPreviewFile(file)}
+                          onClick={() => loadDocPreview(file)}
                           title="Preview"
                         >
                           <PreviewIcon fontSize="small" />
@@ -777,22 +870,46 @@ export default function PriceSheetsPage() {
 
       <Dialog
         open={!!previewFile}
-        onClose={() => setPreviewFile(null)}
+        onClose={() => {
+          setPreviewFile(null);
+          setDocPreviewHtml("");
+          setDocPreviewSearch("");
+        }}
         maxWidth="lg"
         fullWidth
         PaperProps={{ sx: { height: "90vh" } }}
       >
         {previewFile && (
           <>
-            <DialogTitle sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <Typography variant="h6" noWrap sx={{ flex: 1 }}>
+            <DialogTitle sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 1 }}>
+              <Typography variant="h6" noWrap sx={{ flex: 1, minWidth: 0 }}>
                 {previewFile.fileName}
               </Typography>
+              {docPreviewHtml && (
+                <TextField
+                  size="small"
+                  placeholder="Search in document..."
+                  value={docPreviewSearch}
+                  onChange={(e) => setDocPreviewSearch(e.target.value)}
+                  sx={{ width: 220 }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon fontSize="small" />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              )}
               <Box>
                 <IconButton onClick={() => handleDownload(previewFile)} title="Download">
                   <DownloadIcon />
                 </IconButton>
-                <IconButton onClick={() => setPreviewFile(null)}>
+                <IconButton onClick={() => {
+                  setPreviewFile(null);
+                  setDocPreviewHtml("");
+                  setDocPreviewSearch("");
+                }}>
                   <CloseIcon />
                 </IconButton>
               </Box>
@@ -809,6 +926,53 @@ export default function PriceSheetsPage() {
                   src={previewFile.downloadUrl}
                   alt={previewFile.fileName}
                   style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
+                />
+              ) : docPreviewLoading ? (
+                <Box sx={{ textAlign: "center", p: 4 }}>
+                  <LinearProgress sx={{ width: 200, mb: 2 }} />
+                  <Typography color="textSecondary">Loading preview...</Typography>
+                </Box>
+              ) : docPreviewHtml ? (
+                <Box
+                  sx={{
+                    width: "100%",
+                    height: "100%",
+                    overflow: "auto",
+                    p: 3,
+                    "& table": {
+                      borderCollapse: "collapse",
+                      width: "100%",
+                      fontSize: "0.875rem",
+                    },
+                    "& th, & td": {
+                      border: "1px solid #ddd",
+                      padding: "6px 10px",
+                      textAlign: "left",
+                    },
+                    "& th": {
+                      backgroundColor: "#f5f5f5",
+                      fontWeight: 600,
+                    },
+                    "& tr:nth-of-type(even)": {
+                      backgroundColor: "#fafafa",
+                    },
+                    "& mark": {
+                      backgroundColor: "#fff176",
+                      padding: "0 2px",
+                      borderRadius: "2px",
+                    },
+                  }}
+                  dangerouslySetInnerHTML={{
+                    __html: docPreviewSearch.trim()
+                      ? docPreviewHtml.replace(
+                          new RegExp(
+                            `(${docPreviewSearch.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`,
+                            "gi"
+                          ),
+                          "<mark>$1</mark>"
+                        )
+                      : docPreviewHtml,
+                  }}
                 />
               ) : (
                 <Box sx={{ textAlign: "center", p: 4 }}>
