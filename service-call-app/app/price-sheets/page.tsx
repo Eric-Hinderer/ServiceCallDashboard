@@ -50,6 +50,8 @@ import {
   Edit as EditIcon,
   AutoAwesome as AutoAwesomeIcon,
   SortByAlpha as SortByAlphaIcon,
+  Fullscreen as FullscreenIcon,
+  FullscreenExit as FullscreenExitIcon,
 } from "@mui/icons-material";
 import toast from "react-hot-toast";
 import * as XLSX from "xlsx";
@@ -158,6 +160,7 @@ export default function PriceSheetsPage() {
   const [docPreviewHtml, setDocPreviewHtml] = useState<string>("");
   const [docPreviewLoading, setDocPreviewLoading] = useState(false);
   const [docPreviewSearch, setDocPreviewSearch] = useState("");
+  const [previewFullscreen, setPreviewFullscreen] = useState(false);
 
   const fetchFiles = useCallback(async () => {
     try {
@@ -875,10 +878,12 @@ export default function PriceSheetsPage() {
           setPreviewFile(null);
           setDocPreviewHtml("");
           setDocPreviewSearch("");
+          setPreviewFullscreen(false);
         }}
         maxWidth="lg"
         fullWidth
-        PaperProps={{ sx: { height: "90vh" } }}
+        fullScreen={previewFullscreen}
+        PaperProps={{ sx: { height: previewFullscreen ? "100vh" : "90vh" } }}
       >
         {previewFile && (
           <>
@@ -906,10 +911,14 @@ export default function PriceSheetsPage() {
                 <IconButton onClick={() => handleDownload(previewFile)} title="Download">
                   <DownloadIcon />
                 </IconButton>
+                <IconButton onClick={() => setPreviewFullscreen((f) => !f)} title={previewFullscreen ? "Exit fullscreen" : "Fullscreen"}>
+                  {previewFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
+                </IconButton>
                 <IconButton onClick={() => {
                   setPreviewFile(null);
                   setDocPreviewHtml("");
                   setDocPreviewSearch("");
+                  setPreviewFullscreen(false);
                 }}>
                   <CloseIcon />
                 </IconButton>
