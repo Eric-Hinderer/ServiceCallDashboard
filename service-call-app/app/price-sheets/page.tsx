@@ -8,6 +8,7 @@ import {
   ref,
   uploadBytesResumable,
   getDownloadURL,
+  getBlob,
   deleteObject,
 } from "firebase/storage";
 import {
@@ -504,8 +505,9 @@ export default function PriceSheetsPage() {
 
     setDocPreviewLoading(true);
     try {
-      const response = await fetch(file.downloadUrl);
-      const arrayBuffer = await response.arrayBuffer();
+      const storageRef = ref(storage, file.storageUrl);
+      const blob = await getBlob(storageRef);
+      const arrayBuffer = await blob.arrayBuffer();
 
       if (isExcel) {
         const workbook = XLSX.read(arrayBuffer, { type: "array" });
