@@ -37,6 +37,7 @@
     "embla-carousel-react": "^8.5.1",
     "exceljs": "^4.4.0",
     "firebase": "^10.14.1",
+    "firebase-admin": "^13.7.0",
     "lucide-react": "^0.469.0",
     "luxon": "^3.6.1",
     "mammoth": "^1.11.0",
