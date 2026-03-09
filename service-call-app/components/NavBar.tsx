@@ -53,7 +53,6 @@ const Header = () => {
         ? [
             { name: "Dashboard", href: "/dashboard", icon: <DashboardIcon /> },
             { name: "Analytics", href: "/analytics", icon: <AnalyticsIcon /> },
-            { name: "Price Sheets", href: "/price-sheets", icon: <DescriptionIcon /> },
           ]
         : []),
     ],
