@@ -82,6 +82,18 @@ export async function POST(req: Request) {
       lowerName.endsWith(".jpeg") ||
       lowerName.endsWith(".webp");
 
+    const isExcel =
+      fileType === "application/vnd.ms-excel" ||
+      fileType === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
+      lowerName.endsWith(".xls") ||
+      lowerName.endsWith(".xlsx");
+
+    const isWord =
+      fileType === "application/msword" ||
+      fileType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+      lowerName.endsWith(".doc") ||
+      lowerName.endsWith(".docx");
+
     if (isText) {
       return NextResponse.json({
         textContent: cleanText(buffer.toString("utf-8")),
@@ -139,6 +151,44 @@ export async function POST(req: Request) {
         console.error("Gemini image OCR failed:", err);
         return NextResponse.json(
           { textContent: "", error: "Gemini image OCR failed" },
+          { status: 500 }
+        );
+      }
+    }
+
+    if (isExcel) {
+      try {
+        const XLSX = await import("xlsx");
+        const workbook = XLSX.read(buffer, { type: "buffer" });
+        const texts: string[] = [];
+        for (const sheetName of workbook.SheetNames) {
+          const sheet = workbook.Sheets[sheetName];
+          const csv = XLSX.utils.sheet_to_csv(sheet);
+          if (csv.trim()) texts.push(csv);
+        }
+        return NextResponse.json({
+          textContent: cleanText(texts.join("\n\n")),
+        });
+      } catch (err) {
+        console.error("Excel extraction failed:", err);
+        return NextResponse.json(
+          { textContent: "", error: "Excel text extraction failed" },
+          { status: 500 }
+        );
+      }
+    }
+
+    if (isWord) {
+      try {
+        const mammoth = await import("mammoth");
+        const result = await mammoth.extractRawText({ buffer });
+        return NextResponse.json({
+          textContent: cleanText(result.value || ""),
+        });
+      } catch (err) {
+        console.error("Word extraction failed:", err);
+        return NextResponse.json(
+          { textContent: "", error: "Word text extraction failed" },
           { status: 500 }
         );
       }
