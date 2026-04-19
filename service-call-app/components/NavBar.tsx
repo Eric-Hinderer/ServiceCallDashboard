@@ -29,6 +29,7 @@ import {
   Login as LoginIcon,
   Chat as ChatIcon,
   Description as DescriptionIcon,
+  Build as BuildIcon,
 } from "@mui/icons-material";
 import Image from "next/image";
 import Central from "@/public/central.jpg";
@@ -41,7 +42,13 @@ const Header = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   useEffect(() => {
-    if (!loading && !user && pathname !== "/") {
+    if (
+      !loading &&
+      !user &&
+      pathname !== "/" &&
+      pathname !== "/technician" &&
+      pathname !== "/offline"
+    ) {
       router.push("/");
     }
   }, [loading, user, router, pathname]);
@@ -51,6 +58,7 @@ const Header = () => {
       { name: "Home", href: "/", icon: <HomeIcon /> },
       ...(user
         ? [
+            { name: "Technician", href: "/technician", icon: <BuildIcon /> },
             { name: "Dashboard", href: "/dashboard", icon: <DashboardIcon /> },
             { name: "Analytics", href: "/analytics", icon: <AnalyticsIcon /> },
           ]
