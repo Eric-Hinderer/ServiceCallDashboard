@@ -30,6 +30,8 @@ import {
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ServiceCall } from "../(definitions)/definitions";
+import InstallCard from "@/components/InstallCard";
+import { ADMIN_DISPLAY_NAMES } from "@/lib/admins";
 
 const TECH_NAME_KEY = "technician-name";
 const PREDEFINED_NAMES = [
@@ -40,6 +42,7 @@ const PREDEFINED_NAMES = [
   "Damon",
   "John",
   "Aaron",
+  ...ADMIN_DISPLAY_NAMES,
 ];
 
 type FilterMode = "mine" | "unassigned" | "all";
@@ -176,6 +179,8 @@ export default function TechnicianView() {
   }
 
   if (!techName) {
+    const myName = user.displayName?.trim();
+    const showMyName = myName && !PREDEFINED_NAMES.includes(myName);
     return (
       <main className="min-h-[70vh] flex items-center justify-center p-6">
         <Card className="max-w-sm w-full">
@@ -186,6 +191,15 @@ export default function TechnicianView() {
             <p className="text-sm text-slate-600 text-center">
               Pick your name. We&apos;ll use it when you claim a call.
             </p>
+            {showMyName && (
+              <Button
+                variant="default"
+                className="w-full h-12 text-base"
+                onClick={() => handleSaveName(myName!)}
+              >
+                Use my name: {myName}
+              </Button>
+            )}
             <div className="grid grid-cols-2 gap-2">
               {PREDEFINED_NAMES.map((name) => (
                 <Button
@@ -247,6 +261,10 @@ export default function TechnicianView() {
             {tab.label}
           </button>
         ))}
+      </div>
+
+      <div className="mb-4">
+        <InstallCard />
       </div>
 
       {visibleCalls.length === 0 ? (

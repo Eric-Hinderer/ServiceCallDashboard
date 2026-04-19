@@ -25,21 +25,34 @@ locally and syncs when you reconnect).
 
 ## Install the app
 
+**Every device:** open `/technician` in the app, and tap the **Install the app
+on this device** card at the top. If the browser supports an automatic prompt
+(Android Chrome / desktop Chrome / Edge), you'll get an **Install now** button;
+otherwise the same card expands to show the right step-by-step for iOS /
+Android / desktop.
+
 ### Android (Chrome)
 
 1. Visit the dashboard URL in Chrome.
-2. Sign in with Google.
-3. An **"Install Service Call app"** banner will appear at the bottom — tap
-   **Install**.
-   - Or open the Chrome menu (⋮) → **Install app**.
+2. Sign in with Google → navigate to **Technician**.
+3. Tap **Install now** on the install card (or open Chrome menu ⋮ →
+   **Install app**).
 4. The icon appears on your home screen; tap it to launch in fullscreen.
+
+Note: Chrome on Android sometimes waits ~30 seconds of engagement before
+making the automatic prompt available. If you see **How to install on this
+device** instead of **Install now**, expand it and follow the manual steps, or
+wait a bit and re-open the page.
 
 ### iPhone / iPad (Safari)
 
-Apple doesn't support `beforeinstallprompt`, so installation is manual:
+iOS Safari does not support the automatic install prompt. You'll always see
+the **How to install on this device** button on the install card — tap it and
+follow the steps:
 
-1. Open the dashboard in **Safari** (not Chrome — Safari is required on iOS).
-2. Tap the **Share** button (square with an up arrow).
+1. Open the dashboard in **Safari** (not Chrome — iOS only lets Safari install
+   PWAs).
+2. Tap the **Share** button (square with an up arrow) at the bottom of Safari.
 3. Scroll down and tap **Add to Home Screen**.
 4. Name it "Service Calls" and tap **Add**.
 
@@ -47,8 +60,19 @@ Apple doesn't support `beforeinstallprompt`, so installation is manual:
 
 1. Visit the dashboard URL.
 2. Click the **install icon** in the address bar (⊕ / computer-with-arrow),
-   or use the banner at the bottom of the screen.
+   or click **Install now** on the install card inside `/technician`.
 3. The app launches in its own window and pins to the taskbar / dock.
+
+### Troubleshooting: "I don't see an install prompt"
+
+- The automatic prompt is Chrome / Edge only. iOS Safari **never** shows one —
+  use the manual steps above.
+- The prompt only fires after the service worker is registered. Open the app
+  once online, let it load, then try again.
+- If you've previously dismissed the prompt, the install card on
+  `/technician` is still available and will trigger the native install flow
+  whenever Chrome makes it available.
+- In private / incognito windows, install is disabled by the browser.
 
 ---
 
@@ -110,14 +134,49 @@ These need to be true in production for the PWA to install cleanly:
 
 ---
 
+---
+
+## Admin view (`/admin`)
+
+Admins get a separate operations screen with:
+
+- Totals: Open, In Progress, Overdue, Unassigned
+- Per-technician workload with click-to-filter rows
+- One-screen list of every active call with inline reassign (`TakenBy`),
+  status change, and link to the full edit view
+
+**Who counts as an admin?** The allowlist lives in
+`service-call-app/lib/admins.ts`:
+
+```ts
+export const ADMIN_DISPLAY_NAMES = ["Joe Hinderer", "Eric Hinderer"];
+```
+
+The check is against the signed-in Firebase user's `displayName`. If your
+Google display name matches, the **Admin** tab appears in the top nav and
+`/admin` loads. If not, `/admin` shows a friendly "Not authorized" card.
+
+**Caveat — this is UI-level authorization only.** There is no Firestore rule
+today that prevents a non-admin from writing the same data directly. Harden
+this by adding a rule in `firestore.rules` that only lets admins (by uid) write
+to privileged fields. See the sign-in notes in `README.md`.
+
+---
+
 ## Files added / changed
 
 **New**
 - `service-call-app/app/technician/page.tsx` — route entry
 - `service-call-app/app/technician/TechnicianView.tsx` — mobile UI
+- `service-call-app/app/admin/page.tsx` — admin route entry
+- `service-call-app/app/admin/AdminView.tsx` — admin dashboard
 - `service-call-app/app/offline/page.tsx` — offline fallback
-- `service-call-app/components/PWARegister.tsx` — SW registration, install
-  prompt, offline banner
+- `service-call-app/components/PWARegister.tsx` — SW registration + offline
+  banner
+- `service-call-app/components/InstallCard.tsx` — always-visible install CTA
+  with platform-specific instructions
+- `service-call-app/components/useInstallState.tsx` — install/platform hook
+- `service-call-app/lib/admins.ts` — admin allowlist helper
 - `service-call-app/public/manifest.json` — PWA manifest
 - `service-call-app/public/sw.js` — service worker
 - `service-call-app/public/icons/icon-192.svg`
@@ -127,7 +186,8 @@ These need to be true in production for the PWA to install cleanly:
 **Changed**
 - `service-call-app/app/layout.tsx` — manifest link, viewport / theme-color,
   PWARegister mount
-- `service-call-app/components/NavBar.tsx` — Technician nav link, don't
-  redirect unauthenticated users away from `/technician` or `/offline`
+- `service-call-app/components/NavBar.tsx` — Technician + Admin nav links,
+  don't redirect unauthenticated users away from `/technician`, `/admin`, or
+  `/offline`
 - `service-call-app/lib/firebase.ts` — enable Firestore IndexedDB persistence
   on the client
