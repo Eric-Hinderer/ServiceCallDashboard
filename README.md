@@ -9,6 +9,7 @@ Welcome to the Service Call Dashboard App! This app is designed to help you mana
 - **Real-time Updates**: Get real-time updates on the status of service calls, ensuring efficient communication and coordination.
 - **Customer Communication**: Communicate with customers directly through the app, keeping them informed every step of the way.
 - **Analytics and Reporting**: Gain valuable insights into service call trends, technician performance, and customer satisfaction.
+- **Installable PWA (Technician View)**: Field techs can install the dashboard to their home screen, work offline, and update call status with one tap. See [`PWA_GUIDE.md`](./PWA_GUIDE.md) for install instructions and usage.
 
 ## Installation
 
