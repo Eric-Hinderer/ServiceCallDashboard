@@ -184,20 +184,26 @@ export default function AdminView() {
   }
 
   return (
-    <main className="max-w-5xl mx-auto px-3 sm:px-6 pt-4 pb-12 space-y-5">
-      <header className="flex items-center justify-between">
-        <div>
+    <main
+      className="max-w-5xl mx-auto px-3 sm:px-6 pt-4 space-y-5"
+      style={{ paddingBottom: "calc(3rem + env(safe-area-inset-bottom))" }}
+    >
+      <header className="flex items-center justify-between gap-2">
+        <div className="min-w-0">
           <div className="text-xs text-slate-500 uppercase tracking-wide">
             Admin
           </div>
-          <h1 className="text-2xl font-bold text-slate-900">Operations</h1>
-          <div className="text-xs text-slate-500">
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 leading-tight">
+            Operations
+          </h1>
+          <div className="text-xs text-slate-500 truncate">
             Signed in as {user.displayName || user.email}
           </div>
         </div>
-        <Link href="/technician">
+        <Link href="/technician" className="shrink-0">
           <Button variant="outline" size="sm">
-            Technician View
+            <Wrench className="h-4 w-4 mr-1.5" />
+            Tech View
           </Button>
         </Link>
       </header>
@@ -361,12 +367,12 @@ function TechRow({
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center justify-between px-4 py-3 text-left transition ${
+      className={`w-full flex items-center justify-between gap-2 px-4 py-3 text-left transition ${
         active ? "bg-slate-900 text-white" : "hover:bg-slate-50 text-slate-800"
       }`}
     >
-      <div className="font-medium">{name}</div>
-      <div className="flex items-center gap-2 text-xs">
+      <div className="font-medium truncate shrink-0">{name}</div>
+      <div className="flex items-center gap-1.5 text-xs flex-wrap justify-end">
         <span
           className={`rounded-full px-2 py-0.5 ${
             active ? "bg-white/20" : "bg-blue-100 text-blue-800"
@@ -402,38 +408,41 @@ function AdminCallRow({ call }: { call: ServiceCall }) {
         call.overDue ? "border-red-300 bg-red-50" : "border-slate-200"
       } shadow-sm`}
     >
-      <CardContent className="p-3 flex flex-col sm:flex-row gap-3 sm:items-center">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5 font-semibold text-slate-900 truncate">
-            <MapPin className="h-4 w-4 text-slate-500 shrink-0" />
-            <span className="truncate">{call.location || "Unknown"}</span>
-            {call.overDue && (
-              <span className="ml-1 inline-flex items-center gap-0.5 text-red-700 text-xs font-medium">
-                <AlertCircle className="h-3 w-3" />
-                Overdue
+      <CardContent className="p-3 space-y-2">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5 font-semibold text-slate-900 truncate">
+              <MapPin className="h-4 w-4 text-slate-500 shrink-0" />
+              <span className="truncate">{call.location || "Unknown"}</span>
+            </div>
+            <div className="text-xs text-slate-500 flex items-center gap-1.5 mt-0.5">
+              <Clock className="h-3 w-3 shrink-0" />
+              <span className="truncate">
+                {call.date
+                  ? formatDistanceToNow(call.date, { addSuffix: true })
+                  : "No date"}
+                {" • "}
+                {call.machine || "—"}
+                {call.whoCalled ? ` • ${call.whoCalled}` : ""}
               </span>
-            )}
+            </div>
           </div>
-          <div className="text-xs text-slate-500 flex items-center gap-1.5 mt-0.5">
-            <Clock className="h-3 w-3" />
-            {call.date
-              ? formatDistanceToNow(call.date, { addSuffix: true })
-              : "No date"}
-            <span className="text-slate-300">•</span>
-            <span className="truncate">
-              {call.machine || "—"}
-              {call.whoCalled ? ` • ${call.whoCalled}` : ""}
+          {call.overDue && (
+            <span className="inline-flex items-center gap-0.5 text-red-700 text-xs font-semibold bg-red-100 border border-red-200 rounded-full px-2 py-0.5 shrink-0">
+              <AlertCircle className="h-3 w-3" />
+              Overdue
             </span>
-          </div>
-          <div className="text-sm text-slate-800 mt-1 line-clamp-2">
-            {call.reportedProblem || "No problem description"}
-          </div>
+          )}
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap sm:shrink-0">
+        <div className="text-sm text-slate-800 line-clamp-2">
+          {call.reportedProblem || "No problem description"}
+        </div>
+
+        <div className="flex items-center gap-2 flex-wrap pt-1 border-t border-slate-100">
           <TakenBy id={call.id!} currentTakenBy={call.takenBy} />
           <Status id={call.id!} currentStatus={call.status} />
-          <Link href={`/dashboard/${call.id}/edit`}>
+          <Link href={`/dashboard/${call.id}/edit`} className="ml-auto">
             <Button variant="ghost" size="sm">
               Edit
             </Button>

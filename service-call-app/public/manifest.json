@@ -43,6 +43,13 @@
       "description": "Create a new service call",
       "url": "/dashboard/create",
       "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Admin",
+      "short_name": "Admin",
+      "description": "Operations dashboard for admins",
+      "url": "/admin",
+      "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192" }]
     }
   ]
 }
