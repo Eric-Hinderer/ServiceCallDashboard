@@ -134,7 +134,15 @@ const Header = () => {
 
   return (
     <>
-      <AppBar position="fixed" sx={{ backgroundColor: "black" }}>
+      <AppBar
+        position="fixed"
+        sx={{
+          backgroundColor: "black",
+          paddingTop: "env(safe-area-inset-top)",
+          paddingLeft: "env(safe-area-inset-left)",
+          paddingRight: "env(safe-area-inset-right)",
+        }}
+      >
         <Toolbar>
           <IconButton
             color="inherit"
@@ -239,7 +247,9 @@ const Header = () => {
           {drawer}
         </Drawer>
       </Box>
-      <Toolbar />
+      <Box sx={{ paddingTop: "env(safe-area-inset-top)" }}>
+        <Toolbar />
+      </Box>
     </>
   );
 };

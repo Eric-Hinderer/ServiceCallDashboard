@@ -488,7 +488,7 @@ function CallCard({
         </div>
 
         <Link
-          href={`/dashboard/${call.id}/edit`}
+          href={`/dashboard/${call.id}/edit?from=technician`}
           className="block text-center text-xs text-slate-500 underline pt-1"
         >
           Open full details

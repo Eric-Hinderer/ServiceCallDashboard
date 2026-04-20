@@ -5,7 +5,7 @@ import { useState, useTransition } from "react";
 import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Save, Loader2 } from "lucide-react";
-import Link from "next/link";
+import SmartBack from "@/components/SmartBack";
 
 export function SubmitFormButtonEmail({
   closeModalAction,
@@ -106,9 +106,13 @@ export function SubmitFormButton({ closeModalAction }: { closeModalAction: () =>
 }
 
 // Submit button specifically for the edit service call form
-export function EditFormSubmitButton() {
+export function EditFormSubmitButton({
+  cancelFallback = "/dashboard",
+}: {
+  cancelFallback?: string;
+} = {}) {
   const { pending } = useFormStatus();
-  
+
   return (
     <div className="flex gap-4 pt-6 border-t border-gray-200">
       <Button
@@ -128,16 +132,13 @@ export function EditFormSubmitButton() {
           </>
         )}
       </Button>
-      <Link href="/dashboard">
-        <Button
-          type="button"
-          variant="outline"
-          disabled={pending}
-          className="px-6 py-3 border-gray-300 text-gray-700 hover:bg-gray-50 transition-all duration-200 disabled:opacity-50"
-        >
-          Cancel
-        </Button>
-      </Link>
+      <SmartBack
+        fallback={cancelFallback}
+        variant="outline"
+        className="px-6 py-3 border-gray-300 text-gray-700 hover:bg-gray-50 transition-all duration-200 disabled:opacity-50"
+      >
+        Cancel
+      </SmartBack>
     </div>
   );
 }
