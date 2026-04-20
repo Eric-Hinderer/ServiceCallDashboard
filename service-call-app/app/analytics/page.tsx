@@ -288,8 +288,7 @@ export default function AnalyticsPage() {
     <div
       className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 lg:p-6"
       style={{
-        paddingBottom:
-          "calc(1.5rem + var(--bottom-nav-h) + env(safe-area-inset-bottom))",
+        paddingBottom: "calc(1.5rem + var(--bottom-nav-h))",
       }}
     >
       <div className="max-w-7xl mx-auto space-y-6">

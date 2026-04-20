@@ -234,8 +234,7 @@ export default function TechnicianView() {
     <main
       className="px-3 pt-3 max-w-2xl mx-auto"
       style={{
-        paddingBottom:
-          "calc(4.5rem + var(--bottom-nav-h) + env(safe-area-inset-bottom))",
+        paddingBottom: "calc(5rem + var(--bottom-nav-h))",
       }}
     >
       <header className="flex items-center justify-between gap-2 mb-3">
@@ -352,8 +351,7 @@ export default function TechnicianView() {
         className="fixed z-40 flex items-center gap-2 rounded-full bg-slate-900 text-white px-5 py-3 shadow-xl active:scale-95 transition"
         style={{
           right: "calc(1.25rem + env(safe-area-inset-right))",
-          bottom:
-            "calc(1rem + var(--bottom-nav-h) + env(safe-area-inset-bottom))",
+          bottom: "calc(0.75rem + var(--bottom-nav-h))",
         }}
       >
         <Plus className="h-5 w-5" />

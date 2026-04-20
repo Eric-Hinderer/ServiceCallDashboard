@@ -12,14 +12,7 @@ import {
   getFilteredRowModel,
 } from "@tanstack/react-table";
 import { AiOutlineClose } from "react-icons/ai";
-import {
-  Typography,
-  Container,
-  Box,
-  useMediaQuery,
-  IconButton,
-  TextField,
-} from "@mui/material";
+import { Box, IconButton, TextField } from "@mui/material";
 
 import Grid from "@mui/material/Grid2";
 import {
@@ -38,6 +31,11 @@ import db from "@/lib/firebase";
 import { ServiceCall } from "../(definitions)/definitions";
 import ExcelJS from "exceljs";
 import { Button } from "@/components/ui/button";
+import Status from "@/components/Status";
+import TakenBy from "@/components/TakenBy";
+import ServiceCallRowActions from "@/components/ServiceCallRowActions";
+import { formatDistanceToNow } from "date-fns";
+import { AlertCircle, Clock, MapPin } from "lucide-react";
 
 interface DataTableProps {
   columns: ColumnDef<ServiceCall, any>[];
@@ -47,7 +45,6 @@ export function DataTable({ columns }: DataTableProps) {
   const [serviceCalls, setServiceCalls] = useState<ServiceCall[]>([]);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const isMobile = useMediaQuery("(max-width:600px)");
 
   useEffect(() => {
     const q = query(collection(db, "ServiceCalls"), orderBy("date", "desc"));
@@ -129,14 +126,14 @@ export function DataTable({ columns }: DataTableProps) {
 
   return (
     <div>
-      <Box sx={{ padding: 2 }}>
+      <Box sx={{ padding: { xs: 0, sm: 2 }, pb: { xs: 2, sm: 2 } }}>
         <Box
           sx={{
             display: "flex",
-            justifyContent: { xs: "center", md: "flex-end" },
+            justifyContent: { xs: "stretch", md: "flex-end" },
             alignItems: "center",
             flexDirection: { xs: "column", sm: "row" },
-            pb: 4,
+            pb: { xs: 2, sm: 4 },
             gap: 2,
           }}
         >
@@ -156,7 +153,7 @@ export function DataTable({ columns }: DataTableProps) {
         </Box>
 
         <Grid container spacing={2}>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <Grid size={{ xs: 6, sm: 6, md: 3 }}>
             <TextField
               label="Search Location"
               value={
@@ -186,7 +183,7 @@ export function DataTable({ columns }: DataTableProps) {
             />
           </Grid>
 
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <Grid size={{ xs: 6, sm: 6, md: 3 }}>
             <TextField
               label="Search Machine"
               value={
@@ -216,7 +213,7 @@ export function DataTable({ columns }: DataTableProps) {
             />
           </Grid>
 
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <Grid size={{ xs: 6, sm: 6, md: 3 }}>
             <TextField
               label="Search Problem"
               value={
@@ -250,7 +247,7 @@ export function DataTable({ columns }: DataTableProps) {
             />
           </Grid>
 
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <Grid size={{ xs: 6, sm: 6, md: 3 }}>
             <TextField
               label="Search Notes"
               value={
@@ -281,7 +278,7 @@ export function DataTable({ columns }: DataTableProps) {
           </Grid>
         </Grid>
       </Box>
-      <div className="rounded-md border">
+      <div className="hidden md:block rounded-md border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -331,6 +328,96 @@ export function DataTable({ columns }: DataTableProps) {
           </TableBody>
         </Table>
         <DataTablePagination table={table} />
+      </div>
+
+      {/* Mobile card list */}
+      <div className="md:hidden">
+        {table.getRowModel().rows?.length ? (
+          <ul className="space-y-2">
+            {table.getRowModel().rows.map((row) => {
+              const call = row.original;
+              return (
+                <li
+                  key={row.id}
+                  className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5 font-semibold text-slate-900 truncate">
+                        <MapPin
+                          className="h-4 w-4 text-slate-500 shrink-0"
+                          aria-hidden
+                        />
+                        <span className="truncate">
+                          {call.location || "Unknown"}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-0.5">
+                        <Clock className="h-3 w-3" aria-hidden />
+                        {call.date
+                          ? formatDistanceToNow(call.date, { addSuffix: true })
+                          : "No date"}
+                        {call.overDue && (
+                          <span className="ml-1 inline-flex items-center gap-0.5 text-red-700 font-medium">
+                            <AlertCircle className="h-3 w-3" aria-hidden />
+                            Overdue
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <ServiceCallRowActions serviceCall={call} />
+                  </div>
+
+                  <div className="text-sm text-slate-800 mt-2">
+                    <span className="font-medium text-slate-700">Problem:</span>{" "}
+                    {call.reportedProblem || "—"}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-slate-600 mt-2">
+                    <div className="truncate">
+                      <span className="font-medium text-slate-700">
+                        Machine:
+                      </span>{" "}
+                      {call.machine || "—"}
+                    </div>
+                    <div className="truncate">
+                      <span className="font-medium text-slate-700">
+                        Caller:
+                      </span>{" "}
+                      {call.whoCalled || "—"}
+                    </div>
+                  </div>
+
+                  {call.notes && (
+                    <div className="text-xs bg-slate-50 rounded-md p-2 text-slate-700 border border-slate-100 mt-2">
+                      {call.notes}
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between gap-2 mt-3 pt-2 border-t border-slate-100">
+                    <div className="min-w-0">
+                      <TakenBy
+                        id={call.id.toString()}
+                        currentTakenBy={call.takenBy!}
+                      />
+                    </div>
+                    <Status
+                      id={call.id.toString()}
+                      currentStatus={call.status}
+                    />
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <div className="rounded-lg border border-dashed border-slate-200 bg-white p-6 text-center text-sm text-slate-500">
+            No results.
+          </div>
+        )}
+        <div className="mt-3">
+          <DataTablePagination table={table} />
+        </div>
       </div>
     </div>
   );

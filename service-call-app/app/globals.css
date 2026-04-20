@@ -142,9 +142,15 @@ html[data-standalone="true"] [contenteditable="true"] {
 }
 
 /* Reserve space at the bottom of every scroll container for the mobile
- * tab bar. Only active on narrow viewports where the tab bar is visible. */
+ * tab bar. Only active on narrow viewports where the tab bar is visible.
+ * Includes safe-area so pages can use --bottom-nav-h as the single source
+ * of truth and should NOT add env(safe-area-inset-bottom) again. */
 @media (max-width: 767px) {
   html[data-bottom-nav="true"] {
-    --bottom-nav-h: 3.75rem;
+    --bottom-nav-h: calc(3.25rem + env(safe-area-inset-bottom));
   }
+}
+
+html[data-bottom-nav="true"] {
+  scroll-padding-bottom: var(--bottom-nav-h);
 }
