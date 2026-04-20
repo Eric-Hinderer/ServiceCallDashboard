@@ -30,9 +30,11 @@ import {
   Chat as ChatIcon,
   Description as DescriptionIcon,
   Build as BuildIcon,
+  AdminPanelSettings as AdminIcon,
 } from "@mui/icons-material";
 import Image from "next/image";
 import Central from "@/public/central.jpg";
+import { isAdmin } from "@/lib/admins";
 
 const Header = () => {
   const { user, loading, signIn, signOut } = useAuth();
@@ -47,6 +49,7 @@ const Header = () => {
       !user &&
       pathname !== "/" &&
       pathname !== "/technician" &&
+      pathname !== "/admin" &&
       pathname !== "/offline"
     ) {
       router.push("/");
@@ -61,6 +64,9 @@ const Header = () => {
             { name: "Technician", href: "/technician", icon: <BuildIcon /> },
             { name: "Dashboard", href: "/dashboard", icon: <DashboardIcon /> },
             { name: "Analytics", href: "/analytics", icon: <AnalyticsIcon /> },
+            ...(isAdmin(user)
+              ? [{ name: "Admin", href: "/admin", icon: <AdminIcon /> }]
+              : []),
           ]
         : []),
     ],
