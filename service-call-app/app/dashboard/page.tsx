@@ -42,7 +42,13 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-100">
+    <div
+      className="flex flex-col min-h-screen bg-gray-100"
+      style={{
+        paddingBottom:
+          "calc(var(--bottom-nav-h) + env(safe-area-inset-bottom))",
+      }}
+    >
       {/* Main Content */}
       <main className="flex-1">
         {/* Header */}

@@ -148,7 +148,10 @@ const Header = () => {
             color="inherit"
             edge="start"
             onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { md: "none" } }}
+            sx={{
+              mr: 2,
+              display: user ? { xs: "none" } : { xs: "inline-flex", md: "none" },
+            }}
             aria-label="open drawer"
           >
             <MenuIcon />

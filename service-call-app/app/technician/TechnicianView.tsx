@@ -232,8 +232,11 @@ export default function TechnicianView() {
 
   return (
     <main
-      className="pb-28 px-3 pt-3 max-w-2xl mx-auto"
-      style={{ paddingBottom: "calc(7rem + env(safe-area-inset-bottom))" }}
+      className="px-3 pt-3 max-w-2xl mx-auto"
+      style={{
+        paddingBottom:
+          "calc(4.5rem + var(--bottom-nav-h) + env(safe-area-inset-bottom))",
+      }}
     >
       <header className="flex items-center justify-between gap-2 mb-3">
         <div className="min-w-0">
@@ -346,7 +349,12 @@ export default function TechnicianView() {
 
       <Link
         href="/dashboard/create"
-        className="fixed bottom-5 right-5 z-40 flex items-center gap-2 rounded-full bg-slate-900 text-white px-5 py-3 shadow-xl active:scale-95 transition"
+        className="fixed z-40 flex items-center gap-2 rounded-full bg-slate-900 text-white px-5 py-3 shadow-xl active:scale-95 transition"
+        style={{
+          right: "calc(1.25rem + env(safe-area-inset-right))",
+          bottom:
+            "calc(1rem + var(--bottom-nav-h) + env(safe-area-inset-bottom))",
+        }}
       >
         <Plus className="h-5 w-5" />
         <span className="text-sm font-semibold">New Call</span>

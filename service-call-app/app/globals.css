@@ -4,6 +4,8 @@
 
 @layer base {
   :root {
+    --bottom-nav-h: 0px;
+    --safe-bottom: env(safe-area-inset-bottom);
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
@@ -137,4 +139,12 @@ html[data-standalone="true"] textarea,
 html[data-standalone="true"] [contenteditable="true"] {
   user-select: auto;
   -webkit-user-select: auto;
+}
+
+/* Reserve space at the bottom of every scroll container for the mobile
+ * tab bar. Only active on narrow viewports where the tab bar is visible. */
+@media (max-width: 767px) {
+  html[data-bottom-nav="true"] {
+    --bottom-nav-h: 3.75rem;
+  }
 }

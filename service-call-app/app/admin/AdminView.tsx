@@ -186,7 +186,10 @@ export default function AdminView() {
   return (
     <main
       className="max-w-5xl mx-auto px-3 sm:px-6 pt-4 space-y-5"
-      style={{ paddingBottom: "calc(3rem + env(safe-area-inset-bottom))" }}
+      style={{
+        paddingBottom:
+          "calc(3rem + var(--bottom-nav-h) + env(safe-area-inset-bottom))",
+      }}
     >
       <header className="flex items-center justify-between gap-2">
         <div className="min-w-0">
