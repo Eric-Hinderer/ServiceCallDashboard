@@ -11,27 +11,46 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getData } from "./action";
 import { getLocations, getMachines } from "@/app/dashboard/action";
-import Link from "next/link";
 import { Status } from "@/app/(definitions)/definitions";
 import { EditFormSubmitButton } from "@/components/SubmitFormButton";
 import ComboboxInput from "@/components/ComboboxInput";
+import SmartBack from "@/components/SmartBack";
+
+const ALLOWED_RETURN_PATHS = ["/dashboard", "/technician"] as const;
+type ReturnPath = (typeof ALLOWED_RETURN_PATHS)[number];
+
+function resolveReturnPath(raw: string | undefined): ReturnPath {
+  if (raw === "technician" || raw === "/technician") return "/technician";
+  return "/dashboard";
+}
 
 export default async function ServiceEditPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ from?: string }>;
 }) {
   const { id: key } = await params;
+  const { from } = await searchParams;
+  const returnTo = resolveReturnPath(from);
   const [data, locations, machines] = await Promise.all([getData(key), getLocations(), getMachines()]);
-  
+
   // Redirect if no data found
   if (!data) {
-    redirect("/dashboard");
+    redirect(returnTo);
   }
 
   async function editServiceCall(formData: FormData) {
     "use server";
-    
+
+    const submittedReturn = formData.get("returnTo")?.toString();
+    const destination: ReturnPath = ALLOWED_RETURN_PATHS.includes(
+      submittedReturn as ReturnPath
+    )
+      ? (submittedReturn as ReturnPath)
+      : "/dashboard";
+
     try {
       const docRef = doc(db, "ServiceCalls", key);
 
@@ -52,17 +71,17 @@ export default async function ServiceEditPage({
       }
 
       await updateDoc(docRef, updateData);
-      
-      // Revalidate the dashboard page to show updated data
+
       revalidatePath("/dashboard");
+      revalidatePath("/technician");
       revalidatePath(`/dashboard/${key}`);
-      
+
     } catch (error) {
       console.error("Error updating service call:", error);
       throw error;
     }
 
-    redirect("/dashboard");
+    redirect(destination);
   }
 
   const formatDate = (timestamp: any) => {
@@ -89,13 +108,10 @@ export default async function ServiceEditPage({
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header with Back Button */}
         <div className="flex items-center gap-4 mb-8">
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-          >
+          <SmartBack fallback={returnTo}>
             <ArrowLeft className="h-5 w-5" />
-            <span className="text-sm font-medium">Back to Dashboard</span>
-          </Link>
+            <span className="text-sm font-medium">Back</span>
+          </SmartBack>
         </div>
 
         <div className="space-y-6">
@@ -134,6 +150,7 @@ export default async function ServiceEditPage({
             </CardHeader>
             <CardContent>
               <form action={editServiceCall} className="space-y-8">
+                <input type="hidden" name="returnTo" value={returnTo} />
                 {/* Contact Information Section */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
@@ -292,7 +309,7 @@ export default async function ServiceEditPage({
                 </div>
 
                 {/* Action Buttons */}
-                <EditFormSubmitButton />
+                <EditFormSubmitButton cancelFallback={returnTo} />
               </form>
             </CardContent>
           </Card>
