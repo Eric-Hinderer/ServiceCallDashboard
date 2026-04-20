@@ -104,6 +104,7 @@ self.addEventListener("fetch", (event) => {
   if (NEVER_CACHE_HOSTS.some((host) => url.hostname.endsWith(host))) return;
   if (url.origin !== self.location.origin) return;
   if (url.pathname.startsWith("/api/")) return;
+  if (url.pathname === "/firebase-messaging-sw.js") return;
 
   if (request.mode === "navigate") {
     event.respondWith(

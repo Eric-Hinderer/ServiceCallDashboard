@@ -134,6 +134,70 @@ These need to be true in production for the PWA to install cleanly:
 
 ---
 
+## Push notifications
+
+Techs can receive a push notification on their phone the moment a call is
+assigned to them (the `takenBy` field changes to their name).
+
+### How it works
+
+- Each device registers an FCM token against the technician name stored in
+  `localStorage` (same identity used for "My Calls"). Tokens live in the
+  `fcmTokens` Firestore collection, keyed by the token string.
+- A Cloud Function (`notifyOnServiceCallAssigned`) watches every write to
+  `ServiceCalls/*`. When `takenBy` changes to a real technician name, it looks
+  up every token registered for that name and sends a push to all of them.
+- The background notification is rendered by `/firebase-messaging-sw.js`
+  (served by a Next.js route handler with the Firebase config injected). In the
+  foreground, the app shows a toast instead of a system notification.
+- Tapping a notification opens `/technician`. Stale / unregistered tokens are
+  deleted automatically.
+
+### One-time setup (per deployment)
+
+1. **Enable Cloud Messaging** in the Firebase console for the project.
+2. **Generate a VAPID key pair** in Firebase Console → Project Settings → Cloud
+   Messaging → Web Push certificates → *Generate key pair*.
+3. **Find the Sender ID** on the same page (a numeric value).
+4. **Add two env vars** wherever the app reads `NEXT_PUBLIC_FIREBASE_*` (local
+   `.env.local` and Firebase App Hosting secrets):
+   ```
+   NEXT_PUBLIC_FIREBASE_VAPID_KEY=<public VAPID key from step 2>
+   NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=<sender id from step 3>
+   ```
+5. **Deploy the Cloud Function**:
+   ```
+   cd functions && npm install
+   firebase deploy --only functions:notifyOnServiceCallAssigned
+   ```
+
+### Using it (per tech, per device)
+
+1. Open the PWA on the phone (install it first on iPhone — see install steps
+   above; iOS requires an installed PWA for push).
+2. Sign in and pick your name on the "Who's working today?" screen.
+3. Tap **Turn on notifications** at the top of the Technician screen and
+   approve the browser permission prompt.
+4. You'll see a green **Notifications on** pill. From then on, any call
+   assigned to you triggers a push on this device — even when the app is
+   closed. Tap the notification to jump back into `/technician`.
+5. Tap the green pill again to turn them off on that device.
+
+### Caveats
+
+- **iOS**: push only works if the PWA is **installed to the home screen** and
+  running iOS 16.4+. Plain Safari won't prompt for permission.
+- **Permission denied**: if a tech previously blocked notifications, the UI
+  shows a "Notifications blocked" pill. They have to re-enable them via the
+  browser's site settings; the app can't re-prompt.
+- **Identity is per device**: because we key off the `technician-name` in
+  `localStorage`, if a tech shares a phone with someone else, tapping **Switch
+  user** will *not* automatically remove the old FCM token — the replaced
+  tech's pushes will keep going to that phone until they tap the green pill to
+  disable, or their token ages out and the CF cleans it up.
+
+---
+
 ---
 
 ## Admin view (`/admin`)

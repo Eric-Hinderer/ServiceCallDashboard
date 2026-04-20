@@ -32,6 +32,7 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import { ServiceCall } from "../(definitions)/definitions";
 import InstallCard from "@/components/InstallCard";
+import PushNotifications from "@/components/PushNotifications";
 import { ADMIN_DISPLAY_NAMES, isAdmin } from "@/lib/admins";
 
 const TECH_NAME_KEY = "technician-name";
@@ -260,6 +261,10 @@ export default function TechnicianView() {
           </button>
         </div>
       </header>
+
+      <div className="mb-3 flex justify-end">
+        <PushNotifications technicianName={techName} />
+      </div>
 
       <div className="grid grid-cols-3 gap-2 mb-3">
         <StatPill label="Mine" value={counts.mine} tone="slate" />
