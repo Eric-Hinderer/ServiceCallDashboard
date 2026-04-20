@@ -19,6 +19,18 @@ export default function PWARegister() {
       else window.addEventListener("load", onLoad, { once: true });
     }
 
+    const standaloneMQ = window.matchMedia("(display-mode: standalone)");
+    const applyStandalone = () => {
+      const isStandalone =
+        standaloneMQ.matches ||
+        (navigator as Navigator & { standalone?: boolean }).standalone === true;
+      document.documentElement.dataset.standalone = isStandalone
+        ? "true"
+        : "false";
+    };
+    applyStandalone();
+    standaloneMQ.addEventListener?.("change", applyStandalone);
+
     const onOnline = () => setOffline(false);
     const onOffline = () => setOffline(true);
     setOffline(!navigator.onLine);
@@ -26,6 +38,7 @@ export default function PWARegister() {
     window.addEventListener("offline", onOffline);
 
     return () => {
+      standaloneMQ.removeEventListener?.("change", applyStandalone);
       window.removeEventListener("online", onOnline);
       window.removeEventListener("offline", onOffline);
     };

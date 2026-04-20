@@ -63,7 +63,78 @@
   * {
     @apply border-border;
   }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    overscroll-behavior-y: none;
+  }
+
   body {
     @apply bg-background text-foreground;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overscroll-behavior-y: none;
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
   }
+
+  /* Stop long-press callout/selection on UI chrome, keep it for readable content */
+  button,
+  a,
+  [role="button"],
+  [role="tab"],
+  [role="menuitem"] {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Re-enable selection for text content */
+  p,
+  span,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  li,
+  td,
+  input,
+  textarea,
+  [contenteditable="true"] {
+    -webkit-user-select: auto;
+    user-select: auto;
+  }
+
+  /* Lock input font-size to 16px on mobile so iOS doesn't zoom the viewport on focus */
+  @media (max-width: 640px) {
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+    select,
+    textarea {
+      font-size: 16px;
+    }
+  }
+}
+
+/* When launched as an installed PWA, act more like a native app */
+html[data-standalone="true"] body {
+  /* Kill rubber-band/pull-to-refresh inside the app shell */
+  overscroll-behavior: none;
+}
+
+html[data-standalone="true"],
+html[data-standalone="true"] body {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+html[data-standalone="true"] input,
+html[data-standalone="true"] textarea,
+html[data-standalone="true"] [contenteditable="true"] {
+  user-select: auto;
+  -webkit-user-select: auto;
 }
