@@ -91,15 +91,17 @@ export default function ChatWithDatabase({ children }: ChatProps) {
         onClick={handleOpen}
         sx={{
           position: "fixed",
-          bottom: 24,
-          right: 24,
+          bottom: "calc(24px + env(safe-area-inset-bottom))",
+          right: "calc(24px + env(safe-area-inset-right))",
           zIndex: 1300,
           padding: "16px",
           boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
+          transition: "transform 120ms ease-out",
+          "&:active": { transform: "scale(0.96)" },
           "@media (max-width:600px)": {
-            bottom: 16,
-            right: 16,
-          }, // Adjust button position on small screens
+            bottom: "calc(88px + env(safe-area-inset-bottom))",
+            right: "calc(16px + env(safe-area-inset-right))",
+          }, // Lift above the technician FAB and home indicator
         }}
       >
         Open Chat
@@ -122,6 +124,7 @@ export default function ChatWithDatabase({ children }: ChatProps) {
             boxShadow: "0px -4px 12px rgba(0, 0, 0, 0.1)",
             transition: "transform 0.3s ease-out",
             margin: "10px",
+            paddingBottom: "env(safe-area-inset-bottom)",
           },
         }}
         sx={{

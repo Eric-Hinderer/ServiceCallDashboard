@@ -24,13 +24,23 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
     title: "Service Calls",
   },
+  formatDetection: {
+    telephone: false,
+    email: false,
+    address: false,
+  },
+  other: {
+    "mobile-web-app-capable": "yes",
+  },
 };
 
 export const viewport: Viewport = {
   themeColor: "#000000",
   width: "device-width",
   initialScale: 1,
+  maximumScale: 1,
   viewportFit: "cover",
+  userScalable: false,
 };
 
 export default function RootLayout({
