@@ -285,7 +285,13 @@ export default function AnalyticsPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 lg:p-6">
+    <div
+      className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 lg:p-6"
+      style={{
+        paddingBottom:
+          "calc(1.5rem + var(--bottom-nav-h) + env(safe-area-inset-bottom))",
+      }}
+    >
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="text-center space-y-2">

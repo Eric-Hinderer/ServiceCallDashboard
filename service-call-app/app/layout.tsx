@@ -4,9 +4,9 @@ import "./globals.css";
 import { AuthProvider } from "@/components/AuthContext";
 import { Toaster } from "react-hot-toast";
 import PWARegister from "@/components/PWARegister";
+import BottomTabBar from "@/components/BottomTabBar";
 
 import { Inter } from "next/font/google";
-import ChatWithDatabase from "../components/ChatBot";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -66,6 +66,7 @@ export default function RootLayout({
           <Toaster position="top-right" />
           <PWARegister />
           {children}
+          <BottomTabBar />
         </AuthProvider>
       </body>
     </html>
