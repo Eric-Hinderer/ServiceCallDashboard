@@ -25,5 +25,11 @@ env:
   - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
     value: service-call-manager-e7ca2.firebasestorage.app
 
+  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+    value: "190938188627"
+
+  - variable: NEXT_PUBLIC_FIREBASE_VAPID_KEY
+    value: BJFN_ota-6xl6LEigUYTVPnq4Kru5IRPJANd8zRWcvlK5_MlXpOWZ3w8FipWccOeNb9mlcChs7Jt3FMrpWW5odk
+
   - variable: GEMINI_API_KEY
     secret: gemini-api-key
