@@ -10,8 +10,7 @@ export default function Home() {
         paddingTop: "0.5rem",
         paddingLeft: "0.5rem",
         paddingRight: "0.5rem",
-        paddingBottom:
-          "calc(0.5rem + var(--bottom-nav-h) + env(safe-area-inset-bottom))",
+        paddingBottom: "calc(0.5rem + var(--bottom-nav-h))",
         backgroundColor: "#f4f6f9",
         width: "100%",
         maxWidth: "2000px",
