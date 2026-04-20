@@ -27,11 +27,12 @@ import {
   AlertCircle,
   Plus,
   Filter,
+  ShieldCheck,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ServiceCall } from "../(definitions)/definitions";
 import InstallCard from "@/components/InstallCard";
-import { ADMIN_DISPLAY_NAMES } from "@/lib/admins";
+import { ADMIN_DISPLAY_NAMES, isAdmin } from "@/lib/admins";
 
 const TECH_NAME_KEY = "technician-name";
 const PREDEFINED_NAMES = [
@@ -106,6 +107,17 @@ export default function TechnicianView() {
     }
     return calls;
   }, [calls, filter, techName]);
+
+  const counts = useMemo(() => {
+    const mine = techName
+      ? calls.filter((c) => c.takenBy === techName).length
+      : 0;
+    const unassigned = calls.filter(
+      (c) => !c.takenBy || c.takenBy === "Select..." || c.takenBy === ""
+    ).length;
+    const overdue = calls.filter((c) => c.overDue).length;
+    return { mine, unassigned, overdue, all: calls.length };
+  }, [calls, techName]);
 
   const handleSaveName = (name: string) => {
     localStorage.setItem(TECH_NAME_KEY, name);
@@ -219,22 +231,41 @@ export default function TechnicianView() {
   }
 
   return (
-    <main className="pb-28 px-3 pt-3 max-w-2xl mx-auto">
-      <header className="flex items-center justify-between mb-3">
-        <div>
+    <main
+      className="pb-28 px-3 pt-3 max-w-2xl mx-auto"
+      style={{ paddingBottom: "calc(7rem + env(safe-area-inset-bottom))" }}
+    >
+      <header className="flex items-center justify-between gap-2 mb-3">
+        <div className="min-w-0">
           <div className="text-xs text-slate-500">Signed in as</div>
-          <div className="text-lg font-bold">{techName}</div>
+          <div className="text-lg font-bold truncate">{techName}</div>
         </div>
-        <button
-          onClick={() => {
-            localStorage.removeItem(TECH_NAME_KEY);
-            setTechName("");
-          }}
-          className="text-xs text-slate-500 underline"
-        >
-          Switch user
-        </button>
+        <div className="flex items-center gap-2 shrink-0">
+          {isAdmin(user) && (
+            <Link
+              href="/admin"
+              className="inline-flex items-center gap-1 rounded-full bg-slate-900 text-white px-3 py-1.5 text-xs font-semibold active:scale-95 transition"
+            >
+              <ShieldCheck className="h-3.5 w-3.5" /> Admin
+            </Link>
+          )}
+          <button
+            onClick={() => {
+              localStorage.removeItem(TECH_NAME_KEY);
+              setTechName("");
+            }}
+            className="text-xs text-slate-500 underline"
+          >
+            Switch user
+          </button>
+        </div>
       </header>
+
+      <div className="grid grid-cols-3 gap-2 mb-3">
+        <StatPill label="Mine" value={counts.mine} tone="slate" />
+        <StatPill label="Unassigned" value={counts.unassigned} tone="amber" />
+        <StatPill label="Overdue" value={counts.overdue} tone="red" />
+      </div>
 
       <div
         role="tablist"
@@ -268,15 +299,34 @@ export default function TechnicianView() {
       </div>
 
       {visibleCalls.length === 0 ? (
-        <div className="text-center py-14 text-slate-500">
-          <Filter className="h-8 w-8 mx-auto mb-2 text-slate-300" />
-          <p>No calls to show here.</p>
-          {filter === "mine" && (
-            <p className="text-xs mt-2">
-              Check <button className="underline" onClick={() => setFilter("unassigned")}>Unassigned</button> to claim one.
+        <Card className="text-center py-10 border-dashed">
+          <CardContent className="space-y-3">
+            <Filter className="h-8 w-8 mx-auto text-slate-300" />
+            <p className="text-slate-600 font-medium">
+              {filter === "mine"
+                ? "You have no open calls right now."
+                : filter === "unassigned"
+                  ? "No unassigned calls — nice work."
+                  : "No open calls on the board."}
             </p>
-          )}
-        </div>
+            {filter === "mine" && counts.unassigned > 0 && (
+              <button
+                className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 text-amber-900 px-3 py-1.5 text-sm font-medium border border-amber-200"
+                onClick={() => setFilter("unassigned")}
+              >
+                {counts.unassigned} waiting — tap to claim one
+              </button>
+            )}
+            {filter === "mine" && counts.unassigned === 0 && counts.all > 0 && (
+              <button
+                className="text-sm text-slate-600 underline"
+                onClick={() => setFilter("all")}
+              >
+                See all {counts.all} active calls
+              </button>
+            )}
+          </CardContent>
+        </Card>
       ) : (
         <ul className="space-y-3">
           {visibleCalls.map((c) => (
@@ -445,6 +495,33 @@ function CallCard({
         </Link>
       </CardContent>
     </Card>
+  );
+}
+
+function StatPill({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: number;
+  tone: "slate" | "amber" | "red";
+}) {
+  const tones = {
+    slate: "bg-slate-100 text-slate-800 border-slate-200",
+    amber: "bg-amber-50 text-amber-900 border-amber-200",
+    red: "bg-red-50 text-red-900 border-red-200",
+  }[tone];
+  return (
+    <div
+      className={`rounded-lg border px-3 py-2 text-center ${tones}`}
+      aria-label={`${label}: ${value}`}
+    >
+      <div className="text-xl font-bold leading-none">{value}</div>
+      <div className="text-[11px] font-medium uppercase tracking-wide mt-0.5">
+        {label}
+      </div>
+    </div>
   );
 }
 
