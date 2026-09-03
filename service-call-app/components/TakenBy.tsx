@@ -21,7 +21,7 @@ export default function TakenBy({ id, currentTakenBy }: { id: string; currentTak
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
-    setTakenBy(currentTakenBy); 
+    setTakenBy(currentTakenBy || "Select...");
   }, [currentTakenBy]);
 
   const handleSelectChange = (newTakenBy: string) => {
@@ -60,7 +60,7 @@ export default function TakenBy({ id, currentTakenBy }: { id: string; currentTak
             {name}
           </SelectItem>
         ))}
-        {!predefinedNames.includes(takenBy) && (
+        {takenBy.trim() !== "" && !predefinedNames.includes(takenBy) && (
           <SelectItem key={takenBy} value={takenBy}>
             {takenBy}
           </SelectItem>
