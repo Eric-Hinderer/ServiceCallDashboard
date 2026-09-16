@@ -1,6 +1,9 @@
 "use client";
-import { useState } from "react";
-import { SubmitFormButton, SubmitFormButtonEmail } from "./SubmitFormButton";
+import { useRef, useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
+import { submitServiceCall } from "@/app/dashboard/create/action";
+import { CreateFormSubmitButtons } from "./SubmitFormButton";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
@@ -20,6 +23,41 @@ export default function CreateServiceCall({
   machines: string[];
   closeModalAction: () => void;
 }) {
+  const router = useRouter();
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const submitting = useRef(false);
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (submitting.current || !event.currentTarget.reportValidity()) return;
+    const formData = new FormData(event.currentTarget);
+    const submitter = (event.nativeEvent as SubmitEvent).submitter;
+    formData.set("sendEmail", submitter instanceof HTMLButtonElement ? submitter.value : "false");
+    submitting.current = true;
+    setPending(true);
+    setError(null);
+    try {
+      const result = await submitServiceCall(formData);
+      if (!result.success) {
+        setError(result.message);
+        return;
+      }
+      if (result.email === "failed") {
+        toast.error("Service call saved, but the email could not be sent. Do not create the call again.", { duration: 8000 });
+      } else {
+        toast.success(result.email === "sent" ? "Service call saved and email sent." : "Service call saved.");
+      }
+      closeModalAction();
+      router.refresh();
+    } catch {
+      setError("Couldn't confirm the save. Check the dashboard before retrying to avoid a duplicate call. Your entries are still here.");
+    } finally {
+      submitting.current = false;
+      setPending(false);
+    }
+  };
+
   const [selectedTechnician, setSelectedTechnician] = useState("Select...");
   const [selectedStatus, setSelectedStatus] = useState<string>(Status.OPEN);
 
@@ -40,204 +78,204 @@ export default function CreateServiceCall({
     <div className="space-y-6">
       <Card className="border-0 shadow-none">
         <CardContent className="p-0">
-          <form className="space-y-8">
-            {/* Date and Location Section */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-blue-600" />
-                Service Call Details
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="date" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-gray-500" />
-                    Date & Time
-                  </Label>
-                  <Input
-                    id="date"
-                    type="datetime-local"
-                    name="date"
-                    defaultValue={getCurrentDateTime()}
-                    className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    required
-                  />
-                  <p className="text-xs text-gray-500 mt-1">When the service call was reported</p>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="location" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-gray-500" />
-                    Location
-                  </Label>
-                  <ComboboxInput
-                    options={locations}
-                    name="location"
-                    placeholder="Enter or select location"
-                    required
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Physical location where service is needed</p>
+          <form onSubmit={handleSubmit} aria-busy={pending}>
+            <fieldset disabled={pending} className="space-y-8">
+              {/* Date and Location Section */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-blue-600" />
+                  Service Call Details
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="date" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-gray-500" />
+                      Date & Time
+                    </Label>
+                    <Input
+                      id="date"
+                      type="datetime-local"
+                      name="date"
+                      defaultValue={getCurrentDateTime()}
+                      className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      required
+                    />
+                    <p className="text-xs text-gray-500 mt-1">When the service call was reported</p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="location" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                      <MapPin className="h-4 w-4 text-gray-500" />
+                      Location
+                    </Label>
+                    <ComboboxInput
+                      options={locations}
+                      name="location"
+                      placeholder="Enter or select location"
+                      required
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Physical location where service is needed</p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Contact Information Section */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                <User className="h-5 w-5 text-blue-600" />
-                Contact Information
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {/* Contact Information Section */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                  <User className="h-5 w-5 text-blue-600" />
+                  Contact Information
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="whoCalled" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                      <User className="h-4 w-4 text-gray-500" />
+                      Who Called
+                    </Label>
+                    <Input
+                      id="whoCalled"
+                      type="text"
+                      name="whoCalled"
+                      placeholder="Enter caller name"
+                      className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      required
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Name of the person reporting the issue</p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="machine" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                      <Wrench className="h-4 w-4 text-gray-500" />
+                      Machine/Equipment
+                    </Label>
+                    <ComboboxInput
+                      options={machines}
+                      name="machine"
+                      placeholder="Enter or select machine"
+                      required
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Equipment that needs service</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Problem Description Section */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                  <AlertCircle className="h-5 w-5 text-blue-600" />
+                  Problem Details
+                </h3>
                 <div className="space-y-2">
-                  <Label htmlFor="whoCalled" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                    <User className="h-4 w-4 text-gray-500" />
-                    Who Called
+                  <Label htmlFor="reportedProblem" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                    <AlertCircle className="h-4 w-4 text-gray-500" />
+                    Reported Problem
                   </Label>
                   <Input
-                    id="whoCalled"
+                    id="reportedProblem"
                     type="text"
-                    name="whoCalled"
-                    placeholder="Enter caller name"
+                    name="reportedProblem"
+                    placeholder="Brief description of the problem"
                     className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     required
                   />
-                  <p className="text-xs text-gray-500 mt-1">Name of the person reporting the issue</p>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="machine" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                    <Wrench className="h-4 w-4 text-gray-500" />
-                    Machine/Equipment
-                  </Label>
-                  <ComboboxInput
-                    options={machines}
-                    name="machine"
-                    placeholder="Enter or select machine"
-                    required
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Equipment that needs service</p>
+                  <p className="text-xs text-gray-500 mt-1">Describe the issue that needs attention</p>
                 </div>
               </div>
-            </div>
 
-            {/* Problem Description Section */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                <AlertCircle className="h-5 w-5 text-blue-600" />
-                Problem Details
-              </h3>
-              <div className="space-y-2">
-                <Label htmlFor="reportedProblem" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4 text-gray-500" />
-                  Reported Problem
-                </Label>
-                <Input
-                  id="reportedProblem"
-                  type="text"
-                  name="reportedProblem"
-                  placeholder="Brief description of the problem"
-                  className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  required
-                />
-                <p className="text-xs text-gray-500 mt-1">Describe the issue that needs attention</p>
-              </div>
-            </div>
-
-            {/* Assignment Section */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                <UserCheck className="h-5 w-5 text-blue-600" />
-                Assignment & Status
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="takenBy" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                    <UserCheck className="h-4 w-4 text-gray-500" />
-                    Assign To
-                  </Label>
-                  <Select 
-                    name="takenBy" 
-                    value={selectedTechnician}
-                    onValueChange={setSelectedTechnician}
-                  >
-                    <SelectTrigger className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                      <SelectValue placeholder="Select technician" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Select...">Select technician...</SelectItem>
-                      {technicians.map((tech) => (
-                        <SelectItem key={tech} value={tech}>
+              {/* Assignment Section */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                  <UserCheck className="h-5 w-5 text-blue-600" />
+                  Assignment & Status
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="takenBy" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                      <UserCheck className="h-4 w-4 text-gray-500" />
+                      Assign To
+                    </Label>
+                    <Select
+                      name="takenBy"
+                      value={selectedTechnician}
+                      onValueChange={setSelectedTechnician}
+                    >
+                      <SelectTrigger className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <SelectValue placeholder="Select technician" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Select...">Select technician...</SelectItem>
+                        {technicians.map((tech) => (
+                          <SelectItem key={tech} value={tech}>
+                            <div className="flex items-center gap-2">
+                              <UserCheck className="h-4 w-4 text-gray-500" />
+                              {tech}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-gray-500 mt-1">Choose the technician for this service call</p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="status" className="text-sm font-medium text-gray-700">
+                      Initial Status
+                    </Label>
+                    <Select
+                      name="status"
+                      value={selectedStatus}
+                      onValueChange={setSelectedStatus}
+                    >
+                      <SelectTrigger className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={Status.OPEN}>
                           <div className="flex items-center gap-2">
-                            <UserCheck className="h-4 w-4 text-gray-500" />
-                            {tech}
+                            <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                            Open
                           </div>
                         </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-gray-500 mt-1">Choose the technician for this service call</p>
+                        <SelectItem value={Status.IN_PROGRESS}>
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
+                            In Progress
+                          </div>
+                        </SelectItem>
+                        <SelectItem value={Status.DONE}>
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                            Completed
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-gray-500 mt-1">Current status of the service call</p>
+                  </div>
                 </div>
+              </div>
+
+              {/* Notes Section */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-blue-600" />
+                  Additional Information
+                </h3>
                 <div className="space-y-2">
-                  <Label htmlFor="status" className="text-sm font-medium text-gray-700">
-                    Initial Status
+                  <Label htmlFor="notes" className="text-sm font-medium text-gray-700">
+                    Notes & Comments
                   </Label>
-                  <Select 
-                    name="status" 
-                    value={selectedStatus}
-                    onValueChange={setSelectedStatus}
-                  >
-                    <SelectTrigger className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={Status.OPEN}>
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                          Open
-                        </div>
-                      </SelectItem>
-                      <SelectItem value={Status.IN_PROGRESS}>
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
-                          In Progress
-                        </div>
-                      </SelectItem>
-                      <SelectItem value={Status.DONE}>
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                          Completed
-                        </div>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-gray-500 mt-1">Current status of the service call</p>
+                  <Textarea
+                    id="notes"
+                    name="notes"
+                    placeholder="Add any additional notes, special instructions, or details..."
+                    rows={4}
+                    className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Optional additional information or special instructions</p>
                 </div>
               </div>
-            </div>
 
-            {/* Notes Section */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                <FileText className="h-5 w-5 text-blue-600" />
-                Additional Information
-              </h3>
-              <div className="space-y-2">
-                <Label htmlFor="notes" className="text-sm font-medium text-gray-700">
-                  Notes & Comments
-                </Label>
-                <Textarea
-                  id="notes"
-                  name="notes"
-                  placeholder="Add any additional notes, special instructions, or details..."
-                  rows={4}
-                  className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
-                />
-                <p className="text-xs text-gray-500 mt-1">Optional additional information or special instructions</p>
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="space-y-3 pt-6 border-t border-gray-200">
-              <SubmitFormButtonEmail closeModalAction={closeModalAction} />
-              <SubmitFormButton closeModalAction={closeModalAction} />
-            </div>
+              {/* Action Buttons */}
+              {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
+              <CreateFormSubmitButtons pending={pending} />
+            </fieldset>
           </form>
         </CardContent>
       </Card>

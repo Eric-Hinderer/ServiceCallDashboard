@@ -2,14 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import {
-  collection,
-  onSnapshot,
-  orderBy,
-  query,
-  where,
-} from "firebase/firestore";
-import db from "@/lib/firebase";
+import { useServiceCalls } from "@/lib/service-calls/useServiceCalls";
 import { useAuth } from "@/components/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -44,46 +37,14 @@ const UNASSIGNED = "Unassigned";
 
 export default function AdminView() {
   const { user, loading, signIn } = useAuth();
-  const [calls, setCalls] = useState<ServiceCall[]>([]);
+
   const [techFilter, setTechFilter] = useState<string>("all");
-  const [loadingCalls, setLoadingCalls] = useState(true);
+
+  const { calls, loading: loadingCalls, error: callsError } = useServiceCalls("active", user && isAdmin(user) ? user.uid : null);
 
   useEffect(() => {
-    if (!user || !isAdmin(user)) return;
-    const q = query(
-      collection(db, "ServiceCalls"),
-      where("status", "in", ["OPEN", "IN_PROGRESS"]),
-      orderBy("date", "desc")
-    );
-    const unsub = onSnapshot(
-      q,
-      (snap) => {
-        setCalls(
-          snap.docs.map(
-            (d) =>
-              ({
-                id: d.id,
-                ...d.data(),
-                date: d.data().date ? d.data().date.toDate() : null,
-                updatedAt: d.data().updatedAt
-                  ? d.data().updatedAt.toDate()
-                  : null,
-                createdAt: d.data().createdAt
-                  ? d.data().createdAt.toDate()
-                  : null,
-              } as ServiceCall)
-          )
-        );
-        setLoadingCalls(false);
-      },
-      (err) => {
-        console.error(err);
-        toast.error("Failed to load service calls");
-        setLoadingCalls(false);
-      }
-    );
-    return () => unsub();
-  }, [user]);
+    if (callsError) toast.error(callsError);
+  }, [callsError]);
 
   const totals = useMemo(
     () => ({
@@ -297,7 +258,9 @@ export default function AdminView() {
           )}
         </div>
 
-        {loadingCalls ? (
+        {callsError ? (
+          <p role="alert" className="py-4 text-red-700">{callsError}</p>
+        ) : loadingCalls ? (
           <div className="text-center py-8 text-slate-500 text-sm">
             Loading…
           </div>

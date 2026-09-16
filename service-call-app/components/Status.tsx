@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
-import { doc, updateDoc, Timestamp } from "firebase/firestore";
+import { useEffect, useState } from "react";
+import { updateServiceCall } from "@/lib/service-calls/repository";
+import { Status as CallStatus } from "@/lib/service-calls/model";
 import db from "@/lib/firebase";
 import {
   Select,
@@ -47,32 +48,30 @@ export default function Status({
   currentStatus: string;
 }) {
   const [status, setStatus] = useState<string>(currentStatus);
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
 
   useEffect(() => {
     setStatus(currentStatus);
   }, [currentStatus]);
 
-  const handleStatusChange = (newStatus: string) => {
+  const handleStatusChange = async (newStatus: string) => {
+    if (isPending) return;
     // Optimistic update
     setStatus(newStatus);
     
-    startTransition(async () => {
-      try {
-        const serviceCallRef = doc(db, "ServiceCalls", id);
-        await updateDoc(serviceCallRef, {
-          status: newStatus,
-          updatedAt: Timestamp.now(),
-        });
-        const statusLabel = statusOptions.find(opt => opt.value === newStatus)?.label || newStatus;
-        toast.success(`Status updated to ${statusLabel}`);
-      } catch (error) {
-        // Revert on error
-        setStatus(currentStatus);
-        toast.error("Failed to update status");
-        console.error("Failed to update status:", error);
-      }
-    });
+    setIsPending(true);
+    try {
+      await updateServiceCall(db, id, { status: newStatus as CallStatus });
+      const statusLabel = statusOptions.find(opt => opt.value === newStatus)?.label || newStatus;
+      toast.success(`Status updated to ${statusLabel}`);
+    } catch (error) {
+      // Revert on error
+      setStatus(currentStatus);
+      toast.error("Failed to update status");
+      console.error("Failed to update status:", error);
+    } finally {
+      setIsPending(false);
+    }
   };
 
   const selectedOption = statusOptions.find(

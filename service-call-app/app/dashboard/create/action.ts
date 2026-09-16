@@ -1,89 +1,63 @@
 "use server";
-import { ServiceCall, Status } from "@/app/(definitions)/definitions";
+
+import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import db from "@/lib/firebase";
-import { addDoc, collection, setDoc, Timestamp } from "@firebase/firestore";
-import moment from 'moment-timezone';
+import { createServiceCall } from "@/lib/service-calls/repository";
+import {
+  parseCreateServiceCall,
+  type CreateServiceCallInput,
+  type CreateServiceCallResult,
+} from "@/lib/service-calls/model";
+import { sendServiceCallEmail } from "@/lib/service-calls/email.server";
 
+export async function submitServiceCall(
+  formData: FormData,
+): Promise<CreateServiceCallResult> {
+  let input: CreateServiceCallInput;
+  try {
+    input = parseCreateServiceCall(formData);
+  } catch (error) {
+    return {
+      success: false,
+      message:
+        error instanceof z.ZodError
+          ? error.issues[0].message
+          : "Enter a valid date and time.",
+    };
+  }
 
-export async function createFromForm(formData: FormData) {
-  const dateString = formData.get("date") as string | null;  
-  console.log(dateString); 
-  
+  let id: string;
+  try {
+    id = await createServiceCall(db, input);
+  } catch (error) {
+    console.error("Error creating service call:", error);
+    return {
+      success: false,
+      message:
+        "Couldn't save the service call. Your entries are still here; please try again.",
+    };
+  }
 
-  const temp = dateString ? moment.tz(dateString, 'America/Chicago') : moment.tz('America/Chicago');
-  console.log(temp);
-  
-  const utcDate = temp.utc().toDate();
-  console.log(utcDate);
+  // A refresh failure must not turn a committed write into a reported save failure.
+  try {
+    revalidatePath("/dashboard");
+    revalidatePath("/technician");
+    revalidatePath("/admin");
+    revalidatePath("/");
+  } catch (error) {
+    console.error("Error refreshing service calls:", error);
+  }
 
-
-
-  const location = formData.get("location") as string;
-  const whoCalled = formData.get("whoCalled") as string;
-  const machine = formData.get("machine") as string;
-  const reportedProblem = formData.get("reportedProblem") as string;
-  const takenBy = formData.get("takenBy") as string;
-  const notes = formData.get("notes") as string;
-  const status = (formData.get("status") as Status) || Status.OPEN;
-
-  const newServiceCall: any = {
-    date : utcDate,
-    location,
-    whoCalled,
-    machine,
-    reportedProblem,
-    takenBy,
-    notes,
-    status,
-    updatedAt: new Date(),
-    id: "",
-  };
+  if (formData.get("sendEmail") !== "true") {
+    return { success: true, id, email: "not-requested" };
+  }
 
   try {
-    const docRef = await addDoc(collection(db, "ServiceCalls"), newServiceCall);
-
-    await setDoc(docRef, { id: docRef.id }, { merge: true });
-  } catch (err) {
-    console.error("Error creating service call:", err);
+    await sendServiceCallEmail(input);
+    return { success: true, id, email: "sent" };
+  } catch (error) {
+    console.error("Service call saved, but notification failed:", error);
+    return { success: true, id, email: "failed" };
   }
-}
-
-export async function emailGroup(formData: FormData) {
-  const dateString = formData.get("date") as string;
-  const temp = dateString ? moment.tz(dateString, 'America/Chicago') : moment.tz('America/Chicago');
-  const date = Timestamp.fromDate(temp.utc().toDate());
-  const location = formData.get("location") as string;
-  const whoCalled = formData.get("whoCalled") as string;
-  const machine = formData.get("machine") as string;
-  const reportedProblem = formData.get("reportedProblem") as string;
-  const takenBy = formData.get("takenBy") as string;
-  const notes = formData.get("notes") as string;
-  const status = (formData.get("status") as Status) || Status.OPEN;
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
-  try {
-    const res = await fetch(`${baseUrl}/api/sendEmail`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        date: date.toDate().toISOString(),
-        location,
-        whoCalled,
-        machine,
-        reportedProblem,
-        takenBy,
-        status,
-        notes,
-      }),
-    });
-
-    if (res.ok) {
-    } else {
-      console.error("Failed to send email");
-    }
-  } catch (err) {
-    console.error("Error sending email:", err);
-  }
-  await createFromForm(formData);
 }

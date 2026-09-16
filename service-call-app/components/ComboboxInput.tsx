@@ -48,6 +48,7 @@ export default function ComboboxInput({
       <div className="flex gap-2">
         <Input
           type="text"
+          id={name}
           name={name}
           value={value}
           onChange={(e) => {
