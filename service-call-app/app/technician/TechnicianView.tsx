@@ -2,17 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import {
-  collection,
-  onSnapshot,
-  orderBy,
-  query,
-  where,
-  doc,
-  updateDoc,
-  Timestamp,
-} from "firebase/firestore";
+import { useServiceCalls } from "@/lib/service-calls/useServiceCalls";
 import db from "@/lib/firebase";
+import { updateServiceCall } from "@/lib/service-calls/repository";
+import { Status as CallStatus, type ServiceCallPatch } from "@/lib/service-calls/model";
 import { useAuth } from "@/components/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -52,7 +45,7 @@ export default function TechnicianView() {
   const { user, loading, signIn } = useAuth();
   const [techName, setTechName] = useState<string>("");
   const [filter, setFilter] = useState<FilterMode>("mine");
-  const [calls, setCalls] = useState<ServiceCall[]>([]);
+
   const [busyId, setBusyId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -60,40 +53,11 @@ export default function TechnicianView() {
     if (stored) setTechName(stored);
   }, []);
 
+  const { calls, loading: loadingCalls, error: callsError } = useServiceCalls("active", user?.uid ?? null);
+
   useEffect(() => {
-    if (!user) return;
-    const q = query(
-      collection(db, "ServiceCalls"),
-      where("status", "in", ["OPEN", "IN_PROGRESS"]),
-      orderBy("date", "desc")
-    );
-    const unsub = onSnapshot(
-      q,
-      (snap) => {
-        setCalls(
-          snap.docs.map(
-            (d) =>
-              ({
-                id: d.id,
-                ...d.data(),
-                date: d.data().date ? d.data().date.toDate() : null,
-                updatedAt: d.data().updatedAt
-                  ? d.data().updatedAt.toDate()
-                  : null,
-                createdAt: d.data().createdAt
-                  ? d.data().createdAt.toDate()
-                  : null,
-              }) as ServiceCall
-          )
-        );
-      },
-      (err) => {
-        console.error(err);
-        toast.error("Couldn't load service calls");
-      }
-    );
-    return () => unsub();
-  }, [user]);
+    if (callsError) toast.error(callsError);
+  }, [callsError]);
 
   const visibleCalls = useMemo(() => {
     if (filter === "mine") {
@@ -127,19 +91,16 @@ export default function TechnicianView() {
 
   const updateCall = async (
     id: string,
-    patch: Partial<Pick<ServiceCall, "status" | "takenBy">>,
+    patch: ServiceCallPatch,
     successMsg: string
   ) => {
     setBusyId(id);
     try {
-      await updateDoc(doc(db, "ServiceCalls", id), {
-        ...patch,
-        updatedAt: Timestamp.now(),
-      });
+      await updateServiceCall(db, id, patch);
       toast.success(successMsg);
     } catch (err) {
       console.error(err);
-      toast.error("Update failed — will retry when online");
+      toast.error("Update failed. Please try again.");
     } finally {
       setBusyId(null);
     }
@@ -152,16 +113,16 @@ export default function TechnicianView() {
     }
     return updateCall(
       id,
-      { takenBy: techName, status: "IN_PROGRESS" },
+      { takenBy: techName, status: CallStatus.IN_PROGRESS },
       "Claimed — good luck out there"
     );
   };
 
   const startCall = (id: string) =>
-    updateCall(id, { status: "IN_PROGRESS" }, "Marked in progress");
+    updateCall(id, { status: CallStatus.IN_PROGRESS }, "Marked in progress");
 
   const completeCall = (id: string) =>
-    updateCall(id, { status: "DONE" }, "Marked done");
+    updateCall(id, { status: CallStatus.DONE }, "Marked done");
 
   if (loading) {
     return (
@@ -300,7 +261,11 @@ export default function TechnicianView() {
         <InstallCard />
       </div>
 
-      {visibleCalls.length === 0 ? (
+      {callsError ? (
+        <p role="alert" className="py-4 text-red-700">{callsError}</p>
+      ) : loadingCalls ? (
+        <p role="status" className="py-4 text-slate-500">Loading service calls…</p>
+      ) : visibleCalls.length === 0 ? (
         <Card className="text-center py-10 border-dashed">
           <CardContent className="space-y-3">
             <Filter className="h-8 w-8 mx-auto text-slate-300" />

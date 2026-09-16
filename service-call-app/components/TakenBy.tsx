@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
-import { doc, updateDoc, Timestamp } from "firebase/firestore";
+import { useEffect, useState } from "react";
+import { updateServiceCall } from "@/lib/service-calls/repository";
 import db from "@/lib/firebase";
 import {
   Select,
@@ -18,31 +18,29 @@ const predefinedNames = [
 
 export default function TakenBy({ id, currentTakenBy }: { id: string; currentTakenBy: string }) {
   const [takenBy, setTakenBy] = useState<string>(currentTakenBy || "Select...");
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
 
   useEffect(() => {
     setTakenBy(currentTakenBy || "Select...");
   }, [currentTakenBy]);
 
-  const handleSelectChange = (newTakenBy: string) => {
+  const handleSelectChange = async (newTakenBy: string) => {
+    if (isPending) return;
     // Optimistic update
     setTakenBy(newTakenBy);
 
-    startTransition(async () => {
-      try {
-        const serviceCallRef = doc(db, "ServiceCalls", id);
-        await updateDoc(serviceCallRef, {
-          takenBy: newTakenBy,
-          updatedAt: Timestamp.now(),
-        });
-        toast.success(`Assigned to ${newTakenBy === "Select..." ? "unassigned" : newTakenBy}`);
-      } catch (error) {
-        // Revert on error
-        setTakenBy(currentTakenBy);
-        toast.error("Failed to update assignment");
-        console.error("Failed to update takenBy:", error);
-      }
-    });
+    setIsPending(true);
+    try {
+      await updateServiceCall(db, id, { takenBy: newTakenBy });
+      toast.success(`Assigned to ${newTakenBy === "Select..." ? "unassigned" : newTakenBy}`);
+    } catch (error) {
+      // Revert on error
+      setTakenBy(currentTakenBy);
+      toast.error("Failed to update assignment");
+      console.error("Failed to update takenBy:", error);
+    } finally {
+      setIsPending(false);
+    }
   };
 
   return (

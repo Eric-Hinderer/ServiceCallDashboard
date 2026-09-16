@@ -15,7 +15,7 @@ export const columns: ColumnDef<ServiceCall>[] = [
       <DataTableColumnHeader column={column} title="Date" />
     ),
     cell: ({ row }) => {
-      const date = row.original.date.toLocaleString();
+      const date = row.original.date?.toLocaleString() ?? "—";
       return date;
     },
   },
@@ -84,7 +84,7 @@ export const columns: ColumnDef<ServiceCall>[] = [
     accessorKey: "updatedAt",
     header: "Updated At",
     cell: ({ row }) => {
-      const date = row.original.updatedAt.toLocaleString();
+      const date = row.original.updatedAt?.toLocaleString() ?? "—";
       return date;
     },
   },

@@ -23,11 +23,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { DataTablePagination } from "@/components/PaginationTable";
 
-import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
-import db from "@/lib/firebase";
+import { useServiceCalls } from "@/lib/service-calls/useServiceCalls";
+import { useAuth } from "@/components/AuthContext";
 import { ServiceCall } from "../(definitions)/definitions";
 import ExcelJS from "exceljs";
 import { Button } from "@/components/ui/button";
@@ -42,28 +42,10 @@ interface DataTableProps {
 }
 
 export function DataTable({ columns }: DataTableProps) {
-  const [serviceCalls, setServiceCalls] = useState<ServiceCall[]>([]);
+  const { user } = useAuth();
+  const { calls: serviceCalls, error } = useServiceCalls("all", user?.uid ?? null);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-
-  useEffect(() => {
-    const q = query(collection(db, "ServiceCalls"), orderBy("date", "desc"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const updatedServiceCalls = snapshot.docs.map((doc) => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          ...data,
-          date: data.date ? data.date.toDate() : null,
-          updatedAt: data.updatedAt ? data.updatedAt.toDate() : null,
-          createdAt: data.createdAt ? data.createdAt.toDate() : null,
-        } as ServiceCall;
-      });
-      setServiceCalls(updatedServiceCalls);
-    });
-
-    return () => unsubscribe();
-  }, []);
 
   const exportToExcel = async (
     rows: ServiceCall[],
@@ -123,6 +105,8 @@ export function DataTable({ columns }: DataTableProps) {
       columnFilters,
     },
   });
+
+  if (error) return <p role="alert" className="p-4 text-red-700">{error}</p>;
 
   return (
     <div>

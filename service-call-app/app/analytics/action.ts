@@ -55,6 +55,7 @@ export async function getWeekendServiceCalls(startDate: Date, endDate: Date) {
       } as ServiceCall;
     })
     .filter((serviceCall) => {
+      if (!serviceCall.date) return false;
       const serviceCallDateInCentralTime = DateTime.fromJSDate(
         serviceCall.date,
         { zone: "America/Chicago" }

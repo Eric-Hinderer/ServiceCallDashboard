@@ -5,14 +5,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Save, Calendar, MapPin, User, Wrench, AlertCircle, FileText, UserCheck } from "lucide-react";
-import { doc, getDoc, Timestamp, updateDoc } from "@firebase/firestore";
+import { updateServiceCall } from "@/lib/service-calls/repository";
+import { parseServiceCallFields } from "@/lib/service-calls/model";
 import db from "@/lib/firebase";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getData } from "./action";
 import { getLocations, getMachines } from "@/app/dashboard/action";
 import { Status } from "@/app/(definitions)/definitions";
-import { EditFormSubmitButton } from "@/components/SubmitFormButton";
+import EditServiceCallForm from "@/components/EditServiceCallForm";
+import { z } from "zod";
 import ComboboxInput from "@/components/ComboboxInput";
 import SmartBack from "@/components/SmartBack";
 
@@ -43,52 +45,26 @@ export default async function ServiceEditPage({
 
   async function editServiceCall(formData: FormData) {
     "use server";
-
-    const submittedReturn = formData.get("returnTo")?.toString();
-    const destination: ReturnPath = ALLOWED_RETURN_PATHS.includes(
-      submittedReturn as ReturnPath
-    )
-      ? (submittedReturn as ReturnPath)
-      : "/dashboard";
-
     try {
-      const docRef = doc(db, "ServiceCalls", key);
-
-      const updateData: any = {
-        location: formData.get("location")?.toString()?.trim() || "",
-        whoCalled: formData.get("whoCalled")?.toString()?.trim() || "",
-        machine: formData.get("machine")?.toString()?.trim() || "",
-        reportedProblem: formData.get("reportedProblem")?.toString()?.trim() || "",
-        takenBy: formData.get("takenBy")?.toString()?.trim() || "",
-        status: formData.get("status")?.toString() || Status.OPEN,
-        notes: formData.get("notes")?.toString()?.trim() || "",
-        updatedAt: Timestamp.now(),
-      };
-
-      // Validate required fields
-      if (!updateData.location || !updateData.whoCalled || !updateData.machine) {
-        throw new Error("Location, Who Called, and Machine are required fields");
-      }
-
-      await updateDoc(docRef, updateData);
-
-      revalidatePath("/dashboard");
-      revalidatePath("/technician");
-      revalidatePath(`/dashboard/${key}`);
-
+      await updateServiceCall(db, key, parseServiceCallFields(formData));
     } catch (error) {
       console.error("Error updating service call:", error);
-      throw error;
+      return { success: false as const, message: error instanceof z.ZodError
+        ? error.issues[0].message
+        : "Couldn't save your changes. Your entries are still here; please try again." };
     }
-
-    redirect(destination);
+    try {
+      revalidatePath("/dashboard");
+      revalidatePath("/technician");
+      revalidatePath("/admin");
+      revalidatePath("/");
+    } catch (error) {
+      console.error("Error refreshing service calls:", error);
+    }
+    return { success: true as const };
   }
 
-  const formatDate = (timestamp: any) => {
-    if (!timestamp) return "";
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-    return date.toLocaleString();
-  };
+  const formatDate = (date: Date | null) => date?.toLocaleString() ?? "";
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -149,8 +125,7 @@ export default async function ServiceEditPage({
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <form action={editServiceCall} className="space-y-8">
-                <input type="hidden" name="returnTo" value={returnTo} />
+              <EditServiceCallForm saveAction={editServiceCall} returnTo={returnTo}>
                 {/* Contact Information Section */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
@@ -308,9 +283,7 @@ export default async function ServiceEditPage({
                   </div>
                 </div>
 
-                {/* Action Buttons */}
-                <EditFormSubmitButton cancelFallback={returnTo} />
-              </form>
+              </EditServiceCallForm>
             </CardContent>
           </Card>
         </div>

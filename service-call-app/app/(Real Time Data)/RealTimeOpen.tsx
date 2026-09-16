@@ -1,16 +1,9 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
-import {
-  collection,
-  onSnapshot,
-  orderBy,
-  query,
-  where,
-} from "firebase/firestore";
 import { ServiceCall } from "../(definitions)/definitions";
-import db from "@/lib/firebase";
+import { useServiceCalls } from "@/lib/service-calls/useServiceCalls";
 import ServiceCallModalButton from "@/components/ServiceCallModalButton";
 import Status from "../../components/Status";
 import TakenBy from "@/components/TakenBy";
@@ -31,13 +24,27 @@ import { formatDistanceToNow } from "date-fns";
 import { Clock, Users, AlertCircle, MapPin, Wrench } from "lucide-react";
 
 const RealTimeOpenInProgress = () => {
-  const [serviceCalls, setServiceCalls] = useState<ServiceCall[]>([]);
   const { user: currentUser, signIn } = useAuth();
-  const [loading, setLoading] = useState(true);
   const [machines, setMachines] = useState<string[]>([]);
   const [locations, setLocations] = useState<string[]>([]);
-  const isInitialLoad = useRef(true);
-  const [error, setError] = useState<string | null>(null);
+  const [configError, setConfigError] = useState<string | null>(null);
+
+  // Optimized toast notification function
+  const showNewCallNotification = useCallback((newCall: ServiceCall) => {
+    toast.success(
+      `New service call at ${newCall.location || "Unknown Location"}`,
+      {
+        duration: 4000,
+        position: 'top-right',
+        icon: '🔧',
+      }
+    );
+  }, []);
+
+  const { calls: serviceCalls, loading, error: callsError } = useServiceCalls(
+    "active", currentUser?.uid ?? null, showNewCallNotification,
+  );
+  const error = callsError ?? configError;
 
   // Memoized calculations for better performance
   const statistics = useMemo(() => ({
@@ -69,81 +76,10 @@ const RealTimeOpenInProgress = () => {
     [serviceCalls]
   );
 
-  // Optimized toast notification function
-  const showNewCallNotification = useCallback((newCall: ServiceCall) => {
-    toast.success(
-      `New service call at ${newCall.location || "Unknown Location"}`,
-      {
-        duration: 4000,
-        position: 'top-right',
-        icon: '🔧',
-      }
-    );
-  }, []);
-
-  useEffect(() => {
-    const q = query(
-      collection(db, "ServiceCalls"),
-      where("status", "in", ["OPEN", "IN_PROGRESS"]),
-      orderBy("date", "desc")
-    );
-    
-    const unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
-        const updatedServiceCalls = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-          date: doc.data().date ? doc.data().date.toDate() : null,
-          updatedAt: doc.data().updatedAt
-            ? doc.data().updatedAt.toDate()
-            : null,
-          createdAt: doc.data().createdAt
-            ? doc.data().createdAt.toDate()
-            : null,
-        })) as ServiceCall[];
-
-        // Only show toast for new service calls after initial load
-        if (isInitialLoad.current) {
-          isInitialLoad.current = false;
-        } else {
-          snapshot.docChanges().forEach((change) => {
-            if (change.type === "added") {
-              const newCall = {
-                id: change.doc.id,
-                ...change.doc.data(),
-                date: change.doc.data().date ? change.doc.data().date.toDate() : null,
-                updatedAt: change.doc.data().updatedAt
-                  ? change.doc.data().updatedAt.toDate()
-                  : null,
-                createdAt: change.doc.data().createdAt
-                  ? change.doc.data().createdAt.toDate()
-                  : null,
-              } as ServiceCall;
-              showNewCallNotification(newCall);
-            }
-          });
-        }
-
-        setServiceCalls(updatedServiceCalls);
-        setLoading(false);
-        setError(null);
-      },
-      (error) => {
-        console.error("Error fetching service calls: ", error);
-        setError("Failed to fetch service calls");
-        toast.error("Failed to fetch service calls");
-        setLoading(false);
-      }
-    );
-
-    return () => unsubscribe();
-  }, [showNewCallNotification]);
-
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setError(null);
+        setConfigError(null);
         const [machinesData, locationsData] = await Promise.all([
           getMachines(),
           getLocations(),
@@ -152,7 +88,7 @@ const RealTimeOpenInProgress = () => {
         setLocations(locationsData);
       } catch (error) {
         console.error("Error fetching data:", error);
-        setError("Failed to fetch configuration data");
+        setConfigError("Failed to fetch configuration data");
         toast.error("Failed to fetch configuration data");
       }
     };
