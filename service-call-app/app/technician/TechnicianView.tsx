@@ -26,23 +26,19 @@ import { formatDistanceToNow } from "date-fns";
 import { ServiceCall } from "../(definitions)/definitions";
 import InstallCard from "@/components/InstallCard";
 import { ADMIN_DISPLAY_NAMES, isAdmin } from "@/lib/admins";
+import { useTechnicians } from "@/lib/useTechnicians";
 
 const TECH_NAME_KEY = "technician-name";
-const PREDEFINED_NAMES = [
-  "Kurt",
-  "Chris",
-  "Mike",
-  "Dean",
-  "Damon",
-  "John",
-  "Aaron",
-  ...ADMIN_DISPLAY_NAMES,
-];
 
 type FilterMode = "mine" | "unassigned" | "all";
 
 export default function TechnicianView() {
   const { user, loading, signIn } = useAuth();
+  const technicians = useTechnicians();
+  const predefinedNames = useMemo(
+    () => [...technicians, ...ADMIN_DISPLAY_NAMES],
+    [technicians]
+  );
   const [techName, setTechName] = useState<string>("");
   const [filter, setFilter] = useState<FilterMode>("mine");
 
@@ -153,7 +149,7 @@ export default function TechnicianView() {
 
   if (!techName) {
     const myName = user.displayName?.trim();
-    const showMyName = myName && !PREDEFINED_NAMES.includes(myName);
+    const showMyName = myName && !predefinedNames.includes(myName);
     return (
       <main className="min-h-[70vh] flex items-center justify-center p-6">
         <Card className="max-w-sm w-full">
@@ -174,7 +170,7 @@ export default function TechnicianView() {
               </Button>
             )}
             <div className="grid grid-cols-2 gap-2">
-              {PREDEFINED_NAMES.map((name) => (
+              {predefinedNames.map((name) => (
                 <Button
                   key={name}
                   variant="outline"

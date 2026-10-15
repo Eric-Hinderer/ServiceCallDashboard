@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Calendar, MapPin, User, Wrench, AlertCircle, FileText, UserCheck, Clock } from "lucide-react";
 import { Status } from "@/app/(definitions)/definitions";
 import ComboboxInput from "./ComboboxInput";
+import { useTechnicians } from "@/lib/useTechnicians";
 
 
 export default function CreateServiceCall({
@@ -61,7 +62,7 @@ export default function CreateServiceCall({
   const [selectedTechnician, setSelectedTechnician] = useState("Select...");
   const [selectedStatus, setSelectedStatus] = useState<string>(Status.OPEN);
 
-  const technicians = ["Kurt", "Chris", "Mike", "Dean", "Damon", "John", "Aaron"];
+  const technicians = useTechnicians();
 
   // Set current datetime as default
   const getCurrentDateTime = () => {

@@ -11,14 +11,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import toast from "react-hot-toast";
-
-const predefinedNames = [
-  "Kurt", "Chris", "Mike", "Dean", "Damon", "John", "Aaron", "Select..."
-];
+import { useTechnicians } from "@/lib/useTechnicians";
 
 export default function TakenBy({ id, currentTakenBy }: { id: string; currentTakenBy: string }) {
   const [takenBy, setTakenBy] = useState<string>(currentTakenBy || "Select...");
   const [isPending, setIsPending] = useState(false);
+  const predefinedNames = [...useTechnicians(), "Select..."];
 
   useEffect(() => {
     setTakenBy(currentTakenBy || "Select...");
