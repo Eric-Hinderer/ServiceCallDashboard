@@ -24,6 +24,10 @@ vi.mock("next/navigation", () => ({
 vi.mock("@/app/dashboard/create/action", () => ({
   submitServiceCall: vi.fn(),
 }));
+vi.mock("@/lib/useTechnicians", async () => {
+  const { DEFAULT_TECHNICIANS } = await import("@/lib/technicians");
+  return { useTechnicians: () => DEFAULT_TECHNICIANS };
+});
 vi.mock("react-hot-toast", () => ({
   default: { success: vi.fn(), error: vi.fn() },
 }));

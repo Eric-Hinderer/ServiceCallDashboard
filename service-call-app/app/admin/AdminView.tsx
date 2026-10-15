@@ -21,17 +21,7 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import { ServiceCall } from "../(definitions)/definitions";
 import { ADMIN_DISPLAY_NAMES, isAdmin } from "@/lib/admins";
-
-const TECH_NAMES = [
-  "Kurt",
-  "Chris",
-  "Mike",
-  "Dean",
-  "Damon",
-  "John",
-  "Aaron",
-  ...ADMIN_DISPLAY_NAMES,
-];
+import { useTechnicians } from "@/lib/useTechnicians";
 
 const UNASSIGNED = "Unassigned";
 
@@ -39,6 +29,11 @@ export default function AdminView() {
   const { user, loading, signIn } = useAuth();
 
   const [techFilter, setTechFilter] = useState<string>("all");
+  const technicians = useTechnicians();
+  const techNames = useMemo(
+    () => [...technicians, ...ADMIN_DISPLAY_NAMES],
+    [technicians]
+  );
 
   const { calls, loading: loadingCalls, error: callsError } = useServiceCalls("active", user && isAdmin(user) ? user.uid : null);
 
@@ -67,7 +62,7 @@ export default function AdminView() {
       if (!stats[name]) stats[name] = { open: 0, inProgress: 0, overdue: 0 };
     };
     ensure(UNASSIGNED);
-    TECH_NAMES.forEach(ensure);
+    techNames.forEach(ensure);
     calls.forEach((c) => {
       const name =
         !c.takenBy || c.takenBy === "Select..." || c.takenBy === ""
@@ -79,7 +74,7 @@ export default function AdminView() {
       if (c.overDue) stats[name].overdue++;
     });
     return stats;
-  }, [calls]);
+  }, [calls, techNames]);
 
   const filteredCalls = useMemo(() => {
     if (techFilter === "all") return calls;
@@ -213,7 +208,7 @@ export default function AdminView() {
                 active={techFilter === "all"}
                 onClick={() => setTechFilter("all")}
               />
-              {[UNASSIGNED, ...TECH_NAMES].map((name) => {
+              {[UNASSIGNED, ...techNames].map((name) => {
                 const s = perTech[name] || {
                   open: 0,
                   inProgress: 0,

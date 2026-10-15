@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run",
-    "typecheck": "next typegen && tsc --noEmit"
+    "typecheck": "next typegen && tsc --noEmit",
+    "seed:technicians": "node scripts/seed-technicians.mjs"
   },
   "dependencies": {
     "@auth0/nextjs-auth0": "^3.5.0",
